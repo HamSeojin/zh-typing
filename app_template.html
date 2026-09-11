@@ -1792,7 +1792,7 @@ function renderGramList(){
   $('gramCount').textContent = q ? `검색 ${gs.length}개` : `${gs.length}개 항목`;
   let lastSec = null;
   $('glist').innerHTML = gs.map((g,i) => {
-    const head = (g.sec !== lastSec && !q) ? `<div class="gsec" style="padding:10px 4px 2px;border-bottom:1px solid var(--line)">${g.sec}</div>` : ''; lastSec = g.sec;
+    const head = (g.sec !== lastSec && !q) ? `<div class="gsec" style="padding:10px 4px 2px;border-bottom:1px solid var(--line)"><b style="color:var(--ink)">${g.sec_ko||g.sec}</b> <span style="font-family:var(--hanzi)">${g.sec}</span></div>` : ''; lastSec = g.sec;
     return head + `<button data-gid="${g.id}"><span><span style="font-weight:500">${g.title_ko}</span><br><small style="color:var(--ink-2);font-family:var(--hanzi)">${g.pattern}</small></span><span class="pm">${q ? (g.lv===7?'7~9':g.lv)+'급' : g.id.replace(/^[^0-9]+/,'')}</span></button>`;
   }).join('') || '<div style="padding:12px;color:var(--ink-2)">해당하는 항목이 없어요</div>';
 }
@@ -1806,7 +1806,7 @@ function openGram(id){
   $('gramList').hidden = true; $('gramView').hidden = false;
   const ids = gramMatches(g, 8);
   $('gramCard').innerHTML = `
-    <div class="gsec">${g.lv===7?'7~9':g.lv}급 · ${g.sec} · ${g.id}</div>
+    <div class="gsec">${g.lv===7?'7~9':g.lv}급 · ${g.sec_ko||g.sec} (${g.sec}) · ${g.id}</div>
     <h2 class="gtitle">${g.title_ko}</h2>
     <div class="gzh">${tapHtml(g.title)}</div>
     <div class="gpat">${g.pattern}</div>

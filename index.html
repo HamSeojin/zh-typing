@@ -394,7 +394,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 
 <div class="wrap">
 <header>
-  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1816</span></small></h1>
+  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1830</span></small></h1>
   <span id="ttsState" style="font-size:12px;color:var(--ink-2)"></span>
 </header>
 <nav role="tablist">
@@ -767,7 +767,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <script id="strokes" type="application/json" data-src="data/strokes.58e4a29f.json"></script>
 <script id="passages" type="application/json" data-src="data/passages.d342e778.json"></script>
 <script id="exam" type="application/json" data-src="data/exam.a589f29a.json"></script>
-<script id="grammar" type="application/json" data-src="data/grammar.bec56846.json"></script>
+<script id="grammar" type="application/json" data-src="data/grammar.6dbac83e.json"></script>
 <script>/* hanzi-writer (MIT, https://github.com/chanind/hanzi-writer) — 획순 애니메이션·쓰기 퀴즈 라이브러리 */
 /**
  * Hanzi Writer v3.7.3 | https://chanind.github.io/hanzi-writer
@@ -1830,7 +1830,7 @@ function renderGramList(){
   $('gramCount').textContent = q ? `검색 ${gs.length}개` : `${gs.length}개 항목`;
   let lastSec = null;
   $('glist').innerHTML = gs.map((g,i) => {
-    const head = (g.sec !== lastSec && !q) ? `<div class="gsec" style="padding:10px 4px 2px;border-bottom:1px solid var(--line)">${g.sec}</div>` : ''; lastSec = g.sec;
+    const head = (g.sec !== lastSec && !q) ? `<div class="gsec" style="padding:10px 4px 2px;border-bottom:1px solid var(--line)"><b style="color:var(--ink)">${g.sec_ko||g.sec}</b> <span style="font-family:var(--hanzi)">${g.sec}</span></div>` : ''; lastSec = g.sec;
     return head + `<button data-gid="${g.id}"><span><span style="font-weight:500">${g.title_ko}</span><br><small style="color:var(--ink-2);font-family:var(--hanzi)">${g.pattern}</small></span><span class="pm">${q ? (g.lv===7?'7~9':g.lv)+'급' : g.id.replace(/^[^0-9]+/,'')}</span></button>`;
   }).join('') || '<div style="padding:12px;color:var(--ink-2)">해당하는 항목이 없어요</div>';
 }
@@ -1844,7 +1844,7 @@ function openGram(id){
   $('gramList').hidden = true; $('gramView').hidden = false;
   const ids = gramMatches(g, 8);
   $('gramCard').innerHTML = `
-    <div class="gsec">${g.lv===7?'7~9':g.lv}급 · ${g.sec} · ${g.id}</div>
+    <div class="gsec">${g.lv===7?'7~9':g.lv}급 · ${g.sec_ko||g.sec} (${g.sec}) · ${g.id}</div>
     <h2 class="gtitle">${g.title_ko}</h2>
     <div class="gzh">${tapHtml(g.title)}</div>
     <div class="gpat">${g.pattern}</div>
