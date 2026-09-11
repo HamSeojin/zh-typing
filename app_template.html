@@ -1518,9 +1518,9 @@ function mergeStats(a, b){
 // 두 상태를 병합해 하나로. 각 항목은 타임스탬프가 큰 쪽이 이김
 function mergeState(a, b){
   if (!a) return b; if (!b) return a;
+  const keys = (x,y) => new Set([...Object.keys(x||{}), ...Object.keys(y||{})]);   // 두 쪽 키의 합집합
   const out = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats: mergeStats(a.stats, b.stats), read:{} };
   for (const k of keys(a.read, b.read)){ const p=a.read?.[k], q=b.read?.[k]; out.read[k] = !p ? q : !q ? p : ((q.t||0) > (p.t||0) ? q : p); }
-  const keys = (x,y) => new Set([...Object.keys(x||{}), ...Object.keys(y||{})]);
   for (const k of keys(a.progress, b.progress)){ const p=a.progress?.[k], q=b.progress?.[k]; out.progress[k] = !p ? q : !q ? p : ((q.t||0) > (p.t||0) ? q : p); }
   for (const k of keys(a.ko_t, b.ko_t)){ const ta=a.ko_t?.[k]||0, tb=b.ko_t?.[k]||0; const src = tb > ta ? b : a; out.ko_t[k] = Math.max(ta,tb); if (src.ko?.[k]) out.ko[k] = src.ko[k]; }
   for (const k of keys(a.ko, b.ko)) if (!(k in out.ko_t)) out.ko[k] = a.ko?.[k] || b.ko?.[k];   // 시각 기록이 없는 옛 항목
