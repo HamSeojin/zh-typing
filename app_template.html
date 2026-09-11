@@ -114,8 +114,9 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .plist .pt{font-family:var(--hanzi);font-size:18px}
 .plist .pm{font-size:12px;color:var(--ink-2);white-space:nowrap}
 .plist .pm.done{color:var(--good)}
-.tog{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer}
-.tog input{accent-color:var(--accent)}
+.tog{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer}
+.tog input{display:none}
+.tog:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .ptitle{font-family:var(--hanzi);font-size:24px;margin:0 0 12px;font-weight:500}
 .ptext{font-family:var(--hanzi);font-size:22px;line-height:2}
 .ptext .sent{display:block;margin-bottom:6px}
@@ -461,6 +462,8 @@ body.no-tabbar{padding-bottom:24px}
 .ai-form{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px solid var(--line)}
 .ai-form input{flex:1;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
 body.no-tabbar .popup{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.unitbar.toolbar{gap:6px;margin-bottom:10px}
+.unitbar.toolbar .btn{padding:7px 12px;font-size:13px;border-radius:999px}
 /* 정답 확인 후 부가 정보 접기 */
 details.more{margin-top:12px;border-top:1px dashed var(--line);padding-top:6px}
 details.more summary{cursor:pointer;font-size:13px;color:var(--ink-2);list-style:none;display:flex;align-items:center;gap:6px;padding:4px 0;user-select:none}
@@ -578,7 +581,7 @@ details.more summary::-webkit-details-marker{display:none}
   <div class="segpane" data-pane="mine">
   <div class="card" style="margin-bottom:14px">
     <div class="mine-head">
-      <div><b id="mineCount">0</b>단어 <span class="hint">학습 화면의 ☆ 버튼(Alt+S)이나 전체 단어 목록에서 담거나, 아래에서 직접 추가</span></div>
+      <div><b id="mineCount">0</b>단어 <span class="hint">☆로 담거나 아래에서 직접 추가</span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <select id="mineChunk" aria-label="학습할 묶음"></select>
         <button class="btn primary" id="btnMineStudy">내 단어장 학습</button>
@@ -604,7 +607,7 @@ details.more summary::-webkit-details-marker{display:none}
   <div class="card">
 
     <div class="mine-head">
-      <div><b id="mineSentCount">0</b>문장 <span class="hint">문장 모드(빈칸·받아쓰기·어순)에서 ☆ 를 누르면 그 문장이 담겨요</span></div>
+      <div><b id="mineSentCount">0</b>문장 <span class="hint">문장 연습에서 ☆ 를 누르면 담겨요</span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <select id="mineSentMode" aria-label="연습 방식"><option value="cloze">빈칸 채우기</option><option value="dict">문장 받아쓰기</option><option value="order">어순 배열</option></select>
         <button class="btn primary" id="btnMineSentStudy">내 문장 연습</button>
@@ -834,11 +837,15 @@ details.more summary::-webkit-details-marker{display:none}
   <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">타자 연습</b><span class="tb-right" id="typClock"></span></div>
   <div id="typHome">
     <div class="card">
-      <h3 class="sk-h">설정 <small>기본은 이미 학습한 단어(한 번 이상 맞힌 것)만 — 모르는 단어는 칠 수 없으니까. 급수 전체는 학습 시작 시트에서 고른 급수 기준</small></h3>
+      <h3 class="sk-h">설정 <small>기본은 고른 급수에서 이미 학습한 단어(한 번 이상 맞힌 것)만 — 모르는 단어는 칠 수 없으니까</small></h3>
       <div class="sh-label">입력 방식</div>
       <div class="lvbar wrap" id="typMode"><label><input type="radio" name="typMode" value="py" checked>병음 (성조 없이, 실제 중국어 타자처럼)</label><label><input type="radio" name="typMode" value="hz">한자 (중국어 입력기)</label></div>
+      <div class="sh-label">급수 <small style="font-weight:400">(타자 연습 전용 · 학습 급수와 별개)</small></div>
+      <div class="lvbar wrap" id="typLv">
+        <label><input type="checkbox" value="1">1급</label><label><input type="checkbox" value="2">2급</label><label><input type="checkbox" value="3">3급</label><label><input type="checkbox" value="4">4급</label><label><input type="checkbox" value="5">5급</label><label><input type="checkbox" value="6">6급</label><label><input type="checkbox" value="7">7급</label><label><input type="checkbox" value="8">8급</label><label><input type="checkbox" value="9">9급</label>
+      </div>
       <div class="sh-label">내용</div>
-      <div class="lvbar wrap" id="typPool"><label><input type="radio" name="typPool" value="learned" checked>학습한 단어 <span id="typLearnedN"></span></label><label><input type="radio" name="typPool" value="sent">학습한 단어로 된 문장 <span id="typSentN"></span></label><label><input type="radio" name="typPool" value="level"><span id="typLevelLabel">급수 전체</span></label></div>
+      <div class="lvbar wrap" id="typPool"><label><input type="radio" name="typPool" value="learned" checked>학습한 단어 <span id="typLearnedN"></span></label><label><input type="radio" name="typPool" value="sent">학습한 단어로 된 문장 <span id="typSentN"></span></label><label><input type="radio" name="typPool" value="level"><span id="typLevelLabel">고른 급수 단어 전체</span></label></div>
       <div class="sh-label">시간</div>
       <div class="lvbar wrap" id="typSecs"><label><input type="radio" name="typSecs" value="30">30초</label><label><input type="radio" name="typSecs" value="60" checked>60초</label><label><input type="radio" name="typSecs" value="120">2분</label></div>
       <div class="dataops" style="margin-top:12px"><button class="btn primary" id="btnTypStart" style="flex:1">시작 ›</button></div>
@@ -877,14 +884,12 @@ details.more summary::-webkit-details-marker{display:none}
     <div class="card" style="padding:8px 12px"><div class="plist" id="plist"></div></div>
   </div>
   <div id="reader" hidden>
-    <div class="unitbar">
-      <button class="btn" id="btnReadBack">‹ 목록</button>
+    <div class="unitbar toolbar">
       <label class="tog"><input type="checkbox" id="rdPy"> 병음</label>
       <label class="tog"><input type="checkbox" id="rdKo"> 번역</label>
       <button class="btn icon" id="btnReadSpeak" title="전체 읽어주기">🔊</button>
       <button class="btn" id="btnReadAsk" title="AI 선생님에게 이 글에 대해 묻기">🤖 묻기</button>
-      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
-    </div>
+      </div>
     <div class="card" id="readCard">
       <h2 class="ptitle" id="ptitle"></h2>
       <div class="ptext" id="ptext"></div>
@@ -913,20 +918,18 @@ details.more summary::-webkit-details-marker{display:none}
     </div>
   </div>
   <div id="gramView" hidden>
-    <div class="unitbar">
-      <button class="btn" id="btnGramBack">‹ 목록</button>
+    <div class="unitbar toolbar">
       <button class="btn" id="btnGramPrev">‹ 이전</button>
       <button class="btn" id="btnGramNext">다음 ›</button>
       <button class="btn" id="btnGramAsk" title="AI 선생님에게 이 문법에 대해 묻기">🤖 묻기</button>
-      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
-    </div>
+      </div>
     <div class="card" id="gramCard"></div>
   </div>
 </section>
 
 <!-- ═══════════ 모의고사 · 듣기 ═══════════ -->
 <section class="screen pushed" data-screen="exam" data-parent="learn" hidden>
-  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">모의고사 · 듣기</b></div>
+  <div class="topbar" id="examTop"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">모의고사 · 듣기</b></div>
   <div id="examHome">
     <div class="card" style="margin-bottom:14px">
       <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 유형을 본뜬 40문항 (기출 아님)</small></h3>
@@ -950,11 +953,7 @@ details.more summary::-webkit-details-marker{display:none}
     <div class="card"><h3 class="sk-h">지난 시험</h3><div class="lvprog" id="examHistory"></div></div>
   </div>
   <div id="lisRun" hidden>
-    <div class="unitbar">
-      <span id="lisPos" class="hint" style="font-size:13px"></span>
-      <span id="lisScore" class="hint" style="font-size:13px;margin-left:auto"></span>
-      <button class="btn" id="btnLisQuit">끝내기</button>
-    </div>
+    <div class="topbar"><button class="back" data-back aria-label="끝내기">‹</button><b class="title" id="lisPos"></b><span class="tb-right" id="lisScore"></span><button class="btn small" id="btnLisQuit" style="margin-left:8px">끝내기</button></div>
     <div class="uprog"><div class="uprog-bar" id="lisBar"></div></div>
     <div class="card" id="lisCard" style="margin-top:12px">
       <div id="lisBody" class="exam-body"></div>
@@ -965,11 +964,7 @@ details.more summary::-webkit-details-marker{display:none}
     </div>
   </div>
   <div id="examRun" hidden>
-    <div class="unitbar">
-      <span id="examPos" class="hint" style="font-size:13px"></span>
-      <span id="examTimer" style="font-family:var(--mono);margin-left:auto;font-size:15px"></span>
-      <button class="btn" id="btnExamQuit">중단</button>
-    </div>
+    <div class="topbar"><button class="back" data-back aria-label="중단">‹</button><b class="title" id="examPos"></b><span class="tb-right" id="examTimer" style="font-family:var(--mono);font-size:15px;color:var(--ink)"></span><button class="btn small" id="btnExamQuit" style="margin-left:8px">중단</button></div>
     <div class="uprog"><div class="uprog-bar" id="examBar"></div></div>
     <div class="card" id="examCard" style="margin-top:12px">
       <div class="q-meta"><span id="examType"></span><span class="box" id="examSec"></span></div>
@@ -1877,7 +1872,15 @@ function go(name){
 function onScreen(name){ return curScreen === name; }
 document.addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g){ go(g.dataset.go); if (g.dataset.focus === 'lis') setTimeout(() => { const el = $('lisCard0'); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50); return; }
-  const bk = e.target.closest('[data-back]'); if (bk){ const sc = bk.closest('.screen'); if (sc.dataset.screen === 'session' && session && session.type === 'exam') return; go(sc.dataset.parent || 'learn'); }
+  const bk = e.target.closest('[data-back]'); if (bk){ const sc = bk.closest('.screen'); const n = sc.dataset.screen;
+    // 세부 화면(글 본문·문법 상세·시험 진행)에서는 먼저 그 목록으로, 목록에서는 학습 메뉴로
+    if (n === 'read' && !$('reader').hidden){ renderReadList(); return; }
+    if (n === 'gram' && !$('gramView').hidden){ renderGramList(); return; }
+    if (n === 'exam' && !$('examRun').hidden){ $('btnExamQuit').click(); return; }
+    if (n === 'exam' && !$('lisRun').hidden){ $('btnLisQuit').click(); return; }
+    if (n === 'exam' && !$('examResult').hidden){ renderExamHome(); return; }
+    if (n === 'typing' && !$('typRun').hidden){ $('btnTypStop').click(); return; }
+    go(sc.dataset.parent || 'learn'); }
 });
 // 세그먼트(단어장·더보기 안의 작은 탭)
 document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e => {
@@ -1987,7 +1990,7 @@ function renderPassageText(){
   $('ptext').innerHTML = curPassage.sents.map((s,i) => `<span class="sent" data-si="${i}">${s.seg.map(tokHtml).join('')}${showPy?`<span class="pyl">${s.py}</span>`:''}${showKo?`<span class="kol">${s.ko}</span>`:''}</span>`).join('');
 }
 $('rdPy').onchange = $('rdKo').onchange = renderPassageText;
-$('btnReadBack').onclick = renderReadList;
+
 $('btnReadSpeak').onclick = () => { if (curPassage) speak(curPassage.sents.map(s=>s.zh).join('')); };
 // 단어 탭 → 사전 풍선. 단어 전체가 사전에 없으면 글자 단위로 나눠 찾음
 function lookup(tok){
@@ -2220,22 +2223,25 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('aiShee
 let typ = null;
 const TYPING = store.get('zh.typing', []);   // [{t, mode, pool, secs, cpm, acc, n}]
 function typPy(pyn){ return (pyn || '').toLowerCase().replace(/[0-9\s'’\-]/g, '').replace(/u:/g, 'v').replace(/ü/g, 'v'); }
-function learnedWords(){ return WORDS.filter(w => PROGRESS[w.id] && PROGRESS[w.id].box >= 1); }
+function typLevels(){ const v = SETTINGS.typLevels && SETTINGS.typLevels.length ? SETTINGS.typLevels : SETTINGS.levels; return v; }
+function learnedWords(){ const L = typLevels(); return WORDS.filter(w => L.includes(w.lv) && PROGRESS[w.id] && PROGRESS[w.id].box >= 1); }
+document.querySelectorAll('#typLv input').forEach(i => i.onchange = () => { const v = [...document.querySelectorAll('#typLv input:checked')].map(x => +x.value); if (!v.length){ i.checked = true; return; } SETTINGS.typLevels = v; store.set('zh.settings', SETTINGS); renderTypHome(); });
 function learnedSents(){   // 문장의 단어가 전부 학습한 단어(또는 한 글자 조사류)인 예문
-  const L = new Set(learnedWords().map(w => w.s));
+  const L = new Set(WORDS.filter(w => PROGRESS[w.id] && PROGRESS[w.id].box >= 1).map(w => w.s));
   return Object.entries(SENTS).filter(([id, st]) => st.seg.every(t => /^[。，！？、；：!?,.…—""''（）]+$/.test(t) || L.has(t))).map(([id, st]) => ({ id:+id, st }));
 }
 function typItems(){
   const pool = document.querySelector('#typPool input:checked').value;
   if (pool === 'sent') return learnedSents().map(x => ({ hz: x.st.zh.replace(SENT_PUNCT,''), py: x.st.py, ko: x.st.ko, pyn: null, seg: x.st.seg }));
-  const ws = pool === 'level' ? WORDS.filter(w => SETTINGS.levels.includes(w.lv)) : learnedWords();
+  const ws = pool === 'level' ? WORDS.filter(w => typLevels().includes(w.lv)) : learnedWords();
   return ws.map(w => ({ hz: w.s, py: w.py, ko: KO[w.s] || w.ko, pyn: w.pyn }));
 }
 function typTarget(it){ return typ.mode === 'hz' ? it.hz : (it.pyn ? typPy(it.pyn) : it.seg.filter(t => !/^[。，！？、；：!?,.…—""''（）]+$/.test(t)).map(t => { const w = BY_S.get(t); return w ? typPy(w.pyn) : ''; }).join('')); }
 function renderTypHome(){
+  document.querySelectorAll('#typLv input').forEach(i => i.checked = typLevels().includes(+i.value));
   const ln = learnedWords().length, sn = learnedSents().length;
   $('typLearnedN').textContent = `(${ln}개)`; $('typSentN').textContent = `(${sn}개)`;
-  const lvs = SETTINGS.levels.slice().sort((a,b)=>a-b), lvN = WORDS.filter(w => SETTINGS.levels.includes(w.lv)).length;
+  const lvs = typLevels().slice().sort((a,b)=>a-b), lvN = WORDS.filter(w => typLevels().includes(w.lv)).length;
   $('typLevelLabel').textContent = `${lvs.map(l=>l+'급').join('+')} 단어 전체 (${lvN}개 · 안 배운 단어 포함)`;
   document.querySelector('#typPool input[value=sent]').disabled = sn < 5;
   $('typNote').textContent = ln < 10 ? `학습한 단어가 ${ln}개라 아직 적어요. 10개 미만이면 "지금 급수 전체"로 연습하는 걸 권해요.` : '';
@@ -2383,7 +2389,7 @@ $('btnLisStart').onclick = () => {
   const lv = examLv(), bank = EXAM_BANK[String(lv)];
   if (!bank || !bank.dlg.length){ showToast('이 급수의 대화 문항이 없어요'); return; }
   lis = { lv, items: pick(bank.dlg, 10), i: 0, ok: 0, done: false };
-  $('examHome').hidden = true; $('lisRun').hidden = false; renderLis();
+  $('examHome').hidden = true; $('lisRun').hidden = false; $('examTop').hidden = true; renderLis();
 };
 function renderLis(){
   const it = lis.items[lis.i];
@@ -2492,7 +2498,7 @@ $('gramCard').addEventListener('click', e => {
     startSession('gram', ids.map(id => BY_ID.get(id)), { label: '문법 · ' + curGram.title_ko });
   }
 });
-$('btnGramBack').onclick = renderGramList;
+
 $('btnGramPrev').onclick = () => { const i = GRAM.indexOf(curGram); if (i > 0) openGram(GRAM[i-1].id); };
 $('btnGramNext').onclick = () => { const i = GRAM.indexOf(curGram); if (i < GRAM.length-1) openGram(GRAM[i+1].id); };
 // 문장 모드 정답 확인 후 "관련 문법" 칩 (문법 탭으로 이동)
@@ -2539,7 +2545,7 @@ function startExam(){
   if (!items.length){ showToast('이 급수의 문항이 없어요'); return; }
   EXAM_TIME = examTime(lv);
   exam = { lv, items, i: 0, ans: items.map(()=>null), start: Date.now(), left: EXAM_TIME, replay: 0 };
-  $('examHome').hidden = true; $('examResult').hidden = true; $('examRun').hidden = false;
+  $('examHome').hidden = true; $('examResult').hidden = true; $('examRun').hidden = false; $('examTop').hidden = true;
   clearInterval(examTick); examTick = setInterval(() => { exam.left = EXAM_TIME - Math.floor((Date.now()-exam.start)/1000); const m = Math.max(0, exam.left); $('examTimer').textContent = `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; if (exam.left <= 0) finishExam(true); }, 500);
   renderExamItem();
 }
@@ -2625,7 +2631,7 @@ function finishExam(timeout){
     <div class="exam-review">${wrong.map(({it,i}) => `<div class="ri bad"><small style="color:var(--ink-2)">${i+1}. ${it.sec}</small><br><b>${tapHtml(desc(it))}</b><br><small style="color:var(--ink-2)">${it.ko || (it.st&&it.st.ko) || (it.q&&it.q.qko) || ''}</small></div>`).join('') || '<div class="ri">모두 맞았어요 🎉</div>'}</div>
     <div class="dataops" style="margin-top:16px"><button class="btn primary" id="btnExamAgain">다른 문제로 다시</button><button class="btn" id="btnExamHome">모의고사 홈</button></div>
     ${exam.items.some(it => it.wordId != null && !it.ok) ? `<p class="hint" style="font-size:13px;color:var(--ink-2);margin:10px 0 0">빈칸·어순에서 틀린 단어 ${exam.items.filter(it => it.wordId != null && !it.ok).length}개는 모의고사 홈의 "오답 단어" 목록에 담아 뒀어요 (학습 탭 복습과는 별개)</p>` : ''}`;
-  $('examResult').hidden = false; exam = null;
+  $('examResult').hidden = false; $('examTop').hidden = false; exam = null;
   $('btnExamAgain').onclick = startExam; $('btnExamHome').onclick = renderExamHome;
   $('examResult').addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
   updateStats(); window.scrollTo({top:0});
@@ -2636,7 +2642,7 @@ function renderExamWrong(){
   $('btnExamWrongStudy').disabled = $('btnExamWrongSent').disabled = $('btnExamWrongClear').disabled = !wids.length;
 }
 function renderExamHome(){
-  $('examRun').hidden = true; $('examResult').hidden = true; $('examHome').hidden = false; $('lisRun').hidden = true;
+  $('examRun').hidden = true; $('examResult').hidden = true; $('examHome').hidden = false; $('lisRun').hidden = true; $('examTop').hidden = false;
   $('examHistory').innerHTML = EXAMS.slice(-10).reverse().map(x => `<div class="row" style="grid-template-columns:auto 1fr auto"><span>${new Date(x.t).toLocaleDateString()} · ${x.lv===7?'7~9':x.lv}급</span><div class="track"><div class="fill" style="width:${x.score/x.total*100}%"></div></div><span class="num">${Math.round(x.score/x.total*100)}% (${x.score}/${x.total})</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 본 시험이 없어요</span>';
 }
 $('btnExamStart').onclick = startExam;
