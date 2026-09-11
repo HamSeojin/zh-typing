@@ -193,6 +193,9 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .tokens.pool{margin-top:8px}
 .tokens button{font:inherit;font-family:var(--hanzi);font-size:22px;padding:6px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer}
 .tokens.built button{border-color:var(--accent)}
+.tokens.built button[aria-pressed="true"]{background:var(--good-bg);box-shadow:inset 0 0 0 2px var(--accent);transform:translateY(-2px)}
+.tokens button.undo{font-family:var(--body);color:var(--ink-2);border-style:dashed}
+.orderHint{text-align:center;font-size:12px;color:var(--ink-2);min-height:1.2em;margin-top:6px}
 .answer.hiddenInput input{display:none}
 @media (max-width:480px){.modebar.sent{grid-template-columns:auto repeat(3,1fr)}.modebar.sent button{padding:6px 2px}.modebar.sent button b{font-size:12px}.hanzi.sent{font-size:24px}.tokens button{font-size:19px;padding:5px 10px}}
 /* 학습 모드 선택 */
@@ -365,6 +368,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <div class="orderArea" id="orderArea" hidden>
         <div class="tokens built" id="built" aria-label="만든 문장"></div>
         <div class="tokens pool" id="pool" aria-label="남은 어절"></div>
+        <div class="orderHint" id="orderHint"></div>
       </div>
     </div>
     <div class="answer">
@@ -1024,20 +1028,37 @@ function renderSentQuestion(M, ko){
     qKo.textContent = st.ko;
     ans.placeholder = '문장 전체 입력 후 Enter (구두점 생략 가능)';
   } else { // order
-    qKind.textContent = '어절을 순서대로 눌러 문장을 만드세요';
+    qKind.textContent = '어절을 순서대로 눌러 문장을 만드세요 · 다 놓으면 확인';
     qHanzi.innerHTML = ''; qKo.textContent = st.ko;
-    orderBuilt = []; orderPool = st.seg.map((tok,i)=>({tok,i})).sort(()=>Math.random()-.5);
+    orderBuilt = []; orderSel = -1; orderPool = st.seg.map((tok,i)=>({tok,i})).sort(()=>Math.random()-.5);
     $('orderArea').hidden = false; document.querySelector('.answer').classList.add('hiddenInput');
     renderOrder();
     ans.placeholder = '';
   }
 }
+let orderSel = -1;   // 위쪽 칸에서 '집은' 단어의 위치 (-1 = 없음)
 function renderOrder(){
-  $('built').innerHTML = orderBuilt.map((o,k)=>`<button type="button" data-b="${k}">${o.tok}</button>`).join('') || '<span style="color:var(--ink-2);font-size:13px;align-self:center">여기에 문장이 만들어져요</span>';
-  $('pool').innerHTML = orderPool.map((o,k)=>`<button type="button" data-p="${k}">${o.tok}</button>`).join('');
+  $('built').innerHTML = orderBuilt.map((o,k)=>`<button type="button" data-b="${k}" aria-pressed="${k===orderSel}">${o.tok}</button>`).join('') || '<span style="color:var(--ink-2);font-size:13px;align-self:center">여기에 문장이 만들어져요</span>';
+  $('pool').innerHTML = orderPool.map((o,k)=>`<button type="button" data-p="${k}">${o.tok}</button>`).join('')
+    + (orderBuilt.length ? `<button type="button" class="undo" data-undo="1" title="마지막 단어 빼기">↩</button>` : '');
+  $('orderHint').textContent = orderSel >= 0 ? '옮길 자리의 단어를 누르세요 (같은 단어를 다시 누르면 아래로 뺌)' : (orderPool.length ? '' : '순서를 바꾸려면 단어를 누르고 옮길 자리를 누르세요 · 확인으로 채점');
 }
-$('pool').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b || answered) return; orderBuilt.push(orderPool.splice(+b.dataset.p,1)[0]); renderOrder(); if (!orderPool.length) check(); });
-$('built').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (!b || answered) return; orderPool.push(orderBuilt.splice(+b.dataset.b,1)[0]); renderOrder(); });
+// 아래 칸: 누르면 위로 올라감. 위쪽에 집은 단어가 있으면 그 단어를 아래로 되돌림
+$('pool').addEventListener('click', e => {
+  if (answered) return;
+  if (e.target.closest('[data-undo]')){ if (orderBuilt.length) orderPool.push(orderBuilt.pop()); orderSel = -1; renderOrder(); return; }
+  const b = e.target.closest('[data-p]'); if (!b) return;
+  orderBuilt.push(orderPool.splice(+b.dataset.p,1)[0]); orderSel = -1; renderOrder();
+});
+// 위 칸: 1) 아무것도 안 집은 상태에서 누르면 '집기' 2) 집은 채로 다른 단어를 누르면 그 자리로 이동 3) 집은 단어를 다시 누르면 아래로 뺌
+$('built').addEventListener('click', e => {
+  const b = e.target.closest('[data-b]'); if (!b || answered) return;
+  const k = +b.dataset.b;
+  if (orderSel < 0){ orderSel = k; }
+  else if (orderSel === k){ orderPool.push(orderBuilt.splice(k,1)[0]); orderSel = -1; }
+  else { const [item] = orderBuilt.splice(orderSel,1); orderBuilt.splice(k,0,item); orderSel = -1; }
+  renderOrder();
+});
 // 받아쓰기 채점: 구두점·공백 제거 후 비교. 틀린 글자 표시용 diff
 function diffHtml(answer, given){
   const a = [...answer], g = [...given];
