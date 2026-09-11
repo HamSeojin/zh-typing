@@ -17,7 +17,10 @@
 <script>
 // PWA: 홈 화면 설치·오프라인용 서비스 워커 등록 (https 에서만 동작. claude.ai 게시본에는 없음)
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => reg.update()).catch(() => {}); });
+  // 새 서비스 워커가 자리를 잡으면(=새 버전) 한 번 새로고침해서 바로 반영
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloaded) return; reloaded = true; if (navigator.serviceWorker.controller) location.reload(); });
 }
 </script>
 </head>
@@ -321,7 +324,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 
 <div class="wrap">
 <header>
-  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1335</span></small></h1>
+  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1337</span></small></h1>
   <span id="ttsState" style="font-size:12px;color:var(--ink-2)"></span>
 </header>
 <nav role="tablist">

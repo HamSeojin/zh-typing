@@ -53,7 +53,10 @@ head = f"""<!doctype html>
 <script>
 // PWA: 홈 화면 설치·오프라인용 서비스 워커 등록 (https 에서만 동작. claude.ai 게시본에는 없음)
 if ('serviceWorker' in navigator && location.protocol === 'https:') {{
-  window.addEventListener('load', () => {{ navigator.serviceWorker.register('sw.js').catch(() => {{}}); }});
+  window.addEventListener('load', () => {{ navigator.serviceWorker.register('sw.js', {{ updateViaCache: 'none' }}).then(reg => reg.update()).catch(() => {{}}); }});
+  // 새 서비스 워커가 자리를 잡으면(=새 버전) 한 번 새로고침해서 바로 반영
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {{ if (reloaded) return; reloaded = true; if (navigator.serviceWorker.controller) location.reload(); }});
 }}
 </script>
 </head>
