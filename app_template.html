@@ -180,7 +180,9 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .modelabel{font-size:12px;color:var(--ink-2);align-self:center;padding:0 4px;letter-spacing:.04em}
 .hanzi.sent{font-size:30px;letter-spacing:.04em;line-height:1.5}
 .hanzi.sent .blank{width:.9em;height:1em;vertical-align:-.1em}
-.hanzi.sent mark{background:var(--good-bg);color:var(--good);padding:0 .08em;border-radius:4px}
+.hanzi.sent mark,.hanzi.sent .tok.hit,.slist .szh .tok.hit{background:var(--good-bg);color:var(--good);padding:0 .08em;border-radius:4px}
+.hanzi.sent .tok,.slist .szh .tok{cursor:pointer;border-radius:4px;padding:0 1px}
+.hanzi.sent .tok:hover,.hanzi.sent .tok.sel,.slist .szh .tok:hover,.slist .szh .tok.sel{background:var(--good-bg)}
 .hanzi.sent .wrongch{color:var(--bad);text-decoration:underline wavy var(--bad)}
 .orderArea{margin-top:10px}
 .tokens{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:44px;padding:8px;border-radius:10px}
@@ -212,6 +214,14 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .modebar button[aria-checked="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--good-bg)}
 .modebar button[aria-checked="true"] small{color:var(--ink)}
 @media (max-width:480px){.modebar{grid-template-columns:repeat(4,1fr)}.modebar button small{display:none}}
+/* 내 문장 */
+.slist{display:grid;gap:0}
+.slist .srow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line)}
+.slist .srow:last-child{border-bottom:0}
+.slist .szh{font-family:var(--hanzi);font-size:19px}
+.slist .szh mark{background:var(--good-bg);color:var(--good);padding:0 .08em;border-radius:4px}
+.slist .spy{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.slist .sko{font-size:13px;color:var(--ink-2)}
 /* 내 단어장 */
 .mine-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .mine-head b{font-family:var(--mono);font-size:20px;font-weight:500;margin-right:4px}
@@ -408,7 +418,6 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <div class="ptext" id="ptext"></div>
       <div class="pq" id="pq"></div>
     </div>
-    <div class="popup" id="popup" hidden></div>
   </div>
 </section>
 
@@ -479,6 +488,16 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
     </table></div>
     <p id="mineEmpty" class="hint" style="padding:16px 4px;margin:0" hidden>아직 담은 단어가 없어요. 학습하다 헷갈리는 단어에서 ☆ 를 눌러 보세요.</p>
   </div>
+  <div class="card" style="margin-top:14px">
+    <div class="mine-head">
+      <div><b id="mineSentCount">0</b>문장 <span class="hint">문장 모드(빈칸·받아쓰기·어순)에서 ☆ 를 누르면 그 문장이 담겨요</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="mineSentMode" aria-label="연습 방식"><option value="cloze">빈칸 채우기</option><option value="dict">문장 받아쓰기</option><option value="order">어순 배열</option></select>
+        <button class="btn primary" id="btnMineSentStudy">내 문장 연습</button>
+      </div>
+    </div>
+    <div class="slist" id="mineSents"></div>
+  </div>
 </section>
 
 <!-- ───────── 단어장 탭 ───────── -->
@@ -542,6 +561,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 </section>
 </div>
 <div class="toast" id="toast"></div>
+<div class="popup" id="popup" hidden></div>
 
 <script id="words" type="application/json">__WORDS_JSON__</script>
 <script id="sents" type="application/json">__SENTS_JSON__</script>
@@ -571,7 +591,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
@@ -579,6 +599,10 @@ function bump(obj, key, ok){ const o = obj[key] || (obj[key] = {n:0, ok:0}); o.n
 const KO       = store.get('zh.ko', {});        // { "你好": "안녕하세요" }
 // 내 단어장: 별표(FAV)로 담은 HSK 단어 + 직접 추가한 단어(CUSTOM). 직접 추가한 단어는 id 100000 부터
 const FAV    = store.get('zh.fav', {});           // { id: 담은 시각 }
+const FAV_S  = store.get('zh.fav_s', {});         // 내 문장: { 단어id: 담은 시각 } (예문은 단어당 하나라 단어 id 로 가리킴). 음수 = 뺀 시각
+function isFavS(id){ return FAV_S[id] > 0; }
+function toggleFavS(id){ FAV_S[id] = isFavS(id) ? -Date.now() : Date.now(); store.set('zh.fav_s', FAV_S); return isFavS(id); }
+function mineSents(){ return Object.keys(FAV_S).filter(k => FAV_S[k] > 0).sort((a,b) => FAV_S[b]-FAV_S[a]).map(k => BY_ID.get(+k)).filter(w => w && sentOf(w)); }
 const CUSTOM = store.get('zh.custom', []);        // [{id, s, t, py, pyn, en, ko, lv:0, alt:[], custom:true}]
 for (const w of CUSTOM) BY_ID.set(w.id, w);
 const CUSTOM_DEL = store.get('zh.custom_del', {});   // 지운 직접 추가 단어 {id: 지운 시각} — 다른 기기에서도 지워지게
@@ -776,7 +800,7 @@ function renderQuestion(){
   if (session && !session.queue.length){ finishSession(); cur = null; return; }
   cur = pickNext();
   answered = false; hintUsed = false; hintLevel = 0;
-  const M = mode(); $('quizCard').classList.remove('answered');
+  const M = mode(); $('quizCard').classList.remove('answered'); $('popup').hidden = true;
   ans.value = ''; ans.className = M.input==='pinyin' ? 'pymode' : ''; fb.textContent=''; fb.className='feedback'; $('ext').hidden = true;
   if (!cur){ qHanzi.textContent='—'; qKo.textContent='과를 골라 시작하세요'; qEn.textContent=''; return; }
   const p = PROGRESS[cur.id];
@@ -1023,9 +1047,14 @@ function checkSent(raw){
   const built = orderBuilt.map(o=>o.tok).join('');
   return { ok: stripSent(built) === stripSent(st.zh), given: built };
 }
+// 문장을 어절 단위로 눌리게 만든 HTML. target 단어는 강조 표시
+function sentTokensHtml(st, target){
+  return st.seg.map(tok => /^[。，！？、；：!?,.…—""''（）]+$/.test(tok) ? `<span class="punct">${tok}</span>`
+    : `<span class="tok${tok===target?' hit':''}" data-tok="${tok}">${tok}</span>`).join('');
+}
 function revealSent(res){
   const st = sentOf(cur);
-  const highlighted = st.zh.replace(cur.s, `<mark>${cur.s}</mark>`);
+  const highlighted = sentTokensHtml(st, cur.s);
   qHanzi.innerHTML = (SETTINGS.study==='dict' && !res.ok && res.given) ? diffHtml(stripSent(st.zh), res.given) : highlighted;
   qPinyin.innerHTML = `<span style="font-size:.8em">${st.py}</span>`;
   const ko = KO[cur.s] || cur.ko;
@@ -1144,8 +1173,18 @@ koInput.addEventListener('keydown', e => { if (e.key==='Enter'){ e.preventDefaul
 $('btnCheck').onclick = check;
 ans.addEventListener('keydown', e => { if (e.key==='Enter' && !e.isComposing){ e.preventDefault(); check(); } });
 $('btnSpeak').onclick = () => { if(!cur) return; const M = mode(); if (M.kind==='sent'){ if (SETTINGS.study==='cloze' && !answered){ hintUsed = true; qBox.textContent='힌트: 문장 듣기'; } speak(sentOf(cur).zh); } else speak(cur.s); if (SETTINGS.study!=='order') ans.focus(); };
-function updateStar(){ const on = cur && isFav(cur.id); $('btnStar').textContent = on ? '★' : '☆'; $('btnStar').style.color = on ? 'var(--accent)' : ''; }
-$('btnStar').onclick = () => { if(!cur) return; const on = toggleFav(cur.id); updateStar(); showToast(on ? '내 단어장에 담았어요' : '내 단어장에서 뺐어요'); ans.focus(); };
+function updateStar(){
+  const sentMode = cur && mode().kind === 'sent';
+  const on = cur && (sentMode ? isFavS(cur.id) : isFav(cur.id));
+  $('btnStar').textContent = on ? '★' : '☆'; $('btnStar').style.color = on ? 'var(--accent)' : '';
+  $('btnStar').title = sentMode ? '이 문장을 내 문장에 담기 / 빼기 (Alt+S)' : '내 단어장에 담기 / 빼기 (Alt+S)';
+}
+$('btnStar').onclick = () => {
+  if(!cur) return;
+  if (mode().kind === 'sent'){ const on = toggleFavS(cur.id); updateStar(); showToast(on ? '내 문장에 담았어요' : '내 문장에서 뺐어요'); }
+  else { const on = toggleFav(cur.id); updateStar(); showToast(on ? '내 단어장에 담았어요' : '내 단어장에서 뺐어요'); }
+  if (!['order','write','tone','say'].includes(SETTINGS.study)) ans.focus();
+};
 $('btnHint').onclick = hint;
 $('btnKoToggle').onclick = () => { $('quizCard').classList.toggle('show-ko'); if ($('quizCard').classList.contains('show-ko')) koInput.focus(); };
 $('btnSkip').onclick = skip;
@@ -1278,19 +1317,20 @@ function lookup(tok){
   const w = BY_S.get(tok); if (w) return [w];
   return [...tok].map(c => BY_S.get(c)).filter(Boolean);
 }
-$('ptext').addEventListener('click', e => {
-  const el = e.target.closest('.tok'); if (!el) return;
-  document.querySelectorAll('.ptext .tok.sel').forEach(x=>x.classList.remove('sel')); el.classList.add('sel');
+function showLookup(el){
+  document.querySelectorAll('.tok.sel').forEach(x=>x.classList.remove('sel')); el.classList.add('sel');
   const tok = el.dataset.tok, ws = lookup(tok);
   const pop = $('popup'); pop.hidden = false;
   if (!ws.length){ pop.innerHTML = `<b>${tok}</b> <span style="color:var(--ink-2)">사전에 없는 단어예요</span>`; return; }
   pop.innerHTML = ws.map(w => `<div><b>${w.s}</b><span class="py">${w.py}</span> ${KO[w.s]||w.ko||''} <small style="color:var(--ink-2)">${w.lv?(w.lv===7?'7~9급':w.lv+'급'):''}</small></div>`).join('') +
     `<div class="acts"><button data-say="${tok}">🔊 발음</button>${ws.length===1?`<button data-fav="${ws[0].id}">${isFav(ws[0].id)?'★ 내 단어장에서 빼기':'☆ 내 단어장에 담기'}</button>`:''}<button data-close="1">닫기</button></div>`;
-});
+}
+// 읽기 본문 · 학습 카드의 문장 · 내 문장 목록 어디서든 단어를 누르면 풍선
+for (const id of ['ptext','qHanzi','mineSents']) $(id).addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
 $('popup').addEventListener('click', e => {
   const s = e.target.closest('[data-say]'); if (s) speak(s.dataset.say);
   const f = e.target.closest('[data-fav]'); if (f){ const on = toggleFav(+f.dataset.fav); f.textContent = on ? '★ 내 단어장에서 빼기' : '☆ 내 단어장에 담기'; showToast(on?'내 단어장에 담았어요':'뺐어요'); }
-  if (e.target.closest('[data-close]')){ $('popup').hidden = true; document.querySelectorAll('.ptext .tok.sel').forEach(x=>x.classList.remove('sel')); }
+  if (e.target.closest('[data-close]')){ $('popup').hidden = true; document.querySelectorAll('.tok.sel').forEach(x=>x.classList.remove('sel')); }
 });
 // 문제 풀기: 보기를 누르면 바로 채점. 2문제 다 풀면 결과 저장
 $('pq').addEventListener('click', e => {
@@ -1367,7 +1407,25 @@ function renderStats(){
 
 /* ═══════════ 내 단어장 ═══════════ */
 function mineChunks(){ const ws = mineWords(), n = unitSize(), out = []; for (let i=0;i<ws.length;i+=n) out.push(ws.slice(i,i+n)); return out; }
+function renderMineSents(){
+  const ws = mineSents();
+  $('mineSentCount').textContent = ws.length;
+  $('mineSents').innerHTML = ws.map(w => { const st = sentOf(w); return `<div class="srow"><button class="star on" data-favs="${w.id}" title="내 문장에서 빼기">★</button>
+    <div><div class="szh">${sentTokensHtml(st, w.s)}</div><div class="spy">${st.py}</div><div class="sko">${st.ko}</div></div>
+    <button class="btn icon" data-say="${st.zh}" title="문장 듣기">🔊</button></div>`; }).join('') || '<p class="hint" style="padding:12px 4px;margin:0;font-size:13px;color:var(--ink-2)">아직 담은 문장이 없어요.</p>';
+}
+$('mineSents').addEventListener('click', e => {
+  const b = e.target.closest('[data-say]'); if (b) speak(b.dataset.say);
+  const f = e.target.closest('[data-favs]'); if (f){ toggleFavS(+f.dataset.favs); if (cur && cur.id===+f.dataset.favs) updateStar(); renderMineSents(); }
+});
+$('btnMineSentStudy').onclick = () => {
+  const ws = mineSents(); if (!ws.length){ showToast('담은 문장이 없어요'); return; }
+  SETTINGS.study = $('mineSentMode').value; store.set('zh.settings', SETTINGS); renderModeBar();
+  document.querySelector('nav [data-tab=study]').click();
+  startSession('mine', ws, { label: '내 문장' });
+};
 function renderMine(){
+  renderMineSents();
   const ws = mineWords();
   $('mineCount').textContent = ws.length;
   $('mineEmpty').hidden = ws.length > 0;
@@ -1446,7 +1504,7 @@ $('pgNext').onclick = () => { page++; renderList(); };
 const SYNC_DOC = 'zh-typing-sync.json';
 let backend = null, syncTimer = null, syncing = false, lastSyncAt = 0;
 function setSyncStatus(msg){ const el = $('syncStatus'); if (el) el.textContent = msg; }
-function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, updatedAt: Date.now() }; }
+function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, updatedAt: Date.now() }; }
 // 통계 기록 병합: 횟수는 큰 쪽을 취함 (두 기기가 각자 센 값 중 더 많이 센 쪽)
 function mergeStats(a, b){
   a = a || {mode:{},tone:{},confuse:{}}; b = b || {mode:{},tone:{},confuse:{}};
@@ -1467,6 +1525,7 @@ function mergeState(a, b){
   for (const k of keys(a.units, b.units)){ const p=a.units?.[k], q=b.units?.[k]; out.units[k] = !p ? q : !q ? p : ((q.t||0) > (p.t||0) ? q : p); }
   for (const k of keys(a.history, b.history)){ const p=a.history?.[k]||{}, q=b.history?.[k]||{}; out.history[k] = { n:Math.max(p.n||0,q.n||0), ok:Math.max(p.ok||0,q.ok||0), nw:Math.max(p.nw||0,q.nw||0), u:Math.max(p.u||0,q.u||0) }; }
   for (const k of keys(a.fav, b.fav)){ const p=a.fav?.[k]||0, q=b.fav?.[k]||0; out.fav[k] = Math.abs(q) > Math.abs(p) ? q : p; }
+  out.fav_s = {}; for (const k of keys(a.fav_s, b.fav_s)){ const p=a.fav_s?.[k]||0, q=b.fav_s?.[k]||0; out.fav_s[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   for (const k of keys(a.custom_del, b.custom_del)) out.custom_del[k] = Math.max(a.custom_del?.[k]||0, b.custom_del?.[k]||0);
   const byId = new Map(); for (const w of [...(a.custom||[]), ...(b.custom||[])]) if (!byId.has(w.id) || (w.added||0) > (byId.get(w.id).added||0)) byId.set(w.id, w);
   out.custom = [...byId.values()].filter(w => !(out.custom_del[w.id] > (w.added||0)));
@@ -1475,11 +1534,11 @@ function mergeState(a, b){
 }
 function applyState(s){   // 병합 결과를 앱의 메모리·localStorage 에 반영 (참조는 유지)
   const swap = (obj, src) => { for (const k in obj) delete obj[k]; Object.assign(obj, src||{}); };
-  swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(CUSTOM_DEL, s.custom_del);
+  swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(FAV_S, s.fav_s); swap(CUSTOM_DEL, s.custom_del);
   if (s.stats){ STATS.mode = s.stats.mode||{}; STATS.tone = s.stats.tone||{}; STATS.confuse = s.stats.confuse||{}; }
   swap(READ_DONE, s.read);
   CUSTOM.length = 0; for (const w of s.custom||[]) { CUSTOM.push(w); BY_ID.set(w.id, w); }
-  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE }[k])); }catch(e){} };
+  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE }[k])); }catch(e){} };
   for (const k of SYNC_KEYS) silent(k);
 }
 // ── 백엔드 1: claude.ai 계정 저장소 (db). 문서 하나가 256KB 제한이라 진도는 1,000단어씩 쪼갬
@@ -1490,15 +1549,15 @@ function claudeBackend(db){
     async pull(){
       const snap = await db.collection('zhsync').get(); if (snap.empty) return null;
       const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats:null, read:{}, updatedAt:0 };
-      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, updatedAt:v.updatedAt||0 }); } }
+      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, fav_s:v.fav_s||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, updatedAt:v.updatedAt||0 }); } }
       return s;
     },
     async push(s, prev){
       const shards = {}; for (const id in s.progress){ (shards[shard(id)] ||= {})[id] = s.progress[id]; }
       const prevShards = {}; for (const id in (prev?.progress||{})){ (prevShards[shard(id)] ||= {})[id] = prev.progress[id]; }
       for (const k in shards) if (JSON.stringify(shards[k]) !== JSON.stringify(prevShards[k]||{})) await db.doc('zhsync/'+k).set({ progress: shards[k] });
-      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, updatedAt:s.updatedAt };
-      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read } : null;
+      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, updatedAt:s.updatedAt };
+      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read } : null;
       if (!prev || JSON.stringify({...misc, updatedAt:0}) !== JSON.stringify({...prevMisc, updatedAt:0})) await db.doc('zhsync/misc').set(misc);
     }
   };
