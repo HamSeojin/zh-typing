@@ -25,8 +25,32 @@ html = tpl.replace("__WORDS_JSON__", blob).replace("__SENTS_JSON__", sblob).repl
 import datetime
 html = html.replace("__APP_VERSION__", "v" + datetime.datetime.now().strftime("%m%d.%H%M"))
 html = html.replace("__HANZI_WRITER_JS__", hw.replace("</script>", "<\\/script>"))   # 라이브러리 안의 </script> 문자열이 태그를 닫지 않게
-with open("index.html", "w", encoding="utf-8") as f:
+# artifact.html: claude.ai 게시용 (겉껍데기 없이 알맹이만 — claude.ai 가 <head> 등을 씌워 줌)
+with open("artifact.html", "w", encoding="utf-8") as f:
     f.write(html)
+# index.html: GitHub Pages 등 단독 배포용 완전한 문서. 폰 브라우저가 화면 폭에 맞추도록 viewport 메타태그가 꼭 필요
+title_start = html.find("<title>"); title_end = html.find("</title>") + len("</title>")
+title = html[title_start:title_end]; body = html[:title_start] + html[title_end:]
+head = f"""<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4F6F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141922" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="汉语 단어장">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B7F68'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='serif'%3E汉%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%232B7F68'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='serif'%3E汉%3C/text%3E%3C/svg%3E">
+{title}
+<style>img{{max-width:100%}}</style>
+</head>
+<body>
+"""
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(head + body + "\n</body>\n</html>\n")
 print("획순 데이터", len(strokes), "자 내장 / hanzi-writer", "포함" if hw else "없음")
 print("예문", len(sents["sentences"]), "개 포함")
 print("index.html 생성 완료 —", len(data["words"]), "단어")
