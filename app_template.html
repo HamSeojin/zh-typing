@@ -199,7 +199,7 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .answer.hiddenInput input{display:none}
 @media (max-width:480px){.modebar.sent{grid-template-columns:auto repeat(3,1fr)}.modebar.sent button{padding:6px 2px}.modebar.sent button b{font-size:12px}.hanzi.sent{font-size:24px}.tokens button{font-size:19px;padding:5px 10px}}
 /* 학습 모드 선택 */
-.modebar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px}
+.modebar{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:12px}
 .sayArea{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:8px}
 .sayArea .mic{font:inherit;font-size:18px;font-weight:600;padding:14px 26px;border-radius:999px;border:2px solid var(--accent);background:var(--card);color:var(--ink);cursor:pointer}
 .sayArea .mic.listening{background:var(--bad-bg);border-color:var(--bad);animation:pulse 1s infinite}
@@ -655,6 +655,7 @@ const MODES = {
   listen: { name:'듣고 쓰기', desc:'발음 듣고 (뜻 참고) 한자 입력', input:'hanzi',  showH:false, showP:false, showM:true,  speak:true  },
   write:  { name:'손으로 쓰기', desc:'뜻·병음 보고 획순대로 그리기',  input:'draw',   showH:false, showP:true,  showM:true,  speak:false },
   tone:   { name:'성조 맞히기', desc:'발음 듣고 음절마다 성조 고르기',  input:'tone',   showH:false, showP:false, showM:true,  speak:true  },
+  initial:{ name:'자음 구별',   desc:'발음 듣고 ch/q, zh/j, sh/x 등 첫 자음 고르기', input:'initial', showH:false, showP:false, showM:true, speak:true },
   say:    { name:'말하기',     desc:'단어를 소리 내어 읽으면 음성 인식으로 판정', input:'say', showH:true, showP:true, showM:true, speak:false },
   // 문장 연습 (예문이 있는 단어만 — 없으면 뜻→한자로 대체)
   cloze:  { name:'빈칸 채우기', desc:'예문의 빈칸에 들어갈 단어 입력', input:'hanzi', kind:'sent', showM:true, speak:false, group:'sent' },
@@ -829,6 +830,14 @@ function renderQuestion(){
     qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0, 2).join(' ; ') : '';
     document.querySelector('.answer').classList.add('hiddenInput');
     startSay();
+  } else if (M.input === 'initial'){
+    qKind.textContent = '발음을 듣고 음절의 첫 자음을 고르세요 (🔊 다시 듣기)';
+    qHanzi.innerHTML = renderMask(cur.s, 0); qHanzi.className = 'hanzi';
+    qPinyin.innerHTML = ''; qTrad.textContent = '';
+    qKo.textContent = SETTINGS.showKo ? (ko || '') : ''; qKo.className = 'ko';
+    qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0, 2).join(' ; ') : '';
+    document.querySelector('.answer').classList.add('hiddenInput');
+    startInitialQuiz();
   } else if (M.input === 'tone'){
     qKind.textContent = '발음을 듣고 음절마다 성조를 고르세요 (키보드 1~5, 5=경성)';
     qHanzi.innerHTML = renderMask(cur.s, 0); qHanzi.className = 'hanzi';
@@ -861,7 +870,7 @@ function renderQuestion(){
   }
   koInput.value = ko || '';
   updateStar();
-  if (!['order','write','tone','say'].includes(SETTINGS.study)) ans.focus();
+  if (!['order','write','tone','say','initial'].includes(SETTINGS.study)) ans.focus();
   if (M.speak || SETTINGS.autoSpeak) speak(M.kind==='sent' ? sentOf(cur).zh : cur.s);
   updateStats(); renderUnitBar();
   if (window.innerWidth < 480 && session && session.answered > 0){ const r = $('quizCard').getBoundingClientRect(); if (r.top < 0 || r.top > 120) $('quizCard').scrollIntoView({ block:'start', behavior:'smooth' }); }
@@ -989,6 +998,40 @@ function pickTone(i, tn){
   document.querySelectorAll(`#toneArea [data-i="${i}"][data-t]`).forEach(b => b.setAttribute('aria-pressed', +b.dataset.t === tn));
   if (toneAns.every(x => x > 0)) finishTone();
 }
+/* ═══════════ 자음 구별 (첫 자음 듣고 고르기) ═══════════
+   한국인이 헷갈리는 짝: zh/j, ch/q, sh/x (혀를 만 소리 vs 혀 앞면 소리), z/zh, c/ch, s/sh, b/p, d/t, g/k, n/l, l/r, f/h.
+   각 음절의 첫 자음이 이 짝에 속하면 그 짝(과 이웃)을 보기로 냄. 짝에 없는 음절(모음 시작 등)은 그냥 보여줌. */
+const INITIALS = ['zh','ch','sh','b','p','m','f','d','t','n','l','g','k','h','j','q','x','r','z','c','s'];
+const INIT_GROUPS = [['zh','j','z'],['ch','q','c'],['sh','x','s'],['b','p'],['d','t'],['g','k'],['n','l','r'],['f','h']];
+function splitInitial(syl){ const s = syl.replace(/[1-5]$/,''); const ini = INITIALS.find(i => s.startsWith(i)) || ''; return { ini, fin: s.slice(ini.length) }; }
+function initialOptions(ini){ const set = new Set([ini]); for (const g of INIT_GROUPS) if (g.includes(ini)) g.forEach(x => set.add(x)); return [...set].sort(); }
+let initAns = [], initTargets = [], initOpts = [];
+function startInitialQuiz(){
+  const syls = cur.pyn.split(/\s+/), marks = cur.py.split(/\s+/);
+  initTargets = syls.map(s => splitInitial(s).ini); initOpts = initTargets.map(initialOptions);
+  initAns = initTargets.map((ini, i) => initOpts[i].length > 1 ? '' : ini);   // 보기가 하나뿐이면 자동으로 채움
+  const area = $('toneArea'); area.hidden = false;
+  area.innerHTML = syls.map((s, i) => { const { fin } = splitInitial(s); const tone = (s.match(/[1-5]$/)||['5'])[0];
+    const finMark = marks[i] ? marks[i].slice(initTargets[i].length) : fin;   // 성조 부호 붙은 운모
+    return `<div class="tone-syl" data-i="${i}"><span class="syl">${initOpts[i].length > 1 ? '<b style="color:var(--bad)">?</b>' : initTargets[i]}${finMark}</span>` +
+      (initOpts[i].length > 1 ? initOpts[i].map(o => `<button type="button" data-i="${i}" data-ini="${o}" aria-pressed="false">${o}</button>`).join('') : '<small style="color:var(--ink-2)">자동</small>') + `</div>`; }).join('');
+  if (initAns.every(a => a)) { $('toneArea').innerHTML += '<div class="note" style="font-size:12px;color:var(--ink-2)">이 단어엔 헷갈리는 자음이 없어요 — 확인을 누르면 넘어가요</div>'; }
+}
+$('toneArea').addEventListener('click', e => { const b = e.target.closest('[data-ini]'); if (!b || answered) return; pickInitial(+b.dataset.i, b.dataset.ini); });
+function pickInitial(i, ini){
+  if (answered) return; initAns[i] = ini;
+  document.querySelectorAll(`#toneArea [data-i="${i}"][data-ini]`).forEach(b => b.setAttribute('aria-pressed', b.dataset.ini === ini));
+  if (initAns.every(a => a)) finishInitial();
+}
+function finishInitial(){
+  let ok = true;
+  initAns.forEach((a, i) => { const good = a === initTargets[i]; if (!good) ok = false;
+    const row = document.querySelector(`#toneArea [data-i="${i}"].tone-syl`); if (row){ row.classList.add(good ? 'good' : 'bad'); row.querySelector('.syl').textContent = cur.py.split(/\s+/)[i]; }
+    if (initOpts[i].length > 1) bump(STATS.initial || (STATS.initial = {}), initTargets[i], good); });
+  ans.value = ok ? cur.s : '(자음 오답)';
+  check();
+  fb.innerHTML = (ok ? '정답 ✓ ' : '오답 ✕ ') + `첫 자음: ${initTargets.map(x => x || '(없음)').join(' · ')}`;
+}
 function finishTone(){
   const targets = toneTargets(); let ok = true;
   toneAns.forEach((a, i) => {
@@ -1111,6 +1154,7 @@ function check(){
   const M = mode(), isSent = M.kind === 'sent';
   if (M.input==='draw' && !raw){ if (!writers.length) return; hintUsed = true; ans.value = '(포기)'; writers.forEach(x => { try{ x.w.cancelQuiz(); x.w.showCharacter(); }catch(e){} }); raw = ans.value; }   // 안 그리고 확인 = 정답 보기(오답 처리)
   else if (M.input==='tone' && !raw){ toneAns = toneAns.map(x => x || 9); finishTone(); return; }
+  else if (M.input==='initial' && !raw){ initAns = initAns.map(x => x || '?'); finishInitial(); return; }
   else if (M.input==='say' && !raw){ showToast('🎤 버튼을 누르고 읽어 보세요'); return; }
   if (!raw && !(isSent && SETTINGS.study==='order')) return;
   let ok, sentRes = null;
@@ -1207,7 +1251,7 @@ $('btnStar').onclick = () => {
   if(!cur) return;
   if (mode().kind === 'sent'){ const on = toggleFavS(cur.id); updateStar(); showToast(on ? '내 문장에 담았어요' : '내 문장에서 뺐어요'); }
   else { const on = toggleFav(cur.id); updateStar(); showToast(on ? '내 단어장에 담았어요' : '내 단어장에서 뺐어요'); }
-  if (!['order','write','tone','say'].includes(SETTINGS.study)) ans.focus();
+  if (!['order','write','tone','say','initial'].includes(SETTINGS.study)) ans.focus();
 };
 $('btnHint').onclick = hint;
 $('btnKoToggle').onclick = () => { $('quizCard').classList.toggle('show-ko'); if ($('quizCard').classList.contains('show-ko')) koInput.focus(); };
@@ -1215,7 +1259,7 @@ $('btnSkip').onclick = skip;
 document.addEventListener('keydown', e => {
   if (SETTINGS.study==='tone' && !answered && /^[1-5]$/.test(e.key) && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){ e.preventDefault(); pickTone(toneCursor, +e.key); return; }
   if (e.key===' ' && SETTINGS.study==='say' && !answered && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){ e.preventDefault(); $('btnMic').click(); return; }
-  if (e.key==='Enter' && ['order','write','tone','say'].includes(SETTINGS.study) && !e.isComposing && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){ e.preventDefault(); check(); }
+  if (e.key==='Enter' && ['order','write','tone','say','initial'].includes(SETTINGS.study) && !e.isComposing && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){ e.preventDefault(); check(); }
   if (e.altKey && e.key.toLowerCase()==='p'){ e.preventDefault(); if(cur) speak(cur.s); }
   if (e.altKey && e.key.toLowerCase()==='h'){ e.preventDefault(); hint(); }
   if (e.altKey && e.key.toLowerCase()==='s'){ e.preventDefault(); $('btnStar').click(); }
@@ -1422,6 +1466,10 @@ function renderStats(){
   // 모드별 · 성조별 정답률
   const bar = (label, o, extra='') => { const pct = o.n ? Math.round(o.ok/o.n*100) : 0; return `<div class="row"><span>${label}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span class="num">${pct}% (${o.ok}/${o.n})${extra}</span></div>`; };
   $('modeStat').innerHTML = Object.entries(STATS.mode).filter(([k])=>MODES[k]).sort((a,b)=>b[1].n-a[1].n).map(([k,o]) => bar(MODES[k].name, o)).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 기록이 없어요</span>';
+  const ini = STATS.initial || {};
+  const iniHtml = Object.entries(ini).sort((a,b)=>b[1].n-a[1].n).map(([k,o]) => bar(k, o)).join('');
+  let iniBox = document.getElementById('iniStat'); if (!iniBox){ const card = document.createElement('div'); card.className='card'; card.style.marginBottom='14px'; card.innerHTML = '<h3 class="sk-h">자음별 정답률 <small>자음 구별 기준</small></h3><div class="lvprog" id="iniStat"></div>'; $('toneStat').closest('.card').after(card); iniBox = document.getElementById('iniStat'); }
+  iniBox.innerHTML = iniHtml || '<span style="color:var(--ink-2);font-size:13px">자음 구별을 해 보면 채워져요</span>';
   const toneName = { '1':'1성 ˉ', '2':'2성 ˊ', '3':'3성 ˇ', '4':'4성 ˋ', '5':'경성' };
   $('toneStat').innerHTML = ['1','2','3','4','5'].filter(k => STATS.tone[k]).map(k => bar(toneName[k], STATS.tone[k])).join('') || '<span style="color:var(--ink-2);font-size:13px">성조 맞히기를 해 보면 채워져요</span>';
   // 기억 단계 분포
@@ -1533,8 +1581,8 @@ function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNI
 // 통계 기록 병합: 횟수는 큰 쪽을 취함 (두 기기가 각자 센 값 중 더 많이 센 쪽)
 function mergeStats(a, b){
   a = a || {mode:{},tone:{},confuse:{}}; b = b || {mode:{},tone:{},confuse:{}};
-  const out = { mode:{}, tone:{}, confuse:{} };
-  for (const g of ['mode','tone']) for (const k of new Set([...Object.keys(a[g]||{}), ...Object.keys(b[g]||{})])){ const p=a[g]?.[k]||{n:0,ok:0}, q=b[g]?.[k]||{n:0,ok:0}; out[g][k] = q.n > p.n ? q : p; }
+  const out = { mode:{}, tone:{}, initial:{}, confuse:{} };
+  for (const g of ['mode','tone','initial']) for (const k of new Set([...Object.keys(a[g]||{}), ...Object.keys(b[g]||{})])){ const p=a[g]?.[k]||{n:0,ok:0}, q=b[g]?.[k]||{n:0,ok:0}; out[g][k] = q.n > p.n ? q : p; }
   for (const x of new Set([...Object.keys(a.confuse||{}), ...Object.keys(b.confuse||{})])){ out.confuse[x] = {}; for (const y of new Set([...Object.keys(a.confuse?.[x]||{}), ...Object.keys(b.confuse?.[x]||{})])) out.confuse[x][y] = Math.max(a.confuse?.[x]?.[y]||0, b.confuse?.[x]?.[y]||0); }
   return out;
 }
@@ -1560,7 +1608,7 @@ function mergeState(a, b){
 function applyState(s){   // 병합 결과를 앱의 메모리·localStorage 에 반영 (참조는 유지)
   const swap = (obj, src) => { for (const k in obj) delete obj[k]; Object.assign(obj, src||{}); };
   swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(FAV_S, s.fav_s); swap(CUSTOM_DEL, s.custom_del);
-  if (s.stats){ STATS.mode = s.stats.mode||{}; STATS.tone = s.stats.tone||{}; STATS.confuse = s.stats.confuse||{}; }
+  if (s.stats){ STATS.mode = s.stats.mode||{}; STATS.tone = s.stats.tone||{}; STATS.initial = s.stats.initial||{}; STATS.confuse = s.stats.confuse||{}; }
   swap(READ_DONE, s.read);
   CUSTOM.length = 0; for (const w of s.custom||[]) { CUSTOM.push(w); BY_ID.set(w.id, w); }
   const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE }[k])); }catch(e){} };
