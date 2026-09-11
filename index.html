@@ -442,6 +442,18 @@ body.no-tabbar{padding-bottom:24px}
   .set label.row:has(> select) > span,.set label.row:has(> input:not([type=checkbox])) > span{flex:1 1 100%}
   .set label.row > select,.set label.row > input[type=range]{width:100%;box-sizing:border-box}
 }
+/* 타자 연습 */
+.typ-stats{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin-bottom:10px}
+.typ-stats b{font-family:var(--mono);color:var(--ink);font-size:15px}
+.typ-card{text-align:center}
+.typ-target{font-family:var(--hanzi);font-size:38px;line-height:1.4;margin:6px 0 2px}
+.typ-hint{font-size:15px;color:var(--ink-2);min-height:1.4em}
+.typ-typed{font-family:var(--mono);font-size:22px;letter-spacing:.04em;min-height:1.5em;margin:10px 0 6px;word-break:break-all}
+.typ-typed .ok{color:var(--good)}.typ-typed .bad{color:var(--bad);text-decoration:underline wavy var(--bad)}.typ-typed .rest{color:var(--line)}
+#typInput{width:100%;box-sizing:border-box;font:inherit;font-size:20px;text-align:center;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink)}
+#typInput:focus{border-color:var(--accent);outline:none}
+.typ-next{margin-top:10px;font-size:13px;color:var(--ink-2);font-family:var(--hanzi)}
+@media (max-width:480px){.typ-target{font-size:30px}.typ-typed{font-size:18px}}
 /* AI 선생님 시트 */
 .ai-sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100vw,640px);max-height:78vh;background:var(--card);color:var(--ink);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.2);z-index:30;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
 .ai-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
@@ -478,6 +490,7 @@ details.more summary::-webkit-details-marker{display:none}
   .lvbar::-webkit-scrollbar{display:none}
   .lvbar label{flex:0 0 auto}
   .lvbar{white-space:nowrap}
+  .lvbar.wrap{flex-wrap:wrap;white-space:normal;overflow:visible}
   #lvbar #lvCount{display:none}
   .modebar,.modebar.sent{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin-bottom:8px;padding-bottom:2px}
   .modebar::-webkit-scrollbar{display:none}
@@ -538,7 +551,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉语 타자 단어장</h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1941</span></small></header>
+  <header class="apphead"><h1>汉语 타자 단어장</h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1950</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -569,6 +582,7 @@ details.more summary::-webkit-details-marker{display:none}
     <button class="mcard" data-go="gram"><span class="mi">法</span><b>문법</b><small>HSK 3.0 문법 570항목 · 예문 · 어순 연습</small></button>
     <button class="mcard" data-go="exam" data-focus="lis"><span class="mi">听</span><b>듣기 대화</b><small>두 목소리 대화 10문항 · 대본 확인</small></button>
     <button class="mcard" data-go="exam"><span class="mi">考</span><b>모의고사</b><small>실제 유형 40문항 · 시간 제한 · 오답 관리</small></button>
+    <button class="mcard" data-go="typing"><span class="mi">打</span><b>타자 연습</b><small>학습한 단어·문장으로 속도·정확도 드릴</small></button>
   </div>
 </section>
 
@@ -822,6 +836,37 @@ details.more summary::-webkit-details-marker{display:none}
   </div>
 </section>
 
+<!-- ═══════════ 타자 연습 ═══════════ -->
+<section class="screen pushed" data-screen="typing" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">타자 연습</b><span class="tb-right" id="typClock"></span></div>
+  <div id="typHome">
+    <div class="card">
+      <h3 class="sk-h">설정 <small>이미 학습한 단어(한 번 이상 맞힌 단어)만 나와요 — 모르는 단어는 칠 수 없으니까</small></h3>
+      <div class="sh-label">입력 방식</div>
+      <div class="lvbar wrap" id="typMode"><label><input type="radio" name="typMode" value="py" checked>병음 (성조 없이, 실제 중국어 타자처럼)</label><label><input type="radio" name="typMode" value="hz">한자 (중국어 입력기)</label></div>
+      <div class="sh-label">내용</div>
+      <div class="lvbar wrap" id="typPool"><label><input type="radio" name="typPool" value="learned" checked>학습한 단어 <span id="typLearnedN"></span></label><label><input type="radio" name="typPool" value="sent">학습한 단어로 된 문장 <span id="typSentN"></span></label><label><input type="radio" name="typPool" value="level">지금 급수 전체</label></div>
+      <div class="sh-label">시간</div>
+      <div class="lvbar wrap" id="typSecs"><label><input type="radio" name="typSecs" value="30">30초</label><label><input type="radio" name="typSecs" value="60" checked>60초</label><label><input type="radio" name="typSecs" value="120">2분</label></div>
+      <div class="dataops" style="margin-top:12px"><button class="btn primary" id="btnTypStart" style="flex:1">시작 ›</button></div>
+      <p class="hint" id="typNote" style="font-size:12px;color:var(--ink-2);margin:8px 0 0"></p>
+    </div>
+    <div class="card" style="margin-top:12px"><h3 class="sk-h">기록 <small>글자/분(CPM)·정확도</small></h3><div class="lvprog" id="typHist"></div></div>
+  </div>
+  <div id="typRun" hidden>
+    <div class="typ-stats"><span>남은 <b id="typLeft">60</b>초</span><span><b id="typCpm">0</b> 글자/분</span><span>정확도 <b id="typAcc">100%</b></span><span>맞힘 <b id="typN">0</b></span></div>
+    <div class="card typ-card">
+      <div class="typ-target" id="typTarget"></div>
+      <div class="typ-hint" id="typHintLine"></div>
+      <div class="typ-typed" id="typTyped"></div>
+      <input id="typInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="여기에 입력" aria-label="타자 입력">
+      <div class="typ-next" id="typNext"></div>
+    </div>
+    <div class="dataops" style="margin-top:12px"><button class="btn" id="btnTypSkip">건너뛰기</button><button class="btn" id="btnTypStop">그만하기</button></div>
+  </div>
+  <div id="typResult" class="card result" hidden></div>
+</section>
+
 <!-- ═══════════ 읽기 ═══════════ -->
 <section class="screen pushed" data-screen="read" data-parent="learn" hidden>
   <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">읽기</b></div>
@@ -1067,7 +1112,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.exams','zh.exam_wrong']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.exams','zh.exam_wrong','zh.typing']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
@@ -1836,6 +1881,7 @@ function go(name){
   const root = pushed ? sc.dataset.parent : name;
   document.querySelectorAll('#tabbar button').forEach(b => b.setAttribute('aria-selected', b.dataset.go === root));
   $('popup').hidden = true; $('aiSheet').hidden = true; closeStartSheet();
+  if (typ && name !== 'typing'){ clearInterval(typ.tick); typ = null; }
   curScreen = name; window.scrollTo({ top: 0 });
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); }
@@ -1843,6 +1889,7 @@ function go(name){
   if (name === 'read') renderReadList();
   if (name === 'gram') renderGramList();
   if (name === 'exam') renderExamHome();
+  if (name === 'typing') renderTypHome();
   if (name === 'session'){ renderUnitBar(); if (!['order','write','tone','say','initial'].includes(SETTINGS.study) && window.innerWidth > 700) ans.focus(); }
 }
 function onScreen(name){ return curScreen === name; }
@@ -2185,6 +2232,89 @@ function aiPassageCtx(pg){
 $('btnReadAsk').onclick = () => { if (curPassage) aiOpen(aiPassageCtx(curPassage)); };
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('aiSheet').hidden) $('aiSheet').hidden = true; });
+
+/* ═══════════ 타자 연습 ═══════════
+   학습한 단어(상자 1 이상)만 골라 시간 제한 드릴. 병음 모드는 성조 없이(실제 중국어 입력기 방식), 한자 모드는 입력기로 한자를 침.
+   글자/분(CPM) = 맞게 친 글자 수 ÷ 지난 시간(분). 정확도 = 1 − 잘못 친 글자 수 ÷ 전체 친 글자 수 */
+let typ = null;
+const TYPING = store.get('zh.typing', []);   // [{t, mode, pool, secs, cpm, acc, n}]
+function typPy(pyn){ return (pyn || '').toLowerCase().replace(/[0-9\s'’\-]/g, '').replace(/u:/g, 'v').replace(/ü/g, 'v'); }
+function learnedWords(){ return WORDS.filter(w => PROGRESS[w.id] && PROGRESS[w.id].box >= 1); }
+function learnedSents(){   // 문장의 단어가 전부 학습한 단어(또는 한 글자 조사류)인 예문
+  const L = new Set(learnedWords().map(w => w.s));
+  return Object.entries(SENTS).filter(([id, st]) => st.seg.every(t => /^[。，！？、；：!?,.…—""''（）]+$/.test(t) || L.has(t))).map(([id, st]) => ({ id:+id, st }));
+}
+function typItems(){
+  const pool = document.querySelector('#typPool input:checked').value;
+  if (pool === 'sent') return learnedSents().map(x => ({ hz: x.st.zh.replace(SENT_PUNCT,''), py: x.st.py, ko: x.st.ko, pyn: null, seg: x.st.seg }));
+  const ws = pool === 'level' ? WORDS.filter(w => SETTINGS.levels.includes(w.lv)) : learnedWords();
+  return ws.map(w => ({ hz: w.s, py: w.py, ko: KO[w.s] || w.ko, pyn: w.pyn }));
+}
+function typTarget(it){ return typ.mode === 'hz' ? it.hz : (it.pyn ? typPy(it.pyn) : it.seg.filter(t => !/^[。，！？、；：!?,.…—""''（）]+$/.test(t)).map(t => { const w = BY_S.get(t); return w ? typPy(w.pyn) : ''; }).join('')); }
+function renderTypHome(){
+  const ln = learnedWords().length, sn = learnedSents().length;
+  $('typLearnedN').textContent = `(${ln}개)`; $('typSentN').textContent = `(${sn}개)`;
+  document.querySelector('#typPool input[value=sent]').disabled = sn < 5;
+  $('typNote').textContent = ln < 10 ? `학습한 단어가 ${ln}개라 아직 적어요. 10개 미만이면 "지금 급수 전체"로 연습하는 걸 권해요.` : '';
+  $('typHist').innerHTML = TYPING.slice(-8).reverse().map(r => `<div class="row" style="grid-template-columns:auto 1fr auto"><span>${new Date(r.t).toLocaleDateString()} · ${r.mode==='hz'?'한자':'병음'} · ${r.pool==='sent'?'문장':r.pool==='level'?'급수':'학습 단어'} · ${r.secs}초</span><div class="track"><div class="fill" style="width:${Math.min(100, r.cpm/3)}%"></div></div><span class="num">${r.cpm} 글자/분 · ${r.acc}%</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 기록이 없어요</span>';
+  $('typHome').hidden = false; $('typRun').hidden = true; $('typResult').hidden = true; $('typClock').textContent = '';
+}
+$('btnTypStart').onclick = () => {
+  const items = typItems(); if (items.length < 3){ showToast('연습할 항목이 너무 적어요'); return; }
+  typ = { mode: document.querySelector('#typMode input:checked').value, pool: document.querySelector('#typPool input:checked').value, secs: +document.querySelector('#typSecs input:checked').value,
+          items: items.sort(() => Math.random() - .5), i: 0, typed: 0, wrong: 0, okChars: 0, n: 0, start: Date.now(), prevLen: 0 };
+  $('typHome').hidden = true; $('typResult').hidden = true; $('typRun').hidden = false;
+  $('typInput').value = ''; typShow(); $('typInput').focus();
+  typ.tick = setInterval(typTick, 250);
+};
+function typCur(){ return typ.items[typ.i % typ.items.length]; }
+function typShow(){
+  const it = typCur(), tgt = typTarget(it);
+  $('typTarget').innerHTML = typ.mode === 'hz' ? `${it.hz}` : `${it.hz}`;
+  $('typHintLine').textContent = typ.mode === 'hz' ? `${it.py} · ${it.ko}` : `${it.ko}`;
+  const nx = typ.items[(typ.i + 1) % typ.items.length]; $('typNext').textContent = '다음: ' + nx.hz;
+  typ.prevLen = 0; typRenderTyped('');
+  if (typ.mode === 'hz') $('typInput').setAttribute('lang', 'zh-CN'); else $('typInput').removeAttribute('lang');
+}
+function typNorm(v){ return typ.mode === 'hz' ? v.replace(SENT_PUNCT, '') : v.toLowerCase().replace(/[\s'’\-]/g, '').replace(/ü/g, 'v'); }
+function typRenderTyped(v){
+  const tgt = typTarget(typCur()), a = [...tgt], g = [...v]; let html = '';
+  for (let i = 0; i < a.length; i++){ if (i < g.length) html += `<span class="${g[i] === a[i] ? 'ok' : 'bad'}">${a[i]}</span>`; else html += `<span class="rest">${a[i]}</span>`; }
+  if (g.length > a.length) html += `<span class="bad">${g.slice(a.length).join('')}</span>`;
+  $('typTyped').innerHTML = html;
+}
+$('typInput').addEventListener('input', () => {
+  if (!typ) return;
+  const v = typNorm($('typInput').value), tgt = typTarget(typCur());
+  if (v.length > typ.prevLen){ typ.typed += v.length - typ.prevLen; const k = v.length - 1; if (v[k] !== tgt[k]) typ.wrong++; }   // 새로 친 글자가 틀렸으면 오타 1
+  typ.prevLen = v.length; typRenderTyped(v);
+  if (v === tgt){ typ.okChars += [...tgt].length; typ.n++; typ.i++; $('typInput').value = ''; typShow(); typStats(); }
+});
+$('typInput').addEventListener('keydown', e => { if (e.key === 'Enter' && typ){ const v = typNorm($('typInput').value), tgt = typTarget(typCur()); if (v !== tgt){ typ.wrong += Math.max(1, [...tgt].length - v.length); } typ.i++; $('typInput').value = ''; typShow(); typStats(); } });
+function typStats(){
+  const min = Math.max(1/60, (Date.now() - typ.start) / 60000);
+  $('typCpm').textContent = Math.round(typ.okChars / min); $('typAcc').textContent = (typ.typed ? Math.round((1 - typ.wrong / Math.max(typ.typed, typ.wrong)) * 100) : 100) + '%'; $('typN').textContent = typ.n;
+}
+function typTick(){
+  const left = typ.secs - Math.floor((Date.now() - typ.start) / 1000);
+  $('typLeft').textContent = Math.max(0, left); $('typClock').textContent = Math.max(0, left) + '초';
+  typStats(); if (left <= 0) typFinish();
+}
+function typFinish(){
+  clearInterval(typ.tick);
+  const min = Math.max(5/60, Math.min(typ.secs, (Date.now() - typ.start) / 1000) / 60), cpm = Math.round(typ.okChars / min), acc = typ.typed ? Math.round((1 - typ.wrong / Math.max(typ.typed, typ.wrong)) * 100) : 100;
+  TYPING.push({ t: Date.now(), mode: typ.mode, pool: typ.pool, secs: typ.secs, cpm, acc, n: typ.n }); if (TYPING.length > 50) TYPING.shift(); store.set('zh.typing', TYPING);
+  const best = Math.max(...TYPING.filter(r => r.mode === typ.mode).map(r => r.cpm));
+  $('typRun').hidden = true; $('typResult').hidden = false;
+  $('typResult').innerHTML = `<h2>타자 연습 결과</h2><div class="res-stats"><div><b>${cpm}</b><span>글자/분${cpm >= best ? ' · 최고!' : ` (최고 ${best})`}</span></div><div><b>${acc}%</b><span>정확도</span></div><div><b>${typ.n}</b><span>맞힌 항목</span></div></div>
+    <p class="hint" style="font-size:13px;color:var(--ink-2)">오타 ${typ.wrong}개 / 친 글자 ${typ.typed}개 · ${typ.mode==='hz'?'한자':'병음'} · ${typ.secs}초</p>
+    <div class="dataops" style="margin-top:14px"><button class="btn primary" id="btnTypAgain">다시</button><button class="btn" id="btnTypHome">설정으로</button></div>`;
+  $('btnTypAgain').onclick = () => $('btnTypStart').click(); $('btnTypHome').onclick = renderTypHome;
+  TODAY.n += typ.n; TODAY.ok += typ.n; store.set('zh.today', TODAY); { const h = histToday(); h.n += typ.n; h.ok += typ.n; store.set('zh.history', HISTORY); }
+  typ = null; $('typClock').textContent = '';
+}
+$('btnTypSkip').onclick = () => { if (!typ) return; typ.i++; $('typInput').value = ''; typShow(); $('typInput').focus(); };
+$('btnTypStop').onclick = () => { if (typ) typFinish(); };
 
 /* ═══════════ 관련 단어 ═══════════
    정답을 확인한 뒤 그 단어와 얽힌 단어들을 보여줌 (전부 앱 안에서 자동 계산 — 따로 만든 데이터 없음)
@@ -2671,7 +2801,7 @@ $('pgNext').onclick = () => { page++; renderList(); };
 const SYNC_DOC = 'zh-typing-sync.json';
 let backend = null, syncTimer = null, syncing = false, lastSyncAt = 0;
 function setSyncStatus(msg){ const el = $('syncStatus'); if (el) el.textContent = msg; }
-function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, exams: EXAMS, exam_wrong: EXAM_WRONG, updatedAt: Date.now() }; }
+function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, exams: EXAMS, exam_wrong: EXAM_WRONG, typing: TYPING, updatedAt: Date.now() }; }
 // 통계 기록 병합: 횟수는 큰 쪽을 취함 (두 기기가 각자 센 값 중 더 많이 센 쪽)
 function mergeStats(a, b){
   a = a || {mode:{},tone:{},confuse:{}}; b = b || {mode:{},tone:{},confuse:{}};
@@ -2693,6 +2823,7 @@ function mergeState(a, b){
   for (const k of keys(a.history, b.history)){ const p=a.history?.[k]||{}, q=b.history?.[k]||{}; out.history[k] = { n:Math.max(p.n||0,q.n||0), ok:Math.max(p.ok||0,q.ok||0), nw:Math.max(p.nw||0,q.nw||0), u:Math.max(p.u||0,q.u||0) }; }
   for (const k of keys(a.fav, b.fav)){ const p=a.fav?.[k]||0, q=b.fav?.[k]||0; out.fav[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   { const m = new Map(); for (const x of [...(a.exams||[]), ...(b.exams||[])]) m.set(x.t, x); out.exams = [...m.values()].sort((x,y)=>x.t-y.t).slice(-50); }
+  { const m = new Map(); for (const x of [...(a.typing||[]), ...(b.typing||[])]) m.set(x.t, x); out.typing = [...m.values()].sort((x,y)=>x.t-y.t).slice(-50); }
   out.fav_s = {}; for (const k of keys(a.fav_s, b.fav_s)){ const p=a.fav_s?.[k]||0, q=b.fav_s?.[k]||0; out.fav_s[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   out.exam_wrong = {}; for (const k of keys(a.exam_wrong, b.exam_wrong)){ const p=a.exam_wrong?.[k]||0, q=b.exam_wrong?.[k]||0; out.exam_wrong[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   for (const k of keys(a.custom_del, b.custom_del)) out.custom_del[k] = Math.max(a.custom_del?.[k]||0, b.custom_del?.[k]||0);
@@ -2707,8 +2838,9 @@ function applyState(s){   // 병합 결과를 앱의 메모리·localStorage 에
   if (s.stats){ STATS.mode = s.stats.mode||{}; STATS.tone = s.stats.tone||{}; STATS.initial = s.stats.initial||{}; STATS.confuse = s.stats.confuse||{}; }
   swap(READ_DONE, s.read);
   EXAMS.length = 0; for (const x of (s.exams||[])) EXAMS.push(x);
+  TYPING.length = 0; for (const x of (s.typing||[])) TYPING.push(x);
   CUSTOM.length = 0; for (const w of s.custom||[]) { CUSTOM.push(w); BY_ID.set(w.id, w); }
-  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE,'zh.exams':EXAMS,'zh.exam_wrong':EXAM_WRONG }[k])); }catch(e){} };
+  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE,'zh.exams':EXAMS,'zh.exam_wrong':EXAM_WRONG,'zh.typing':TYPING }[k])); }catch(e){} };
   for (const k of SYNC_KEYS) silent(k);
 }
 // ── 백엔드 1: claude.ai 계정 저장소 (db). 문서 하나가 256KB 제한이라 진도는 1,000단어씩 쪼갬
@@ -2718,16 +2850,16 @@ function claudeBackend(db){
     name: 'claude.ai 계정 저장소',
     async pull(){
       const snap = await db.collection('zhsync').get(); if (snap.empty) return null;
-      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats:null, read:{}, exams:[], exam_wrong:{}, updatedAt:0 };
-      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, fav_s:v.fav_s||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, exams:v.exams||[], exam_wrong:v.exam_wrong||{}, updatedAt:v.updatedAt||0 }); } }
+      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats:null, read:{}, exams:[], exam_wrong:{}, typing:[], updatedAt:0 };
+      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, fav_s:v.fav_s||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, exams:v.exams||[], exam_wrong:v.exam_wrong||{}, typing:v.typing||[], updatedAt:v.updatedAt||0 }); } }
       return s;
     },
     async push(s, prev){
       const shards = {}; for (const id in s.progress){ (shards[shard(id)] ||= {})[id] = s.progress[id]; }
       const prevShards = {}; for (const id in (prev?.progress||{})){ (prevShards[shard(id)] ||= {})[id] = prev.progress[id]; }
       for (const k in shards) if (JSON.stringify(shards[k]) !== JSON.stringify(prevShards[k]||{})) await db.doc('zhsync/'+k).set({ progress: shards[k] });
-      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, exams:s.exams, exam_wrong:s.exam_wrong, updatedAt:s.updatedAt };
-      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read, exams:prev.exams, exam_wrong:prev.exam_wrong } : null;
+      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, exams:s.exams, exam_wrong:s.exam_wrong, typing:s.typing, updatedAt:s.updatedAt };
+      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read, exams:prev.exams, exam_wrong:prev.exam_wrong, typing:prev.typing } : null;
       if (!prev || JSON.stringify({...misc, updatedAt:0}) !== JSON.stringify({...prevMisc, updatedAt:0})) await db.doc('zhsync/misc').set(misc);
     }
   };
