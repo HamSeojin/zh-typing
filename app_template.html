@@ -463,11 +463,15 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <section class="panel" id="tab-exam" hidden>
   <div id="examHome">
     <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 시험 유형·비율을 본뜬 40문항 · 기출 아님</small></h3>
+      <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 시험 유형·비율을 본뜬 40문항 · 기출 아님 · 1~3급 30분, 4~6급 35분, 7~9급 40분</small></h3>
       <div class="lvbar" id="examLv">급수
         <label><input type="radio" name="examLv" value="1" checked>1급</label>
         <label><input type="radio" name="examLv" value="2">2급</label>
         <label><input type="radio" name="examLv" value="3">3급</label>
+        <label><input type="radio" name="examLv" value="4">4급</label>
+        <label><input type="radio" name="examLv" value="5">5급</label>
+        <label><input type="radio" name="examLv" value="6">6급</label>
+        <label><input type="radio" name="examLv" value="7">7~9급</label>
       </div>
       <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">듣기 16(판단 8 · 대화 8) · 독해 16(빈칸 8 · 순서 4 · 글 4) · 쓰기 8(어순) — 제한 시간 30분. 듣기는 자동 재생되고 🔊로 두 번까지 다시 들을 수 있어요.</p>
       <div class="dataops"><button class="btn primary" id="btnExamStart">시험 시작</button><a class="btn" href="https://www.chinesetest.cn/HSK" target="_blank" rel="noopener" style="text-decoration:none">공식 샘플 시험지 (chinesetest.cn)</a></div>
@@ -1504,13 +1508,16 @@ $('pq').addEventListener('click', e => {
 /* ═══════════ 모의고사 ═══════════
    구성(40문항): 듣기 판단 8 · 대화 듣기 8 · 독해 빈칸 8 · 문장 순서 4 · 글 읽기 4(2편×2문) · 쓰기 어순 8. 30분.
    빈칸·어순은 예문에서, 글 읽기는 읽기 탭 글에서 자동 출제. 나머지는 문항 은행에서. */
-const EXAM_TIME = 30 * 60;
+function examTime(lv){ return (lv <= 3 ? 30 : lv <= 6 ? 35 : 40) * 60; }
+let EXAM_TIME = 30 * 60;
 let exam = null, examTick = null;
 const pick = (arr, n) => { const a = arr.slice(); for (let i = a.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a.slice(0, n); };
 function examLv(){ return +(document.querySelector('#examLv input:checked')||{value:1}).value; }
 function buildExam(lv){
   const bank = EXAM_BANK[String(lv)] || {tf:[], dlg:[], order:[]};
-  const lvWords = WORDS.filter(w => w.lv <= lv && sentOf(w));
+  // 빈칸·어순용 단어: 해당 급수와 바로 아래 두 급수에서 (7~9급은 예문이 5~6급까지만 있어 그걸 씀)
+  let lvWords = WORDS.filter(w => w.lv <= lv && w.lv >= Math.max(1, lv - 2) && sentOf(w));
+  if (lvWords.length < 40) lvWords = WORDS.filter(w => w.lv <= lv && sentOf(w));
   const items = [];
   pick(bank.tf, 8).forEach(it => items.push({ type:'tf', sec:'듣기 · 판단', ...it }));
   pick(bank.dlg, 8).forEach(it => items.push({ type:'dlg', sec:'듣기 · 대화', ...it }));
@@ -1532,6 +1539,7 @@ function buildExam(lv){
 function startExam(){
   const lv = examLv(); const items = buildExam(lv);
   if (!items.length){ showToast('이 급수의 문항이 없어요'); return; }
+  EXAM_TIME = examTime(lv);
   exam = { lv, items, i: 0, ans: items.map(()=>null), start: Date.now(), left: EXAM_TIME, replay: 0 };
   $('examHome').hidden = true; $('examResult').hidden = true; $('examRun').hidden = false;
   clearInterval(examTick); examTick = setInterval(() => { exam.left = EXAM_TIME - Math.floor((Date.now()-exam.start)/1000); const m = Math.max(0, exam.left); $('examTimer').textContent = `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; if (exam.left <= 0) finishExam(true); }, 500);
@@ -1611,7 +1619,7 @@ function finishExam(timeout){
   const secHtml = Object.entries(secs).map(([k,s]) => `<div class="row"><span>${k}</span><div class="track"><div class="fill" style="width:${s.ok/s.n*100}%"></div></div><span class="num">${s.ok} / ${s.n}</span></div>`).join('');
   const wrong = exam.items.map((it,i) => ({it,i})).filter(x => !x.it.ok);
   const desc = it => it.type==='tf' ? `들은 문장: ${it.audio} / 보인 문장: ${it.shown} → ${it.ans?'같다':'다르다'}` : it.type==='dlg' ? `${it.a} / ${it.b} / ${it.q} → ${it.opts[it.ans]}` : it.type==='cloze' ? `${it.zh} (${it.word.s})` : it.type==='order' ? it.sents.join(' ') : it.type==='read' ? `${it.q.q} → ${it.q.opts[it.q.ans]}` : it.st.zh;
-  $('examResult').innerHTML = `<h2>${exam.lv}급 모의고사 결과${timeout?' (시간 초과)':''}</h2>
+  $('examResult').innerHTML = `<h2>${exam.lv===7?'7~9':exam.lv}급 모의고사 결과${timeout?' (시간 초과)':''}</h2>
     <div class="res-stats"><div><b>${pct}%</b><span>정답률 (${score}/${total})</span></div><div><b>${pct>=60?'합격권':'미달'}</b><span>HSK 합격 기준 60%</span></div><div><b>${Math.floor(used/60)}분 ${used%60}초</b><span>소요 시간</span></div></div>
     <div class="lvprog" style="margin-top:14px">${secHtml}</div>
     <h3 class="sk-h" style="margin-top:16px">틀린 문항 ${wrong.length}개 <small>단어를 누르면 뜻이 보여요</small></h3>
@@ -1624,7 +1632,7 @@ function finishExam(timeout){
 }
 function renderExamHome(){
   $('examRun').hidden = true; $('examResult').hidden = true; $('examHome').hidden = false;
-  $('examHistory').innerHTML = EXAMS.slice(-10).reverse().map(x => `<div class="row" style="grid-template-columns:auto 1fr auto"><span>${new Date(x.t).toLocaleDateString()} · ${x.lv}급</span><div class="track"><div class="fill" style="width:${x.score/x.total*100}%"></div></div><span class="num">${Math.round(x.score/x.total*100)}% (${x.score}/${x.total})</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 본 시험이 없어요</span>';
+  $('examHistory').innerHTML = EXAMS.slice(-10).reverse().map(x => `<div class="row" style="grid-template-columns:auto 1fr auto"><span>${new Date(x.t).toLocaleDateString()} · ${x.lv===7?'7~9':x.lv}급</span><div class="track"><div class="fill" style="width:${x.score/x.total*100}%"></div></div><span class="num">${Math.round(x.score/x.total*100)}% (${x.score}/${x.total})</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 본 시험이 없어요</span>';
 }
 $('btnExamStart').onclick = startExam;
 
