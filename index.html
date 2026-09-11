@@ -482,6 +482,10 @@ body{display:flex;flex-direction:column;margin:0}
 .notes .memo{margin-top:6px;font-size:13px;color:var(--ink);background:var(--good-bg);border-left:3px solid var(--accent);padding:6px 8px;border-radius:6px;white-space:pre-wrap}
 .seg.small{margin-bottom:8px}.seg.small button{font-size:12px;padding:5px 4px}
 .notes .n .a{-webkit-user-select:text;user-select:text}
+.notes .n.hlmode .a .s{cursor:pointer;border-radius:4px}
+.notes .n.hlmode .a .s:hover{background:color-mix(in srgb,#ffd54a 25%,transparent)}
+.notes .n.hlmode{box-shadow:0 0 0 2px color-mix(in srgb,#ffd54a 60%,transparent)}
+.notes .n .meta button.on{color:#d9a400;font-weight:700}
 /* 타자 연습 */
 .typ-stats{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin-bottom:10px}
 .typ-stats b{font-family:var(--mono);color:var(--ink);font-size:15px}
@@ -594,7 +598,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2329</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2337</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -2384,9 +2388,12 @@ let aiNoteFilter = 'all';   // all | star | hl
 function aiTouch(n){ n.u = Date.now(); store.set('zh.ai_notes', AI_NOTES); }
 // 답변 본문에 형광펜(hl: 사용자가 고른 문구들)을 <mark> 로 입힘
 function aiFmtHl(text, hl){
-  let html = aiFmt(text);
-  for (const h of (hl || [])){ if (!h) continue; const esc = aiFmt(h).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); html = html.replace(new RegExp(esc, 'g'), m => `<mark>${m}</mark>`); }
-  return html;
+  // 답변을 문장 단위(。.!?줄바꿈)로 잘라 각각 <span class="s">…</span> 으로 감싼다 → 형광펜 모드에서 문장을 탭해 칠할 수 있게
+  const parts = text.split(/(?<=[。！？!?\.])\s*|\n/).map(x => x.trim()).filter(Boolean);
+  const set = new Set(hl || []);
+  return parts.map(pt => { let html = aiFmt(pt); const whole = set.has(pt);
+    for (const h of set){ if (!h || h === pt) continue; const esc = aiFmt(h).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); html = html.replace(new RegExp(esc, 'g'), m => `<mark>${m}</mark>`); }
+    return `<span class="s ${whole ? 'hl' : ''}" data-s="${pt.replace(/"/g,'&quot;')}">${whole ? `<mark>${html}</mark>` : html}</span>`; }).join(' ');
 }
 function renderAiNotes(){
   const q = ($('aiNoteQ').value || '').trim().toLowerCase();
@@ -2402,7 +2409,7 @@ function renderAiNotes(){
       ${n.memo ? `<div class="memo">✎ ${aiFmt(n.memo)}</div>` : ''}
       <div class="meta"><span>${new Date(n.t).toLocaleDateString()}</span>
         <button data-nstar="1" class="${n.star?'on':''}" title="중요 표시">${n.star?'★':'☆'}</button>
-        <button data-nhl="1" title="답변에서 글자를 드래그해 고른 뒤 누르면 형광펜">🖍 형광펜</button>
+        <button data-nhl="1" title="누르면 형광펜 모드 — 문장을 탭해서 칠하기. 글자를 드래그해 고른 뒤 누르면 그 부분만">🖍 형광펜</button>
         <button data-nmemo="1" title="내 메모">✎ 메모</button>
         <button data-ncopy="1">복사</button>
         <button data-ntoggle="1">${'펼치기'}</button>
@@ -2417,7 +2424,9 @@ $('aiNoteList').addEventListener('pointerdown', e => {
   const b = e.target.closest('[data-nhl]'); if (!b) return; e.preventDefault();
   const n = b.closest('.n'), it = noteOf(n); if (!it) return;
   const sel = (window.getSelection() ? window.getSelection().toString() : '').trim();
-  if (!sel){ showToast('먼저 답변에서 형광펜 칠할 글자를 드래그해 고르세요'); return; }
+  if (!sel){   // 고른 글자가 없으면 '형광펜 모드' 켜기/끄기: 모드에서는 문장을 탭할 때마다 그 문장이 칠해짐
+    const on = n.classList.toggle('hlmode'); n.classList.add('open'); b.classList.toggle('on', on); b.textContent = on ? '🖍 형광펜 끄기' : '🖍 형광펜';
+    showToast(on ? '문장을 탭하면 형광펜이 칠해져요' : '형광펜 모드를 껐어요'); return; }
   it.hl = it.hl || []; const i = it.hl.indexOf(sel);
   if (i >= 0){ it.hl.splice(i, 1); showToast('형광펜을 지웠어요'); } else { it.hl.push(sel.slice(0, 200)); showToast('형광펜을 칠했어요'); }
   aiTouch(it); window.getSelection().removeAllRanges(); const open = n.classList.contains('open'); renderAiNotes(); if (open){ const el = [...document.querySelectorAll('.n')].find(x => x.dataset.nt === n.dataset.nt); if (el) el.classList.add('open'); }
@@ -2431,8 +2440,8 @@ $('aiNoteList').addEventListener('click', e => {
   if (e.target.closest('[data-nmemo]')){ if (!it) return; const m = prompt('이 답변에 붙일 메모 (비우면 삭제)', it.memo || ''); if (m === null) return; it.memo = m.trim(); aiTouch(it); renderAiNotes(); return; }
   if (e.target.closest('[data-ncopy]')){ if (!it) return; const text = `Q: ${it.q}\nA: ${it.a}${it.memo ? '\n메모: ' + it.memo : ''}`; navigator.clipboard.writeText(text).then(() => showToast('복사했어요')).catch(() => showToast('복사 실패')); return; }
   if (e.target.closest('[data-ndel]')){ if (it){ it.del = 1; aiTouch(it); } renderAiNotes(); return; }
-  if (e.target.closest('mark')) return;
-  if (!window.getSelection().toString()) n.classList.toggle('open');
+  // 형광펜 모드에서 문장을 탭하면 그 문장 전체를 칠하거나 지움
+  const sp = e.target.closest('.a .s'); if (sp && n.classList.contains('hlmode') && it){ const t = sp.dataset.s; it.hl = it.hl || []; const i = it.hl.indexOf(t); if (i >= 0) it.hl.splice(i, 1); else it.hl.push(t); aiTouch(it); sp.outerHTML = ''; n.querySelector('.a').innerHTML = aiFmtHl(it.a, it.hl); return; }
 });
 function aiNotesText(){
   const lines = [`# AI 선생님 문답 노트 (${new Date().toLocaleDateString()})`, ''];
