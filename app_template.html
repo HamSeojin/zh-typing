@@ -348,6 +348,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 .ai-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
 .ai-ctx{font-size:12px;color:var(--ink-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--hanzi)}
 .ai-x{background:none;border:0;font-size:16px;cursor:pointer;color:var(--ink-2);padding:4px 6px}
+#btnAiNew{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 9px}
 .ai-quick{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px 0}
 .ai-quick button{font:inherit;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--paper);color:var(--ink);cursor:pointer}
 .ai-quick button:hover{border-color:var(--accent)}
@@ -810,7 +811,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <div class="popup" id="popup" hidden></div>
 <!-- AI 선생님 패널 (화면 아래에서 올라오는 시트) -->
 <div class="ai-sheet" id="aiSheet" hidden>
-  <div class="ai-head"><b>🤖 AI 선생님</b><span id="aiCtx" class="ai-ctx"></span><button class="ai-x" id="btnAiClose" aria-label="닫기">✕</button></div>
+  <div class="ai-head"><b>🤖 AI 선생님</b><span id="aiCtx" class="ai-ctx"></span><button class="ai-x" id="btnAiNew" title="이 단어의 이전 문답을 지우고 새로 시작">새 대화</button><button class="ai-x" id="btnAiClose" aria-label="닫기">✕</button></div>
   <div class="ai-quick" id="aiQuick"></div>
   <div class="ai-log" id="aiLog"></div>
   <form class="ai-form" id="aiForm"><input id="aiQ" placeholder="질문을 입력하세요 (예: 时间이랑 时候 차이?)" autocomplete="off"><button class="btn primary" type="submit" id="btnAiSend">보내기</button></form>
@@ -1849,33 +1850,34 @@ function aiUsageLine(){
   const usd = AI_USAGE.inTok/1e6*price[0] + AI_USAGE.outTok/1e6*price[1];
   el.textContent = `이 기기에서 질문 ${AI_USAGE.n}개 · 대략 ${Math.round(usd*1400).toLocaleString()}원 (추정치 · 실제 금액은 서비스 사용량 페이지에서)`;
 }
-async function aiCall(user, systemExtra){
+async function aiCall(user, systemExtra, history){   // history: [{q, a}] 앞선 문답 (이어서 질문할 때 함께 보냄)
   if (!AI.key) throw new Error('설정 탭에서 API 키를 먼저 넣어 주세요');
   const system = aiSystem() + (systemExtra ? '\n' + systemExtra : '');
+  const turns = (history || []).flatMap(h => [{ role:'user', text: h.q }, { role:'assistant', text: h.a }]);
   const maxTok = AI.len==='long' ? 1500 : 900;
   let res, j;
   if (AI.provider === 'gemini'){
     res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI.model)}:generateContent?key=${encodeURIComponent(AI.key)}`, { method:'POST', headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[{ role:'user', parts:[{ text: user }] }], generationConfig:{ maxOutputTokens: maxTok * 2 } }) });
+      body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[...turns.map(t => ({ role: t.role==='assistant' ? 'model' : 'user', parts:[{ text: t.text }] })), { role:'user', parts:[{ text: user }] }], generationConfig:{ maxOutputTokens: maxTok * 2 } }) });
     j = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && j.error.message));
-    { const out = ((j.candidates||[])[0]?.content?.parts||[]).map(p => p.text||'').join('').trim() || '(빈 응답)'; aiCountUsage(system + user, out); return out; }
+    { const out = ((j.candidates||[])[0]?.content?.parts||[]).map(p => p.text||'').join('').trim() || '(빈 응답)'; aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
   }
   if (AI.provider === 'claude'){
     res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key': AI.key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
-      body: JSON.stringify({ model: AI.model, max_tokens: maxTok, system, messages:[{ role:'user', content: user }] }) });
+      body: JSON.stringify({ model: AI.model, max_tokens: maxTok, system, messages:[...turns.map(t => ({ role: t.role, content: t.text })), { role:'user', content: user }] }) });
     j = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && j.error.message));
-    { const out = (j.content||[]).filter(c => c.type==='text').map(c => c.text).join('').trim() || '(빈 응답)'; aiCountUsage(system + user, out); return out; }
+    { const out = (j.content||[]).filter(c => c.type==='text').map(c => c.text).join('').trim() || '(빈 응답)'; aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
   }
   // OpenAI 호환 (DeepSeek, OpenAI, 기타)
   const base = AI.base || 'https://api.openai.com/v1';
-  const body = { model: AI.model, messages:[{ role:'system', content: system }, { role:'user', content: user }] };
+  const body = { model: AI.model, messages:[{ role:'system', content: system }, ...turns.map(t => ({ role: t.role, content: t.text })), { role:'user', content: user }] };
   if (/openai\.com/.test(base)) body.max_completion_tokens = maxTok; else body.max_tokens = maxTok;
   res = await fetch(`${base}/chat/completions`, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + AI.key }, body: JSON.stringify(body) });
   j = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && (j.error.message || j.error)));
-  { const out = ((j.choices||[])[0]?.message?.content || '').trim() || '(빈 응답)'; aiCountUsage(system + user, out); return out; }
+  { const out = ((j.choices||[])[0]?.message?.content || '').trim() || '(빈 응답)'; aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
 }
 // 지금 보고 있는 것(단어·문장·문법)을 질문에 같이 보내기 위한 문맥
 let aiCtx = null;   // { key, label, text, quick:[{label, q}] }
@@ -1904,7 +1906,7 @@ function aiOpen(ctx){
   $('aiQuick').innerHTML = ctx.quick.map((q,i) => `<button data-aiq="${i}">${q.label}</button>`).join('');
   const log = $('aiLog'); log.innerHTML = '';
   for (const n of (AI_NOTES[ctx.key] || [])) aiAppend(n.q, n.a);
-  if (!log.innerHTML) log.innerHTML = AI.key ? '<div class="thinking" style="animation:none">위 버튼을 누르거나 아래에 질문을 쓰세요</div>' : '<div class="a err">설정 탭 → AI 선생님에서 API 키를 넣어야 쓸 수 있어요</div>';
+  if (!log.innerHTML) log.innerHTML = AI.key ? '<div class="thinking" style="animation:none">위 버튼을 누르거나 아래에 질문을 쓰세요. 답을 받은 뒤 이어서 물어봐도 돼요 (최근 3번의 문답을 기억)</div>' : '<div class="a err">설정 탭 → AI 선생님에서 API 키를 넣어야 쓸 수 있어요</div>';
   log.scrollTop = log.scrollHeight; if (window.innerWidth > 700) $('aiQ').focus();
 }
 function aiFmt(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^#+\s*/gm, '').replace(/([\u4e00-\u9fff]{1,20})/g, '<span class="zh">$1</span>'); }
@@ -1914,7 +1916,9 @@ async function aiAsk(q){
   if (!AI.key){ showToast('설정 탭에서 API 키를 넣어 주세요'); return; }
   const el = aiAppend(q, null); $('btnAiSend').disabled = true;
   try{
-    const a = await aiCall(`${aiCtx.text}\n\n[질문] ${q}`);
+    // 이어서 질문: 같은 문맥에서 나눈 최근 3번의 문답을 같이 보냄. 문맥 설명은 첫 질문 앞에만 붙임
+    const hist = (AI_NOTES[aiCtx.key] || []).slice(-3).map((h, i, arr) => ({ q: i === 0 ? `${aiCtx.text}\n\n[질문] ${h.q}` : h.q, a: h.a }));
+    const a = await aiCall(hist.length ? q : `${aiCtx.text}\n\n[질문] ${q}`, '', hist);
     el.innerHTML = aiFmt(a);
     (AI_NOTES[aiCtx.key] = AI_NOTES[aiCtx.key] || []).push({ q, a, t: Date.now() }); if (AI_NOTES[aiCtx.key].length > 8) AI_NOTES[aiCtx.key].shift(); store.set('zh.ai_notes', AI_NOTES);
   }catch(e){ el.className = 'a err'; el.textContent = /(Failed to fetch|NetworkError|Load failed)/i.test(e.message) ? '서버에 연결하지 못했어요. 인터넷을 확인하거나, 이 서비스가 브라우저 직접 호출을 막는 경우(CORS)일 수 있어요.' : e.message; }
@@ -1923,6 +1927,7 @@ async function aiAsk(q){
 $('aiQuick').addEventListener('click', e => { const b = e.target.closest('[data-aiq]'); if (!b) return; const q = aiCtx.quick[+b.dataset.aiq].q; if (!q){ $('aiQ').value = '3번 문장 '; $('aiQ').focus(); $('aiQ').setSelectionRange(0, 2); return; } aiAsk(q); });
 $('aiForm').onsubmit = e => { e.preventDefault(); const q = $('aiQ').value; $('aiQ').value = ''; aiAsk(q); };
 $('btnAiClose').onclick = () => { $('aiSheet').hidden = true; };
+$('btnAiNew').onclick = () => { if (!aiCtx) return; delete AI_NOTES[aiCtx.key]; store.set('zh.ai_notes', AI_NOTES); aiOpen(aiCtx); };
 $('btnAsk').onclick = () => { if (!cur) return; aiOpen(aiWordCtx(cur)); };
 $('btnGramAsk').onclick = () => { if (curGram) aiOpen(aiGramCtx(curGram)); };
 function aiPassageCtx(pg){
