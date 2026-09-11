@@ -37,15 +37,8 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);f
   /* 홈 화면 앱(PWA)으로 열면 화면이 상태 표시줄·홈 바 아래까지 확장되므로 그만큼 안쪽 여백을 둠 (일반 브라우저에선 0) */
   padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 .wrap{max-width:720px;margin:0 auto;zoom:var(--zoom,1)}   /* 글자 크기 설정: 페이지 전체를 배율로 키우고 줄임 */
-header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:18px 10px}
-header h1{font-family:var(--hanzi);font-weight:700;font-size:22px;margin:0;letter-spacing:.02em}
-header h1 small{font-family:var(--body);font-weight:500;font-size:13px;color:var(--ink-2);margin-left:8px}
 /* 탭 줄: 좁으면 옆으로만 스크롤. 세로 스크롤은 막아야 손가락을 위아래로 밀 때 탭 글자가 잘리지 않음 */
-nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 nav::-webkit-scrollbar{display:none}
-nav button{background:none;border:0;box-shadow:inset 0 -2px 0 transparent;padding:8px 12px;font:inherit;font-weight:500;color:var(--ink-2);cursor:pointer;white-space:nowrap;flex:0 0 auto;line-height:1.3}
-nav button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent)}
-.panel[hidden]{display:none}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .stat{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
@@ -144,7 +137,7 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .pq .opts button.good{border-color:var(--good);background:var(--good-bg)}
 .pq .opts button.bad{border-color:var(--bad);background:var(--bad-bg)}
 .pq .pres{font-size:14px;padding:8px 0}
-.popup{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--card);color:var(--ink);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.35),0 0 0 6px color-mix(in srgb,var(--accent) 18%,transparent);width:max-content;max-width:min(calc(100vw - 32px),440px);box-sizing:border-box;z-index:20;font-size:14px;line-height:1.5}
+.popup{position:fixed;left:50%;bottom:calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--card);color:var(--ink);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.35),0 0 0 6px color-mix(in srgb,var(--accent) 18%,transparent);width:max-content;max-width:min(calc(100vw - 32px),440px);box-sizing:border-box;z-index:20;font-size:14px;line-height:1.5}
 .popup::before{content:'';position:absolute;top:6px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line)}   /* 시트임을 알리는 손잡이 */
 .popup{padding-top:16px}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .popup{background:#233042;box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 0 6px color-mix(in srgb,var(--accent) 22%,transparent)}}
@@ -306,11 +299,9 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
   input,select,textarea{font-size:16px!important}   /* 16px 미만이면 iOS 사파리가 입력칸을 누를 때 화면을 확대함 */
   .stats{grid-template-columns:repeat(2,1fr);gap:8px}.stat{padding:8px 10px}.stat b{font-size:17px}
   .hanzi{font-size:48px}.meaning{font-size:15px}.meaning .en{font-size:13px}
-  header h1{font-size:19px}header{padding-block:12px 6px}
   .lvbar{gap:4px}.lvbar label{padding:3px 8px;font-size:12px}
   .card{padding:12px}.toolrow .hint{display:none}#ttsState{display:none}
   /* 키보드가 올라와도 문제~입력칸이 한 화면에 들어오게: 위쪽 요소를 줄이거나 숨김 */
-  #tab-study .stats{display:none}               /* 통계 탭에 같은 숫자가 있음 */
   .modebar{gap:4px;margin-bottom:8px}.modebar button{padding:6px 4px}.modebar button b{font-size:13px}
   .unitbar{gap:6px;margin-bottom:8px}.unitbar select{padding:6px 8px;font-size:13px}.unitbar .btn{padding:6px 10px}
   .lvbar{margin-bottom:8px}
@@ -333,6 +324,86 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 .loading-hz{font-family:'Noto Serif SC',serif;font-size:56px;color:var(--accent);margin-bottom:8px}
 .loading-bar{width:160px;height:4px;background:var(--line);border-radius:2px;margin:12px auto 0;overflow:hidden}
 .loading-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+/* ═══════════ 앱 껍데기: 화면·하단 탭·상단 줄 ═══════════ */
+:root{--tabbar-h:60px;--sp:12px}
+body{padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom,0px) + 16px)}
+body.no-tabbar{padding-bottom:24px}
+.screen[hidden]{display:none}
+.screen{animation:fadein .15s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.apphead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:18px 0 12px}
+.apphead h1{font-family:var(--hanzi);font-weight:700;font-size:24px;margin:0;letter-spacing:.02em}
+.apphead small{font-size:12px;color:var(--ink-2)}
+/* 하단 탭 */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar[hidden]{display:none}
+.tabbar button{flex:1;max-width:180px;height:var(--tabbar-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:0;font:inherit;font-size:11px;font-weight:500;color:var(--ink-2);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tabbar button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabbar button[aria-selected="true"]{color:var(--accent)}
+.tabbar button[aria-selected="true"] svg{fill:color-mix(in srgb,var(--accent) 18%,transparent)}
+/* pushed 화면 상단 줄 */
+.topbar{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:6px;padding:8px 0;margin:0 0 8px;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.topbar .back{width:38px;height:38px;border:0;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:22px;line-height:1;color:var(--ink);cursor:pointer;flex:0 0 auto}
+.topbar .title{font:inherit;font-weight:700;font-size:16px;background:none;border:0;color:var(--ink);padding:6px 8px;border-radius:8px;cursor:default;text-align:left;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topbar button.title{cursor:pointer}
+.topbar button.title:hover{background:var(--card)}
+.topbar .chev{color:var(--ink-2);font-size:12px}
+.topbar .tb-right{margin-left:auto;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.uprog.slim{margin:0 0 12px;min-width:0}
+.uprog.slim .uprog-bar{height:4px}
+/* 홈 */
+.hero{display:block;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#1f4a3c));color:#fff;border-radius:16px;padding:18px 18px 16px;margin-bottom:12px;cursor:pointer;box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 30%,transparent)}
+.hero-eyebrow{font-size:12px;opacity:.85;letter-spacing:.06em}
+.hero-title{font-family:var(--hanzi);font-size:26px;font-weight:700;margin-top:2px}
+.hero-sub{font-size:13px;opacity:.9;margin-top:2px}
+.hero-cta{display:inline-block;margin-top:12px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.tile{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.tile:hover{border-color:var(--accent)}
+.tile b{font-size:20px;font-family:var(--mono);font-weight:600}
+.tile > span{font-size:14px;font-weight:600}
+.tile small{font-size:12px;color:var(--ink-2)}
+#btnHomeReview b{color:var(--accent)}
+.goal-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px}
+.goal-row b{font-family:var(--mono);font-weight:600}
+.goal-row.small{font-size:12px;color:var(--ink-2);margin:8px 0 0}
+#homeGoalCard .uprog{min-width:0}
+/* 학습 메뉴 */
+.menu{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.mcard{font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:4px;min-height:118px}
+.mcard:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.mcard .mi{font-family:var(--hanzi);font-size:22px;color:var(--accent);background:var(--good-bg);border-radius:10px;width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px}
+.mcard b{font-size:16px}
+.mcard small{font-size:12px;color:var(--ink-2);line-height:1.4}
+/* 세그먼트 */
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;font:inherit;font-size:13px;font-weight:500;border:0;background:none;color:var(--ink-2);padding:7px 4px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.seg button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.segpane[hidden]{display:none}
+.segpane > .card + .card{margin-top:12px}
+/* 시작 시트 */
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100vw,640px);max-height:86vh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.2);z-index:30;padding:0 14px calc(14px + env(safe-area-inset-bottom,0px))}
+.sheet[hidden]{display:none}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:29}
+.backdrop[hidden]{display:none}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:12px 0 8px;position:sticky;top:0;background:var(--card)}
+.sh-label{font-size:12px;color:var(--ink-2);letter-spacing:.06em;margin:10px 0 6px}
+.sheet .lvbar{margin-bottom:4px}
+.sheet .modebar{margin-bottom:4px}
+.sheet .unitbar{margin-bottom:0}
+.sheet .unitbar select{flex:1;min-width:0}
+.btn.small{padding:5px 10px;font-size:12px}
+.sk-h .btn.small{float:right}
+@media (max-width:480px){
+  .apphead{padding:12px 0 10px}.apphead h1{font-size:21px}
+  .tiles{gap:8px}.tile{padding:12px}.tile b{font-size:18px}
+  .menu{gap:8px}.mcard{padding:12px;min-height:104px}.mcard b{font-size:15px}
+  .hero{padding:16px}.hero-title{font-size:23px}
+}
+@media (min-width:721px){
+  .tabbar{border-top:0;bottom:16px;left:50%;right:auto;transform:translateX(-50%);width:420px;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.15);padding-bottom:0}
+  .tabbar button{height:56px}
+}
 /* AI 선생님 설정: 설명이 길어 좌우 2단이 아니라 위아래로 쌓음 */
 #aiBox label.row{flex-direction:column;align-items:stretch;gap:6px}
 #aiBox label.row > span{max-width:none}
@@ -365,6 +436,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 @keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
 .ai-form{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px solid var(--line)}
 .ai-form input{flex:1;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+body.no-tabbar .popup{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
 /* 정답 확인 후 부가 정보 접기 */
 details.more{margin-top:12px;border-top:1px dashed var(--line);padding-top:6px}
 details.more summary{cursor:pointer;font-size:13px;color:var(--ink-2);list-style:none;display:flex;align-items:center;gap:6px;padding:4px 0;user-select:none}
@@ -435,287 +507,49 @@ details.more summary::-webkit-details-marker{display:none}
 .gchips button:hover{border-color:var(--accent)}
 </style>
 
-<div class="wrap">
-<header>
-  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">__APP_VERSION__</span></small></h1>
-  <span id="ttsState" style="font-size:12px;color:var(--ink-2)"></span>
-</header>
-<nav role="tablist">
-  <button role="tab" aria-selected="true" data-tab="study">학습</button>
-  <button role="tab" aria-selected="false" data-tab="read">읽기</button>
-  <button role="tab" aria-selected="false" data-tab="gram">문법</button>
-  <button role="tab" aria-selected="false" data-tab="exam">모의고사</button>
-  <button role="tab" aria-selected="false" data-tab="stats">통계</button>
-  <button role="tab" aria-selected="false" data-tab="mine">내 단어장</button>
-  <button role="tab" aria-selected="false" data-tab="list">전체 단어</button>
-  <button role="tab" aria-selected="false" data-tab="settings">설정</button>
-</nav>
+<div class="wrap" id="app">
 
-<!-- ───────── 학습 탭 ───────── -->
-<section class="panel" id="tab-study">
-  <div class="stats">
-    <div class="stat"><b id="stToday">0</b><span>오늘 푼 문제 / 목표</span></div>
-    <div class="stat"><b id="stAcc">–</b><span>오늘 정답률</span></div>
-    <div class="stat"><b id="stDue">0</b><span>복습 예정</span></div>
-    <div class="stat"><b id="stLearned">0</b><span>학습한 단어</span></div>
+<!-- ═══════════ 홈 ═══════════ -->
+<section class="screen" data-screen="home">
+  <header class="apphead"><h1>汉语 타자 단어장</h1><small>HSK 3.0 · 1~9급 · <span id="appVer">__APP_VERSION__</span></small></header>
+  <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
+  <div class="hero" id="heroContinue" role="button" tabindex="0">
+    <div class="hero-eyebrow">이어서 학습</div>
+    <div class="hero-title" id="heroLabel">1급 1과</div>
+    <div class="hero-sub" id="heroSub">뜻→한자 · 0/20</div>
+    <div class="hero-cta">계속하기 ›</div>
   </div>
-  <div class="lvbar" id="lvbar">급수
-    <label><input type="checkbox" value="1" checked>1급</label>
-    <label><input type="checkbox" value="2">2급</label>
-    <label><input type="checkbox" value="3">3급</label>
-    <label><input type="checkbox" value="4">4급</label>
-    <label><input type="checkbox" value="5">5급</label>
-    <label><input type="checkbox" value="6">6급</label>
-    <label><input type="checkbox" value="7">7급</label>
-    <label><input type="checkbox" value="8">8급</label>
-    <label><input type="checkbox" value="9">9급</label>
-    <span id="lvCount" style="margin-left:auto"></span>
+  <div class="tiles">
+    <button class="tile" id="btnHomeReview"><b id="homeDue">0</b><span>복습할 단어</span><small>기한이 된 단어만 모아서</small></button>
+    <button class="tile" data-go="read"><b>읽기</b><span id="homeRead">0편 읽음</span><small>급수별 짧은 글</small></button>
+    <button class="tile" data-go="gram"><b>문법</b><span>570 항목</span><small>공식 요목 + 예문</small></button>
+    <button class="tile" data-go="exam"><b>모의고사</b><span id="homeExam">아직 없음</span><small>40문항 · 듣기 연습</small></button>
   </div>
-  <div class="modebar" id="modebar" role="radiogroup" aria-label="단어 학습 모드"></div>
-  <div class="modebar sent" id="modebar2" role="radiogroup" aria-label="문장 학습 모드"></div>
-  <div class="unitbar">
-    <select id="unitSel" aria-label="과 선택"></select>
-    <button class="btn" id="btnUnitPrev" title="이전 과">‹</button>
-    <button class="btn" id="btnUnitNext" title="다음 과">›</button>
-    <button class="btn" id="btnReview">복습 (<span id="reviewN">0</span>)</button>
-    <div class="uprog"><div class="uprog-bar" id="uprogBar"></div><span id="uprogText"></span></div>
-  </div>
-
-  <div class="card result" id="resultCard" hidden>
-    <h2 id="resTitle">과 완료</h2>
-    <div class="res-stats"><div><b id="resAcc">–</b><span>정답률</span></div><div><b id="resN">0</b><span>문제 수</span></div><div><b id="resWrong">0</b><span>틀린 단어</span></div></div>
-    <div id="resWrongList" class="res-wrong"></div>
-    <div class="dataops" style="margin-top:16px">
-      <button class="btn primary" id="btnResNext">다음 과 →</button>
-      <button class="btn" id="btnResRetry">이 과 다시</button>
-      <button class="btn" id="btnResWrong">틀린 것만 다시</button>
-    </div>
-  </div>
-
-  <div class="card" id="quizCard">
-    <div class="q-meta"><span id="qKind">뜻을 보고 한자를 입력하세요</span><span class="box" id="qBox"></span></div>
-    <div class="prompt">
-      <div class="hanzi" id="qHanzi"></div>
-      <div class="pinyin" id="qPinyin"></div>
-      <div class="trad" id="qTrad"></div>
-      <div class="meaning"><div class="ko" id="qKo"></div><div class="en" id="qEn"></div></div>
-      <div class="writers" id="writers" hidden></div>
-      <div class="toneArea" id="toneArea" hidden></div>
-      <div class="sayArea" id="sayArea" hidden>
-        <button type="button" class="mic" id="btnMic">🎤 누르고 말하기</button>
-        <div class="heard" id="heard"></div>
-        <div class="note" id="sayNote"></div>
-      </div>
-      <div class="orderArea" id="orderArea" hidden>
-        <div class="tokens built" id="built" aria-label="만든 문장"></div>
-        <div class="tokens pool" id="pool" aria-label="남은 어절"></div>
-        <div class="orderHint" id="orderHint"></div>
-      </div>
-    </div>
-    <div class="answer">
-      <input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="여기에 입력하고 Enter" aria-label="답 입력">
-      <button class="btn icon" id="btnSpeak" title="발음 듣기 (Alt+P)">🔊</button>
-      <button class="btn icon" id="btnStar" title="내 단어장에 담기 / 빼기 (Alt+S)">☆</button>
-      <button class="btn primary" id="btnCheck">확인</button>
-    </div>
-    <div class="feedback" id="fb"></div>
-    <details class="more" id="moreBox" hidden><summary>관련 단어 · 문법 · 바깥 링크</summary>
-    <div id="wordRel"></div>
-    <div id="gramRel"></div>
-    <div class="extlinks" id="ext" hidden>
-      <a class="btn" id="lnkYouglish" target="_blank" rel="noopener">▶ 유튜브 예문 (YouGlish)</a>
-      <a class="btn" id="lnkForvo" target="_blank" rel="noopener">🎙 원어민 발음 (Forvo)</a>
-      <a class="btn" id="lnkDict" target="_blank" rel="noopener">📖 네이버 사전</a>
-    </div>
-    </details>
-    <div class="toolrow">
-      <span class="hint">Enter: 확인 → 다음 · Alt+P: 발음 · Alt+H: 힌트 · Alt+S: 내 단어장</span>
-      <div style="display:flex;gap:8px">
-        <button class="btn" id="btnHint">힌트</button>
-        <button class="btn" id="btnSkip">건너뛰기</button>
-        <button class="btn" id="btnStrokes" title="획순 애니메이션 보기">✍ 획순</button>
-        <button class="btn" id="btnAsk" title="AI 선생님에게 이 단어·문장에 대해 묻기">🤖 묻기</button>
-        <button class="btn" id="btnKoToggle">뜻 수정</button>
-      </div>
-    </div>
-    <div class="koedit">
-      <label for="koInput">한국어 뜻 직접 입력</label>
-      <input id="koInput" placeholder="예: 안녕하세요 (인사)">
-      <button class="btn" id="btnKoSave">저장</button>
-    </div>
+  <div class="card" id="homeGoalCard">
+    <div class="goal-row"><span>오늘 목표</span><b id="homeGoalText">0 / 30</b></div>
+    <div class="uprog"><div class="uprog-bar" id="homeGoalBar"></div></div>
+    <div class="goal-row small"><span id="homeStreak">연속 0일</span><span id="homeAcc">오늘 정답률 –</span><span id="homeLearned">학습 0/507</span></div>
   </div>
 </section>
 
-<!-- ───────── 읽기 탭 ───────── -->
-<section class="panel" id="tab-read" hidden>
-  <div id="readList">
-    <div class="lvbar" id="readLv">급수
-      <label><input type="radio" name="readLv" value="1" checked>1급</label>
-      <label><input type="radio" name="readLv" value="2">2급</label>
-      <label><input type="radio" name="readLv" value="3">3급</label>
-      <label><input type="radio" name="readLv" value="4">4급</label>
-      <label><input type="radio" name="readLv" value="5">5급</label>
-      <label><input type="radio" name="readLv" value="6">6급</label>
-      <label><input type="radio" name="readLv" value="7">7~9급</label>
-      <span id="readCount" style="margin-left:auto"></span>
-    </div>
-    <div class="card" style="padding:8px 12px"><div class="plist" id="plist"></div></div>
-  </div>
-  <div id="reader" hidden>
-    <div class="unitbar">
-      <button class="btn" id="btnReadBack">‹ 목록</button>
-      <label class="tog"><input type="checkbox" id="rdPy"> 병음</label>
-      <label class="tog"><input type="checkbox" id="rdKo"> 번역</label>
-      <button class="btn icon" id="btnReadSpeak" title="전체 읽어주기">🔊</button>
-      <button class="btn" id="btnReadAsk" title="AI 선생님에게 이 글에 대해 묻기">🤖 묻기</button>
-      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
-    </div>
-    <div class="card" id="readCard">
-      <h2 class="ptitle" id="ptitle"></h2>
-      <div class="ptext" id="ptext"></div>
-      <div class="pq" id="pq"></div>
-    </div>
+<!-- ═══════════ 학습 메뉴 ═══════════ -->
+<section class="screen" data-screen="learn" hidden>
+  <header class="apphead"><h1>학습</h1><small>무엇을 할지 고르세요</small></header>
+  <div class="menu">
+    <button class="mcard" data-start="word"><span class="mi">字</span><b>단어 학습</b><small>익히기 · 뜻→한자 · 병음 · 듣기 · 쓰기 · 성조 · 자음 · 말하기</small></button>
+    <button class="mcard" data-start="sent"><span class="mi">句</span><b>문장 연습</b><small>빈칸 채우기 · 받아쓰기 · 어순 배열</small></button>
+    <button class="mcard" data-go="read"><span class="mi">读</span><b>읽기</b><small>1~9급 짧은 글 224편 · 탭 사전 · 내용 문제</small></button>
+    <button class="mcard" data-go="gram"><span class="mi">法</span><b>문법</b><small>HSK 3.0 문법 570항목 · 예문 · 어순 연습</small></button>
+    <button class="mcard" data-go="exam" data-focus="lis"><span class="mi">听</span><b>듣기 대화</b><small>두 목소리 대화 10문항 · 대본 확인</small></button>
+    <button class="mcard" data-go="exam"><span class="mi">考</span><b>모의고사</b><small>실제 유형 40문항 · 시간 제한 · 오답 관리</small></button>
   </div>
 </section>
 
-<!-- ───────── 문법 탭 ───────── -->
-<section class="panel" id="tab-gram" hidden>
-  <div id="gramList">
-    <div class="lvbar" id="gramLv">급수
-      <label><input type="radio" name="gramLv" value="1" checked>1급</label>
-      <label><input type="radio" name="gramLv" value="2">2급</label>
-      <label><input type="radio" name="gramLv" value="3">3급</label>
-      <label><input type="radio" name="gramLv" value="4">4급</label>
-      <label><input type="radio" name="gramLv" value="5">5급</label>
-      <label><input type="radio" name="gramLv" value="6">6급</label>
-      <label><input type="radio" name="gramLv" value="7">7~9급</label>
-      <span id="gramCount" style="margin-left:auto"></span>
-    </div>
-    <div class="card" style="padding:8px 12px;background:transparent;border:0;box-shadow:none">
-      <input type="search" id="gramSearch" placeholder="문법 검색 (예: 把, 비교, 了)" style="width:100%;box-sizing:border-box;margin:4px 0 6px;padding:8px 10px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)">
-      <div class="plist" id="glist"></div>
-    </div>
-  </div>
-  <div id="gramView" hidden>
-    <div class="unitbar">
-      <button class="btn" id="btnGramBack">‹ 목록</button>
-      <button class="btn" id="btnGramPrev">‹ 이전</button>
-      <button class="btn" id="btnGramNext">다음 ›</button>
-      <button class="btn" id="btnGramAsk" title="AI 선생님에게 이 문법에 대해 묻기">🤖 묻기</button>
-      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
-    </div>
-    <div class="card" id="gramCard"></div>
-  </div>
-</section>
-
-<!-- ───────── 모의고사 탭 ───────── -->
-<section class="panel" id="tab-exam" hidden>
-  <div id="examHome">
-    <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 유형을 본뜬 40문항 (기출 아님)</small></h3>
-      <div class="lvbar" id="examLv">급수
-        <label><input type="radio" name="examLv" value="1" checked>1급</label>
-        <label><input type="radio" name="examLv" value="2">2급</label>
-        <label><input type="radio" name="examLv" value="3">3급</label>
-        <label><input type="radio" name="examLv" value="4">4급</label>
-        <label><input type="radio" name="examLv" value="5">5급</label>
-        <label><input type="radio" name="examLv" value="6">6급</label>
-        <label><input type="radio" name="examLv" value="7">7~9급</label>
-      </div>
-      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">듣기 16 · 독해 16 · 쓰기 8 — 1~3급 30분, 4~6급 35분, 7~9급 40분. 듣기는 자동 재생, 🔊로 2번까지 다시 듣기.</p>
-      <div class="dataops"><button class="btn primary" id="btnExamStart">시험 시작</button><a class="btn" href="https://www.chinesetest.cn/HSK" target="_blank" rel="noopener" style="text-decoration:none">공식 샘플 시험지 (chinesetest.cn)</a></div>
-    </div>
-    <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">듣기 대화 연습 <small>위에서 고른 급수 · 10문항 · 시간 제한 없음</small></h3>
-      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">A·B를 다른 목소리로 듣고 답하면 대본·번역이 바로 보여요.</p>
-      <div class="dataops"><button class="btn primary" id="btnLisStart">듣기 연습 시작</button><span class="hint" id="lisStat" style="font-size:13px;color:var(--ink-2);align-self:center"></span></div>
-    </div>
-    <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">모의고사 오답 단어 <small>빈칸·어순에서 틀린 단어 · 학습 복습과 별개 · 맞히면 빠짐</small></h3>
-      <div id="examWrongList" class="res-wrong" style="margin-bottom:10px"></div>
-      <div class="dataops"><button class="btn primary" id="btnExamWrongStudy">오답 단어 학습 (뜻→한자)</button><button class="btn" id="btnExamWrongSent">문장으로 (빈칸 채우기)</button><button class="btn" id="btnExamWrongClear">목록 비우기</button></div>
-    </div>
-    <div class="card"><h3 class="sk-h">지난 시험</h3><div class="lvprog" id="examHistory"></div></div>
-  </div>
-  <div id="lisRun" hidden>
-    <div class="unitbar">
-      <span id="lisPos" class="hint" style="font-size:13px"></span>
-      <span id="lisScore" class="hint" style="font-size:13px;margin-left:auto"></span>
-      <button class="btn" id="btnLisQuit">끝내기</button>
-    </div>
-    <div class="uprog"><div class="uprog-bar" id="lisBar"></div></div>
-    <div class="card" id="lisCard" style="margin-top:12px">
-      <div id="lisBody" class="exam-body"></div>
-      <div class="dataops" style="margin-top:14px;justify-content:space-between">
-        <button class="btn icon" id="btnLisSpeak" title="다시 듣기">🔊 다시 듣기</button>
-        <button class="btn primary" id="btnLisNext" hidden>다음 →</button>
-      </div>
-    </div>
-  </div>
-  <div id="examRun" hidden>
-    <div class="unitbar">
-      <span id="examPos" class="hint" style="font-size:13px"></span>
-      <span id="examTimer" style="font-family:var(--mono);margin-left:auto;font-size:15px"></span>
-      <button class="btn" id="btnExamQuit">중단</button>
-    </div>
-    <div class="uprog"><div class="uprog-bar" id="examBar"></div></div>
-    <div class="card" id="examCard" style="margin-top:12px">
-      <div class="q-meta"><span id="examType"></span><span class="box" id="examSec"></span></div>
-      <div id="examBody" class="exam-body"></div>
-      <div class="dataops" style="margin-top:14px;justify-content:space-between">
-        <button class="btn icon" id="btnExamSpeak" title="다시 듣기">🔊 <span id="examReplay"></span></button>
-        <button class="btn primary" id="btnExamNext">다음 →</button>
-      </div>
-    </div>
-  </div>
-  <div id="examResult" class="card result" hidden></div>
-</section>
-
-<!-- ───────── 통계 탭 ───────── -->
-<section class="panel" id="tab-stats" hidden>
-  <div class="stats">
-    <div class="stat"><b id="skStreak">0</b><span>연속 학습일</span></div>
-    <div class="stat"><b id="skWeek">0</b><span>최근 7일 푼 문제</span></div>
-    <div class="stat"><b id="skLearned">0</b><span>학습한 단어 (전체)</span></div>
-    <div class="stat"><b id="skAcc">–</b><span>전체 정답률</span></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <h3 class="sk-h">학습 달력 <small>최근 16주 · 색이 진할수록 많이 품</small></h3>
-    <div class="heat-wrap"><div class="heat-days"><span>월</span><span></span><span>수</span><span></span><span>금</span><span></span><span></span></div><div class="heat" id="heat"></div></div>
-    <div class="heat-legend">적게 <i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i> 많이</div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <h3 class="sk-h">최근 14일 <small>하루에 푼 문제 수 · 막대 위에 마우스를 올리면 자세히</small></h3>
-    <div class="bars" id="dayBars"></div><div class="bars-x" id="dayBarsX"></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <h3 class="sk-h">급수별 진도 <small>한 번 이상 맞힌 단어 / 전체</small></h3>
-    <div class="lvprog" id="lvProg"></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <h3 class="sk-h">약한 단어 <small>틀림·힌트가 많은 순 (최근 30일 가중)</small><button class="btn" id="btnWeakStudy" style="float:right;padding:5px 10px;font-size:12px">약한 단어 학습</button></h3>
-    <div class="res-wrong" id="weakList"></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <h3 class="sk-h">헷갈리는 짝 <small>정답 대신 다른 단어를 적은 경우</small></h3>
-    <div class="lvprog" id="confuseList"></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <h3 class="sk-h">모드별 정답률</h3>
-    <div class="lvprog" id="modeStat"></div>
-  </div>
-  <div class="card" style="margin-bottom:14px">
-    <h3 class="sk-h">성조별 정답률 <small>성조 맞히기 기준</small></h3>
-    <div class="lvprog" id="toneStat"></div>
-  </div>
-  <div class="card">
-    <h3 class="sk-h">기억 단계 분포 <small>상자가 높을수록 오래 기억한 단어 · 다음 복습까지 0/1/3/7/14/30/60일</small></h3>
-    <div class="lvprog" id="boxDist"></div>
-  </div>
-</section>
-
-<!-- ───────── 내 단어장 탭 ───────── -->
-<section class="panel" id="tab-mine" hidden>
+<!-- ═══════════ 단어장 ═══════════ -->
+<section class="screen" data-screen="words" hidden>
+  <header class="apphead"><h1>단어장</h1></header>
+  <div class="seg" id="wordsSeg"><button aria-selected="true" data-seg="mine">내 단어장</button><button data-seg="sents">내 문장</button><button data-seg="wrong">오답</button><button data-seg="all">전체 검색</button></div>
+  <div class="segpane" data-pane="mine">
   <div class="card" style="margin-bottom:14px">
     <div class="mine-head">
       <div><b id="mineCount">0</b>단어 <span class="hint">학습 화면의 ☆ 버튼(Alt+S)이나 전체 단어 목록에서 담거나, 아래에서 직접 추가</span></div>
@@ -738,7 +572,11 @@ details.more summary::-webkit-details-marker{display:none}
     </table></div>
     <p id="mineEmpty" class="hint" style="padding:16px 4px;margin:0" hidden>아직 담은 단어가 없어요. 학습하다 헷갈리는 단어에서 ☆ 를 눌러 보세요.</p>
   </div>
-  <div class="card" style="margin-top:14px">
+
+  </div>
+  <div class="segpane" data-pane="sents" hidden>
+  <div class="card">
+
     <div class="mine-head">
       <div><b id="mineSentCount">0</b>문장 <span class="hint">문장 모드(빈칸·받아쓰기·어순)에서 ☆ 를 누르면 그 문장이 담겨요</span></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -748,10 +586,15 @@ details.more summary::-webkit-details-marker{display:none}
     </div>
     <div class="slist" id="mineSents"></div>
   </div>
-</section>
-
-<!-- ───────── 단어장 탭 ───────── -->
-<section class="panel" id="tab-list" hidden>
+  </div>
+  <div class="segpane" data-pane="wrong" hidden>
+    <div class="card" id="wrongCard">
+      <h3 class="sk-h">모의고사 오답 단어 <small>빈칸·어순에서 틀린 단어 · 학습 복습과 별개 · 맞히면 빠짐</small></h3>
+      <div id="examWrongList" class="res-wrong" style="margin-bottom:10px"></div>
+      <div class="dataops"><button class="btn primary" id="btnExamWrongStudy">오답 단어 학습 (뜻→한자)</button><button class="btn" id="btnExamWrongSent">문장으로 (빈칸 채우기)</button><button class="btn" id="btnExamWrongClear">목록 비우기</button></div>
+    </div>
+  </div>
+  <div class="segpane" data-pane="all" hidden>
   <div class="search">
     <input id="q" placeholder="한자 · 병음 · 뜻 검색 (예: 学, xue, study)">
     <select id="listLv"><option value="">전체 급수</option><option value="1">1급</option><option value="2">2급</option><option value="3">3급</option><option value="4">4급</option><option value="5">5급</option><option value="6">6급</option><option value="7">7급</option><option value="8">8급</option><option value="9">9급</option></select>
@@ -763,10 +606,55 @@ details.more summary::-webkit-details-marker{display:none}
     </table></div>
     <div class="pager"><button class="btn" id="pgPrev">‹</button><span id="pgInfo"></span><button class="btn" id="pgNext">›</button></div>
   </div>
+  </div>
 </section>
 
-<!-- ───────── 설정 탭 ───────── -->
-<section class="panel" id="tab-settings" hidden>
+<!-- ═══════════ 더보기 (통계 · 설정) ═══════════ -->
+<section class="screen" data-screen="more" hidden>
+  <header class="apphead"><h1>더보기</h1></header>
+  <div class="seg" id="moreSeg"><button aria-selected="true" data-seg="stats">통계</button><button data-seg="settings">설정</button></div>
+  <div class="segpane" data-pane="stats">
+  <div class="stats">
+    <div class="stat"><b id="skStreak">0</b><span>연속 학습일</span></div>
+    <div class="stat"><b id="skWeek">0</b><span>최근 7일 푼 문제</span></div>
+    <div class="stat"><b id="skLearned">0</b><span>학습한 단어 (전체)</span></div>
+    <div class="stat"><b id="skAcc">–</b><span>전체 정답률</span></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">학습 달력 <small>최근 16주 · 색이 진할수록 많이 품</small></h3>
+    <div class="heat-wrap"><div class="heat-days"><span>월</span><span></span><span>수</span><span></span><span>금</span><span></span><span></span></div><div class="heat" id="heat"></div></div>
+    <div class="heat-legend">적게 <i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i> 많이</div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">최근 14일 <small>하루에 푼 문제 수 · 막대 위에 마우스를 올리면 자세히</small></h3>
+    <div class="bars" id="dayBars"></div><div class="bars-x" id="dayBarsX"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">급수별 진도 <small>한 번 이상 맞힌 단어 / 전체</small></h3>
+    <div class="lvprog" id="lvProg"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">약한 단어 <small>틀림·힌트가 많은 순 (최근 30일 가중)</small><button class="btn small" id="btnWeakStudy">약한 단어 학습</button></h3>
+    <div class="res-wrong" id="weakList"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">헷갈리는 짝 <small>정답 대신 다른 단어를 적은 경우</small></h3>
+    <div class="lvprog" id="confuseList"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">모드별 정답률</h3>
+    <div class="lvprog" id="modeStat"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">성조별 정답률 <small>성조 맞히기 기준</small></h3>
+    <div class="lvprog" id="toneStat"></div>
+  </div>
+  <div class="card">
+    <h3 class="sk-h">기억 단계 분포 <small>상자가 높을수록 오래 기억한 단어 · 다음 복습까지 0/1/3/7/14/30/60일</small></h3>
+    <div class="lvprog" id="boxDist"></div>
+  </div>
+  </div>
+  <div class="segpane" data-pane="settings" hidden>
   <div class="card set">
     <h3>문제 방식</h3>
     <p style="margin:0 0 4px;font-size:13px;color:var(--ink-2)">모드(익히기 · 뜻→한자 · 한자→병음 · 듣고 쓰기)는 학습 화면 위쪽에서 고릅니다. 병음 색은 성조: <span style="color:var(--t1)">1성</span> <span style="color:var(--t2)">2성</span> <span style="color:var(--t3)">3성</span> <span style="color:var(--t4)">4성</span> <span style="color:var(--t5)">경성</span></p>
@@ -774,6 +662,7 @@ details.more summary::-webkit-details-marker{display:none}
     <label class="row"><span>영어 뜻 보이기</span><input type="checkbox" id="optShowEn" checked></label>
     <label class="row"><span>번체 보이기</span><input type="checkbox" id="optShowTrad"></label>
     <h3>발음</h3>
+    <p id="ttsState" style="margin:0 0 4px;font-size:12px;color:var(--ink-2)"></p>
     <label class="row"><span>문제 나올 때 자동 재생<small>정답 확인 후에는 항상 한 번 읽어줌</small></span><input type="checkbox" id="optAutoSpeak"></label>
     <label class="row"><span>미리 만든 음성(mp3) 우선<small id="mp3State">자연스러운 신경망 음성으로 미리 만들어 둔 발음이 있으면 그걸 먼저 씀 (없는 단어·문장은 아래 브라우저 음성)</small></span><input type="checkbox" id="optMp3"></label>
     <label class="row"><span>음성<small>브라우저에 설치된 중국어 음성 목록</small></span><select id="optVoice"></select></label>
@@ -830,8 +719,245 @@ details.more summary::-webkit-details-marker{display:none}
     <textarea class="io" id="io" placeholder='{"ko":{...},"progress":{...}}'></textarea>
     <p style="margin:6px 0 0;font-size:12px;color:var(--ink-2)">단어 <b id="totalWords"></b>개 · 출처: HSK 3.0 목록 + CC-CEDICT (영어 뜻) · 한국어 뜻 입력됨: <b id="koCount">0</b>개</p>
   </div>
+  </div>
+</section>
+
+<!-- ═══════════ 학습 세션 (전체 화면) ═══════════ -->
+<section class="screen pushed" data-screen="session" data-parent="learn" hidden>
+  <div class="topbar">
+    <button class="back" data-back aria-label="나가기">‹</button>
+    <button class="title" id="sessTitle" title="급수·모드·과 바꾸기">1급 1과 · 뜻→한자 <span class="chev">▾</span></button>
+    <span class="tb-right" id="uprogText"></span>
+  </div>
+  <div class="uprog slim"><div class="uprog-bar" id="uprogBar"></div></div>
+  <div class="card result" id="resultCard" hidden>
+    <h2 id="resTitle">과 완료</h2>
+    <div class="res-stats"><div><b id="resAcc">–</b><span>정답률</span></div><div><b id="resN">0</b><span>문제 수</span></div><div><b id="resWrong">0</b><span>틀린 단어</span></div></div>
+    <div id="resWrongList" class="res-wrong"></div>
+    <div class="dataops" style="margin-top:16px">
+      <button class="btn primary" id="btnResNext">다음 과 →</button>
+      <button class="btn" id="btnResRetry">이 과 다시</button>
+      <button class="btn" id="btnResWrong">틀린 것만 다시</button>
+    </div>
+  </div>
+
+  <div class="card" id="quizCard">
+    <div class="q-meta"><span id="qKind">뜻을 보고 한자를 입력하세요</span><span class="box" id="qBox"></span></div>
+    <div class="prompt">
+      <div class="hanzi" id="qHanzi"></div>
+      <div class="pinyin" id="qPinyin"></div>
+      <div class="trad" id="qTrad"></div>
+      <div class="meaning"><div class="ko" id="qKo"></div><div class="en" id="qEn"></div></div>
+      <div class="writers" id="writers" hidden></div>
+      <div class="toneArea" id="toneArea" hidden></div>
+      <div class="sayArea" id="sayArea" hidden>
+        <button type="button" class="mic" id="btnMic">🎤 누르고 말하기</button>
+        <div class="heard" id="heard"></div>
+        <div class="note" id="sayNote"></div>
+      </div>
+      <div class="orderArea" id="orderArea" hidden>
+        <div class="tokens built" id="built" aria-label="만든 문장"></div>
+        <div class="tokens pool" id="pool" aria-label="남은 어절"></div>
+        <div class="orderHint" id="orderHint"></div>
+      </div>
+    </div>
+    <div class="answer">
+      <input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="여기에 입력하고 Enter" aria-label="답 입력">
+      <button class="btn icon" id="btnSpeak" title="발음 듣기 (Alt+P)">🔊</button>
+      <button class="btn icon" id="btnStar" title="내 단어장에 담기 / 빼기 (Alt+S)">☆</button>
+      <button class="btn primary" id="btnCheck">확인</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <details class="more" id="moreBox" hidden><summary>관련 단어 · 문법 · 바깥 링크</summary>
+    <div id="wordRel"></div>
+    <div id="gramRel"></div>
+    <div class="extlinks" id="ext" hidden>
+      <a class="btn" id="lnkYouglish" target="_blank" rel="noopener">▶ 유튜브 예문 (YouGlish)</a>
+      <a class="btn" id="lnkForvo" target="_blank" rel="noopener">🎙 원어민 발음 (Forvo)</a>
+      <a class="btn" id="lnkDict" target="_blank" rel="noopener">📖 네이버 사전</a>
+    </div>
+    </details>
+    <div class="toolrow">
+      <span class="hint">Enter: 확인 → 다음 · Alt+P 발음 · Alt+H 힌트 · Alt+S 담기</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="btnHint">힌트</button>
+        <button class="btn" id="btnSkip">건너뛰기</button>
+        <button class="btn" id="btnStrokes" title="획순 애니메이션 보기">✍ 획순</button>
+        <button class="btn" id="btnAsk" title="AI 선생님에게 이 단어·문장에 대해 묻기">🤖 묻기</button>
+        <button class="btn" id="btnKoToggle">뜻 수정</button>
+      </div>
+    </div>
+    <div class="koedit">
+      <label for="koInput">한국어 뜻 직접 입력</label>
+      <input id="koInput" placeholder="예: 안녕하세요 (인사)">
+      <button class="btn" id="btnKoSave">저장</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 읽기 ═══════════ -->
+<section class="screen pushed" data-screen="read" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">읽기</b></div>
+  <div id="readList">
+    <div class="lvbar" id="readLv">급수
+      <label><input type="radio" name="readLv" value="1" checked>1급</label>
+      <label><input type="radio" name="readLv" value="2">2급</label>
+      <label><input type="radio" name="readLv" value="3">3급</label>
+      <label><input type="radio" name="readLv" value="4">4급</label>
+      <label><input type="radio" name="readLv" value="5">5급</label>
+      <label><input type="radio" name="readLv" value="6">6급</label>
+      <label><input type="radio" name="readLv" value="7">7~9급</label>
+      <span id="readCount" style="margin-left:auto"></span>
+    </div>
+    <div class="card" style="padding:8px 12px"><div class="plist" id="plist"></div></div>
+  </div>
+  <div id="reader" hidden>
+    <div class="unitbar">
+      <button class="btn" id="btnReadBack">‹ 목록</button>
+      <label class="tog"><input type="checkbox" id="rdPy"> 병음</label>
+      <label class="tog"><input type="checkbox" id="rdKo"> 번역</label>
+      <button class="btn icon" id="btnReadSpeak" title="전체 읽어주기">🔊</button>
+      <button class="btn" id="btnReadAsk" title="AI 선생님에게 이 글에 대해 묻기">🤖 묻기</button>
+      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
+    </div>
+    <div class="card" id="readCard">
+      <h2 class="ptitle" id="ptitle"></h2>
+      <div class="ptext" id="ptext"></div>
+      <div class="pq" id="pq"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 문법 ═══════════ -->
+<section class="screen pushed" data-screen="gram" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">문법</b></div>
+  <div id="gramList">
+    <div class="lvbar" id="gramLv">급수
+      <label><input type="radio" name="gramLv" value="1" checked>1급</label>
+      <label><input type="radio" name="gramLv" value="2">2급</label>
+      <label><input type="radio" name="gramLv" value="3">3급</label>
+      <label><input type="radio" name="gramLv" value="4">4급</label>
+      <label><input type="radio" name="gramLv" value="5">5급</label>
+      <label><input type="radio" name="gramLv" value="6">6급</label>
+      <label><input type="radio" name="gramLv" value="7">7~9급</label>
+      <span id="gramCount" style="margin-left:auto"></span>
+    </div>
+    <div class="card" style="padding:8px 12px;background:transparent;border:0;box-shadow:none">
+      <input type="search" id="gramSearch" placeholder="문법 검색 (예: 把, 비교, 了)" style="width:100%;box-sizing:border-box;margin:4px 0 6px;padding:8px 10px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)">
+      <div class="plist" id="glist"></div>
+    </div>
+  </div>
+  <div id="gramView" hidden>
+    <div class="unitbar">
+      <button class="btn" id="btnGramBack">‹ 목록</button>
+      <button class="btn" id="btnGramPrev">‹ 이전</button>
+      <button class="btn" id="btnGramNext">다음 ›</button>
+      <button class="btn" id="btnGramAsk" title="AI 선생님에게 이 문법에 대해 묻기">🤖 묻기</button>
+      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
+    </div>
+    <div class="card" id="gramCard"></div>
+  </div>
+</section>
+
+<!-- ═══════════ 모의고사 · 듣기 ═══════════ -->
+<section class="screen pushed" data-screen="exam" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">모의고사 · 듣기</b></div>
+  <div id="examHome">
+    <div class="card" style="margin-bottom:14px">
+      <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 유형을 본뜬 40문항 (기출 아님)</small></h3>
+      <div class="lvbar" id="examLv">급수
+        <label><input type="radio" name="examLv" value="1" checked>1급</label>
+        <label><input type="radio" name="examLv" value="2">2급</label>
+        <label><input type="radio" name="examLv" value="3">3급</label>
+        <label><input type="radio" name="examLv" value="4">4급</label>
+        <label><input type="radio" name="examLv" value="5">5급</label>
+        <label><input type="radio" name="examLv" value="6">6급</label>
+        <label><input type="radio" name="examLv" value="7">7~9급</label>
+      </div>
+      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">듣기 16 · 독해 16 · 쓰기 8 — 1~3급 30분, 4~6급 35분, 7~9급 40분. 듣기는 자동 재생, 🔊로 2번까지 다시 듣기.</p>
+      <div class="dataops"><button class="btn primary" id="btnExamStart">시험 시작</button><a class="btn" href="https://www.chinesetest.cn/HSK" target="_blank" rel="noopener" style="text-decoration:none">공식 샘플 시험지 (chinesetest.cn)</a></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3 class="sk-h">듣기 대화 연습 <small>위에서 고른 급수 · 10문항 · 시간 제한 없음</small></h3>
+      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">A·B를 다른 목소리로 듣고 답하면 대본·번역이 바로 보여요.</p>
+      <div class="dataops"><button class="btn primary" id="btnLisStart">듣기 연습 시작</button><span class="hint" id="lisStat" style="font-size:13px;color:var(--ink-2);align-self:center"></span></div>
+    </div>
+    <div class="card"><h3 class="sk-h">지난 시험</h3><div class="lvprog" id="examHistory"></div></div>
+  </div>
+  <div id="lisRun" hidden>
+    <div class="unitbar">
+      <span id="lisPos" class="hint" style="font-size:13px"></span>
+      <span id="lisScore" class="hint" style="font-size:13px;margin-left:auto"></span>
+      <button class="btn" id="btnLisQuit">끝내기</button>
+    </div>
+    <div class="uprog"><div class="uprog-bar" id="lisBar"></div></div>
+    <div class="card" id="lisCard" style="margin-top:12px">
+      <div id="lisBody" class="exam-body"></div>
+      <div class="dataops" style="margin-top:14px;justify-content:space-between">
+        <button class="btn icon" id="btnLisSpeak" title="다시 듣기">🔊 다시 듣기</button>
+        <button class="btn primary" id="btnLisNext" hidden>다음 →</button>
+      </div>
+    </div>
+  </div>
+  <div id="examRun" hidden>
+    <div class="unitbar">
+      <span id="examPos" class="hint" style="font-size:13px"></span>
+      <span id="examTimer" style="font-family:var(--mono);margin-left:auto;font-size:15px"></span>
+      <button class="btn" id="btnExamQuit">중단</button>
+    </div>
+    <div class="uprog"><div class="uprog-bar" id="examBar"></div></div>
+    <div class="card" id="examCard" style="margin-top:12px">
+      <div class="q-meta"><span id="examType"></span><span class="box" id="examSec"></span></div>
+      <div id="examBody" class="exam-body"></div>
+      <div class="dataops" style="margin-top:14px;justify-content:space-between">
+        <button class="btn icon" id="btnExamSpeak" title="다시 듣기">🔊 <span id="examReplay"></span></button>
+        <button class="btn primary" id="btnExamNext">다음 →</button>
+      </div>
+    </div>
+  </div>
+  <div id="examResult" class="card result" hidden></div>
 </section>
 </div>
+
+<!-- 하단 탭 -->
+<nav class="tabbar" id="tabbar">
+  <button data-go="home" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg><span>홈</span></button>
+  <button data-go="learn"><svg viewBox="0 0 24 24"><path d="M4 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z"/></svg><span>학습</span></button>
+  <button data-go="words"><svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg><span>단어장</span></button>
+  <button data-go="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg><span>더보기</span></button>
+</nav>
+
+<!-- 학습 시작 시트: 급수·모드·과 고르기 -->
+<div class="backdrop" id="backdrop" hidden></div>
+<div class="sheet" id="startSheet" hidden>
+  <div class="sheet-head"><b id="startTitle">단어 학습</b><button class="ai-x" id="btnStartClose" aria-label="닫기">✕</button></div>
+  <div class="sheet-body">
+    <div class="sh-label">급수</div>
+  <div class="lvbar" id="lvbar">
+    <label><input type="checkbox" value="1" checked>1급</label>
+    <label><input type="checkbox" value="2">2급</label>
+    <label><input type="checkbox" value="3">3급</label>
+    <label><input type="checkbox" value="4">4급</label>
+    <label><input type="checkbox" value="5">5급</label>
+    <label><input type="checkbox" value="6">6급</label>
+    <label><input type="checkbox" value="7">7급</label>
+    <label><input type="checkbox" value="8">8급</label>
+    <label><input type="checkbox" value="9">9급</label>
+    <span id="lvCount" style="margin-left:auto"></span>
+  </div>
+    <div class="sh-label">방식</div>
+  <div class="modebar" id="modebar" role="radiogroup" aria-label="단어 학습 모드"></div>
+  <div class="modebar sent" id="modebar2" role="radiogroup" aria-label="문장 학습 모드"></div>
+    <div class="sh-label">범위</div>
+    <div class="unitbar">
+      <select id="unitSel" aria-label="과 선택"></select>
+      <button class="btn" id="btnUnitPrev" title="이전 과">‹</button>
+      <button class="btn" id="btnUnitNext" title="다음 과">›</button>
+    </div>
+    <div class="dataops" style="margin-top:12px"><button class="btn primary" id="btnStartGo" style="flex:1">시작 ›</button><button class="btn" id="btnReview">복습 (<span id="reviewN">0</span>)</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="popup" id="popup" hidden></div>
 <!-- AI 선생님 패널 (화면 아래에서 올라오는 시트) -->
@@ -1044,6 +1170,7 @@ function renderUnitBar(){
   const inUnit = !session || session.type === 'unit';
   $('btnReview').innerHTML = inUnit ? `복습 (<span id="reviewN">${dueWords().length}</span>)` : `↩ 과 학습으로 (${session.meta&&session.meta.label ? session.meta.label : session.type==='review'?'복습':'내 단어장'} 중)`;
   $('btnReview').classList.toggle('primary', !inUnit);
+  $('sessTitle').innerHTML = sessTitleText() + ' <span class="chev">▾</span>';
   if (session){
     const p = session.type==='unit' ? Math.round((session.total - session.queue.length) / session.total * 100) : Math.round((session.total - session.queue.length) / session.total * 100);
     $('uprogBar').style.setProperty('--p', p + '%');
@@ -1659,18 +1786,70 @@ $('btnResNext').onclick = () => { const i = currentUnitIndex(); if (session && s
 $('btnResRetry').onclick = () => { if (session.type==='mine') $('btnMineStudy').click(); else startUnit(currentUnitIndex()); };
 $('btnResWrong').onclick = () => { const ws = [...session.wrong].map(id => BY_ID.get(id)); startSession('review', ws, {}); };
 // 탭
-document.querySelectorAll('nav [role=tab]').forEach(b => b.onclick = () => {
-  document.querySelectorAll('nav [role=tab]').forEach(x=>x.setAttribute('aria-selected', x===b));
-  try{ b.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' }); }catch(e){}
-  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== 'tab-'+b.dataset.tab);
-  if (b.dataset.tab==='list') renderList();
-  if (b.dataset.tab==='mine') renderMine();
-  if (b.dataset.tab==='stats') renderStats();
-  if (b.dataset.tab==='read') renderReadList();
-  if (b.dataset.tab==='gram') renderGramList();
-  if (b.dataset.tab==='exam') renderExamHome();
-  if (b.dataset.tab==='study') ans.focus();
+/* ═══════════ 화면 전환 (라우터) ═══════════
+   화면(screen)은 두 종류: 하단 탭에 붙은 뿌리 화면(홈·학습·단어장·더보기)과, 거기서 들어가는 밀어 넣은(pushed) 화면(세션·읽기·문법·모의고사).
+   pushed 화면에서는 하단 탭을 숨기고 위에 ‹ 뒤로 줄을 둔다. */
+let curScreen = 'home';
+function go(name){
+  const sc = document.querySelector(`.screen[data-screen="${name}"]`); if (!sc) return;
+  document.querySelectorAll('.screen').forEach(x => x.hidden = x !== sc);
+  const pushed = sc.classList.contains('pushed');
+  $('tabbar').hidden = pushed; document.body.classList.toggle('no-tabbar', pushed);
+  const root = pushed ? sc.dataset.parent : name;
+  document.querySelectorAll('#tabbar button').forEach(b => b.setAttribute('aria-selected', b.dataset.go === root));
+  $('popup').hidden = true; $('aiSheet').hidden = true; closeStartSheet();
+  curScreen = name; window.scrollTo({ top: 0 });
+  if (name === 'home') renderHome();
+  if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); }
+  if (name === 'more') renderStats();
+  if (name === 'read') renderReadList();
+  if (name === 'gram') renderGramList();
+  if (name === 'exam') renderExamHome();
+  if (name === 'session'){ renderUnitBar(); if (!['order','write','tone','say','initial'].includes(SETTINGS.study) && window.innerWidth > 700) ans.focus(); }
+}
+function onScreen(name){ return curScreen === name; }
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if (g){ go(g.dataset.go); if (g.dataset.focus === 'lis') setTimeout(() => { const el = $('lisCard0'); if (el) el.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50); return; }
+  const bk = e.target.closest('[data-back]'); if (bk){ const sc = bk.closest('.screen'); if (sc.dataset.screen === 'session' && session && session.type === 'exam') return; go(sc.dataset.parent || 'learn'); }
 });
+// 세그먼트(단어장·더보기 안의 작은 탭)
+document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e => {
+  const b = e.target.closest('[data-seg]'); if (!b) return;
+  seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
+  const scr = seg.closest('.screen'); scr.querySelectorAll('.segpane').forEach(p => p.hidden = p.dataset.pane !== b.dataset.seg);
+  if (b.dataset.seg === 'all') renderList(); if (b.dataset.seg === 'stats') renderStats();
+}));
+// 학습 시작 시트
+function openStartSheet(kind){
+  $('startSheet').hidden = false; $('backdrop').hidden = false; $('startTitle').textContent = kind === 'sent' ? '문장 연습' : '단어 학습';
+  // 문장 연습으로 들어왔는데 단어 모드가 켜져 있으면(또는 반대) 기본 모드로 맞춰 줌. 시트 안에서 언제든 둘 다 고를 수 있음
+  const isSent = !!MODES[SETTINGS.study].group;
+  if ((kind === 'sent' && !isSent) || (kind === 'word' && isSent)){ SETTINGS.study = kind === 'sent' ? 'cloze' : 'test'; store.set('zh.settings', SETTINGS); renderModeBar(); if (cur && !answered){ hintUsed=false; hintLevel=0; renderQuestion(); } }
+  renderUnitBar();
+}
+function closeStartSheet(){ $('startSheet').hidden = true; $('backdrop').hidden = true; }
+$('backdrop').onclick = closeStartSheet;
+document.querySelectorAll('[data-start]').forEach(b => b.onclick = () => openStartSheet(b.dataset.start));
+$('btnStartClose').onclick = closeStartSheet;
+$('btnStartGo').onclick = () => { closeStartSheet(); if (!session || session.type !== 'unit') startUnit(currentUnitIndex()); go('session'); };
+$('sessTitle').onclick = () => openStartSheet(MODES[SETTINGS.study].group ? 'sent' : 'word');
+$('heroContinue').onclick = () => { if (!session || session.type !== 'unit') startUnit(currentUnitIndex()); go('session'); };
+$('btnHomeReview').onclick = () => { if (!dueWords().length){ showToast('복습할 단어가 아직 없어요'); return; } startReview(); go('session'); };
+function sessTitleText(){
+  const m = MODES[SETTINGS.study] || MODES.test;
+  if (session && session.type !== 'unit') return `${session.meta && session.meta.label ? session.meta.label : session.type==='review' ? '복습' : '내 단어장'} · ${m.name}`;
+  const u = units()[currentUnitIndex()]; return `${u ? u.label.replace(/ \(.*\)$/, '') : ''} · ${m.name}`;
+}
+function renderHome(){
+  updateStats(); renderUnitBar();
+  const due = dueWords().length; $('homeDue').textContent = due;
+  $('heroLabel').textContent = sessTitleText().split(' · ')[0];
+  $('heroSub').textContent = `${(MODES[SETTINGS.study]||MODES.test).name}${session ? ` · ${session.total - session.queue.length}/${session.total} 맞힘` : ''}`;
+  const goal = +SETTINGS.goal || 30; $('homeGoalText').textContent = `${TODAY.n} / ${goal}${TODAY.n >= goal ? ' ✓' : ''}`; $('homeGoalBar').style.setProperty('--p', Math.min(100, Math.round(TODAY.n / goal * 100)) + '%');
+  $('homeRead').textContent = `${Object.keys(READ_DONE).length}편 읽음`;
+  $('homeExam').textContent = EXAMS.length ? `최근 ${Math.round(EXAMS[EXAMS.length-1].score / EXAMS[EXAMS.length-1].total * 100)}%` : '아직 없음';
+  const { streak } = streakInfo(); $('homeStreak').textContent = `연속 ${streak}일`; $('homeAcc').textContent = `오늘 정답률 ${$('stAcc').textContent}`; $('homeLearned').textContent = `학습한 단어 ${$('stLearned').textContent}`;
+}
 
 /* ═══════════ 설정 ═══════════ */
 function bindOpt(id, key, evt='change'){
@@ -2127,7 +2306,7 @@ $('gramCard').addEventListener('click', e => {
   if (pr){
     const ids = ($('gramCard').dataset.ids || '').split(',').filter(Boolean).map(Number); if (!ids.length) return;
     SETTINGS.study = pr.dataset.gpractice; store.set('zh.settings', SETTINGS); renderModeBar();
-    document.querySelector('nav [data-tab=study]').click();
+    go('session');
     startSession('gram', ids.map(id => BY_ID.get(id)), { label: '문법 · ' + curGram.title_ko });
   }
 });
@@ -2139,7 +2318,7 @@ function gramChips(st, lv){
   const gs = gramFor(st, Math.min(7, lv + 1)); if (!gs.length) return '';
   return `<div class="gchips" style="margin-top:6px"><span style="font-size:12px;color:var(--ink-2);align-self:center">관련 문법</span>${gs.map(g => `<button data-gopen="${g.id}">${g.title_ko}</button>`).join('')}</div>`;
 }
-document.addEventListener('click', e => { const b = e.target.closest('[data-gopen]'); if (b){ document.querySelector('nav [data-tab=gram]').click(); openGram(b.dataset.gopen); } });
+document.addEventListener('click', e => { const b = e.target.closest('[data-gopen]'); if (b){ go('gram'); openGram(b.dataset.gopen); } });
 
 /* ═══════════ 모의고사 ═══════════
    구성(40문항): 듣기 판단 8 · 대화 듣기 8 · 독해 빈칸 8 · 문장 순서 4 · 글 읽기 4(2편×2문) · 쓰기 어순 8. 30분.
@@ -2269,26 +2448,34 @@ function finishExam(timeout){
   $('examResult').addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
   updateStats(); window.scrollTo({top:0});
 }
-function renderExamHome(){
-  $('examRun').hidden = true; $('examResult').hidden = true; $('examHome').hidden = false;
+function renderExamWrong(){
   const wids = examWrongIds();
   $('examWrongList').innerHTML = wids.length ? wids.slice().sort((a,b)=>EXAM_WRONG[b]-EXAM_WRONG[a]).map(id => { const w = BY_ID.get(id); return `<span class="w"><b>${w.s}</b>${w.py} <small>${KO[w.s]||w.ko}</small></span>`; }).join('') : '<span style="color:var(--ink-2);font-size:13px">아직 없어요</span>';
   $('btnExamWrongStudy').disabled = $('btnExamWrongSent').disabled = $('btnExamWrongClear').disabled = !wids.length;
+}
+function renderExamHome(){
+  $('examRun').hidden = true; $('examResult').hidden = true; $('examHome').hidden = false; $('lisRun').hidden = true;
   $('examHistory').innerHTML = EXAMS.slice(-10).reverse().map(x => `<div class="row" style="grid-template-columns:auto 1fr auto"><span>${new Date(x.t).toLocaleDateString()} · ${x.lv===7?'7~9':x.lv}급</span><div class="track"><div class="fill" style="width:${x.score/x.total*100}%"></div></div><span class="num">${Math.round(x.score/x.total*100)}% (${x.score}/${x.total})</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 본 시험이 없어요</span>';
 }
 $('btnExamStart').onclick = startExam;
 function startExamWrong(study){
   const ids = examWrongIds(); if (!ids.length){ showToast('오답 단어가 없어요'); return; }
   SETTINGS.study = study; store.set('zh.settings', SETTINGS); renderModeBar();
-  document.querySelector('nav [data-tab=study]').click();
+  go('session');
   startSession('examWrong', ids.map(id => BY_ID.get(id)), { label: '모의고사 오답' });
 }
 $('btnExamWrongStudy').onclick = () => startExamWrong('test');
 $('btnExamWrongSent').onclick = () => startExamWrong('cloze');
-$('btnExamWrongClear').onclick = () => { if (!confirm('모의고사 오답 단어 목록을 비울까요?')) return; for (const k of Object.keys(EXAM_WRONG)) if (EXAM_WRONG[k] > 0) EXAM_WRONG[k] = -Date.now(); store.set('zh.exam_wrong', EXAM_WRONG); renderExamHome(); };
+$('btnExamWrongClear').onclick = () => { if (!confirm('모의고사 오답 단어 목록을 비울까요?')) return; for (const k of Object.keys(EXAM_WRONG)) if (EXAM_WRONG[k] > 0) EXAM_WRONG[k] = -Date.now(); store.set('zh.exam_wrong', EXAM_WRONG); renderExamWrong(); };
 
 /* ═══════════ 통계 ═══════════ */
 function isoDay(d){ return d.toISOString().slice(0,10); }
+function streakInfo(){
+  const today = new Date(); today.setHours(12,0,0,0);
+  let streak = 0; { const d = new Date(today); if (!HISTORY[isoDay(d)]) d.setDate(d.getDate()-1); while (HISTORY[isoDay(d)] && HISTORY[isoDay(d)].n > 0){ streak++; d.setDate(d.getDate()-1); } }
+  let week = 0; for (let i=0;i<7;i++){ const d=new Date(today); d.setDate(d.getDate()-i); week += (HISTORY[isoDay(d)]||{n:0}).n; }
+  return { streak, week };
+}
 function renderStats(){
   const today = new Date(); today.setHours(12,0,0,0);
   // 연속 학습일: 오늘(또는 어제)부터 거꾸로 기록이 있는 날을 셈
@@ -2363,7 +2550,7 @@ $('mineSents').addEventListener('click', e => {
 $('btnMineSentStudy').onclick = () => {
   const ws = mineSents(); if (!ws.length){ showToast('담은 문장이 없어요'); return; }
   SETTINGS.study = $('mineSentMode').value; store.set('zh.settings', SETTINGS); renderModeBar();
-  document.querySelector('nav [data-tab=study]').click();
+  go('session');
   startSession('mine', ws, { label: '내 문장' });
 };
 function renderMine(){
@@ -2405,11 +2592,11 @@ $('btnMineStudy').onclick = () => {
   const ws = mineWords(); if (!ws.length){ showToast('내 단어장이 비어 있어요'); return; }
   const v = $('mineChunk').value, chunks = mineChunks();
   const pick = (v==='all' || chunks.length<=1) ? ws : chunks[+v];
-  document.querySelector('nav [data-tab=study]').click();
+  go('session');
   startSession('mine', pick, { label: '내 단어장' });
 };
 
-$('btnWeakStudy').onclick = () => { const ids = window.weakIds || []; if (!ids.length){ showToast('약한 단어가 아직 없어요'); return; } document.querySelector('nav [data-tab=study]').click(); startSession('review', ids.map(id => BY_ID.get(id)), { label:'약한 단어' }); };
+$('btnWeakStudy').onclick = () => { const ids = window.weakIds || []; if (!ids.length){ showToast('약한 단어가 아직 없어요'); return; } go('session'); startSession('review', ids.map(id => BY_ID.get(id)), { label:'약한 단어' }); };
 
 /* ═══════════ 단어장 목록 ═══════════ */
 let page = 0; const PAGE = 50;
@@ -2547,8 +2734,8 @@ async function syncNow(reason){
     lastRemote = merged; lastSyncAt = Date.now();
     setSyncStatus(`${backend.name}: 동기화됨 (${new Date().toLocaleTimeString()})`);
     updateStats(); renderUnitBar(); renderModeBar();
-    if (document.querySelector('nav [data-tab=mine][aria-selected=true]')) renderMine();
-    if (document.querySelector('nav [data-tab=stats][aria-selected=true]')) renderStats();
+    if (onScreen('words')) renderMine();
+    if (onScreen('more')) renderStats(); if (onScreen('home')) renderHome();
   }catch(e){ setSyncStatus(`${backend.name}: 실패 — ${e.message||e}`); }
   finally{ syncing = false; }
 }
