@@ -116,15 +116,16 @@ nav button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 -2px 0 var(
 .answer input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
 .answer input.good{border-color:var(--good);background:var(--good-bg)}
 .answer input.bad{border-color:var(--bad);background:var(--bad-bg)}
-button.btn{font:inherit;font-weight:500;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;white-space:nowrap}
-button.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-button.btn.icon{padding:8px 12px;font-size:18px;line-height:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;font:inherit;font-weight:500;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;white-space:nowrap;text-decoration:none;box-sizing:border-box;line-height:1.2}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.icon{padding:8px 12px;font-size:18px;line-height:1}
+.btn:disabled{opacity:.5;cursor:default}
 button.btn:focus-visible,nav button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .feedback{margin-top:12px;min-height:26px;font-size:15px}
 .feedback.good{color:var(--good)}.feedback.bad{color:var(--bad)}
 .feedback .ans{font-family:var(--hanzi);font-size:20px;margin-left:6px}
 .extlinks{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.extlinks a.btn{text-decoration:none;font-size:13px;padding:7px 12px;color:var(--ink)}
+.extlinks .btn{font-size:13px;padding:7px 12px}
 .toolrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;justify-content:space-between;align-items:center}
 .toolrow .hint{font-size:12px;color:var(--ink-2)}
 .koedit{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -391,6 +392,28 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 @keyframes dots{0%{content:''}33%{content:'.'}66%{content:'..'}100%{content:'...'}}
 .ai-form{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px solid var(--line)}
 .ai-form input{flex:1;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+/* 정답 확인 후 부가 정보 접기 */
+details.more{margin-top:12px;border-top:1px dashed var(--line);padding-top:6px}
+details.more summary{cursor:pointer;font-size:13px;color:var(--ink-2);list-style:none;display:flex;align-items:center;gap:6px;padding:4px 0;user-select:none}
+details.more summary::before{content:'▸';font-size:12px;transition:transform .15s}
+details.more[open] summary::before{transform:rotate(90deg)}
+details.more summary::-webkit-details-marker{display:none}
+/* 카드 제목의 설명은 폰에서 아래 줄로 */
+@media (max-width:480px){
+  .sk-h small{display:block;margin:3px 0 0;font-size:12px;line-height:1.45}
+  /* 학습 상단 조작부: 급수·모드를 한 줄 가로 스크롤로 (세로 공간 절약) */
+  .lvbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+  .lvbar::-webkit-scrollbar{display:none}
+  .lvbar label{flex:0 0 auto}
+  .lvbar{white-space:nowrap}
+  #lvbar #lvCount{display:none}
+  .modebar,.modebar.sent{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;margin-bottom:8px;padding-bottom:2px}
+  .modebar::-webkit-scrollbar{display:none}
+  .modebar button{flex:0 0 auto;padding:7px 12px!important}
+  .modebar button b{font-size:13px!important}
+  .modebar .modelabel{flex:0 0 auto;align-self:center}
+  .toolrow{gap:6px}.toolrow .btn{padding:8px 10px;font-size:13px}
+}
 /* 관련 단어 (정답 확인 후) */
 .rel{margin-top:10px;font-size:13px}
 .rel .rh{color:var(--ink-2);margin:6px 0 4px}
@@ -441,7 +464,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 
 <div class="wrap">
 <header>
-  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1924</span></small></h1>
+  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1928</span></small></h1>
   <span id="ttsState" style="font-size:12px;color:var(--ink-2)"></span>
 </header>
 <nav role="tablist">
@@ -452,7 +475,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
   <button role="tab" aria-selected="false" data-tab="stats">통계</button>
   <button role="tab" aria-selected="false" data-tab="mine">내 단어장</button>
   <button role="tab" aria-selected="false" data-tab="list">전체 단어</button>
-  <button role="tab" aria-selected="false" data-tab="settings">설정 · 데이터</button>
+  <button role="tab" aria-selected="false" data-tab="settings">설정</button>
 </nav>
 
 <!-- ───────── 학습 탭 ───────── -->
@@ -523,6 +546,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <button class="btn primary" id="btnCheck">확인</button>
     </div>
     <div class="feedback" id="fb"></div>
+    <details class="more" id="moreBox" hidden><summary>관련 단어 · 문법 · 바깥 링크</summary>
     <div id="wordRel"></div>
     <div id="gramRel"></div>
     <div class="extlinks" id="ext" hidden>
@@ -530,6 +554,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <a class="btn" id="lnkForvo" target="_blank" rel="noopener">🎙 원어민 발음 (Forvo)</a>
       <a class="btn" id="lnkDict" target="_blank" rel="noopener">📖 네이버 사전</a>
     </div>
+    </details>
     <div class="toolrow">
       <span class="hint">Enter: 확인 → 다음 · Alt+P: 발음 · Alt+H: 힌트 · Alt+S: 내 단어장</span>
       <div style="display:flex;gap:8px">
@@ -614,7 +639,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <section class="panel" id="tab-exam" hidden>
   <div id="examHome">
     <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 시험 유형·비율을 본뜬 40문항 · 기출 아님 · 1~3급 30분, 4~6급 35분, 7~9급 40분</small></h3>
+      <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 유형을 본뜬 40문항 (기출 아님)</small></h3>
       <div class="lvbar" id="examLv">급수
         <label><input type="radio" name="examLv" value="1" checked>1급</label>
         <label><input type="radio" name="examLv" value="2">2급</label>
@@ -624,16 +649,16 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
         <label><input type="radio" name="examLv" value="6">6급</label>
         <label><input type="radio" name="examLv" value="7">7~9급</label>
       </div>
-      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">듣기 16(판단 8 · 대화 8) · 독해 16(빈칸 8 · 순서 4 · 글 4) · 쓰기 8(어순) — 제한 시간 30분. 듣기는 자동 재생되고 🔊로 두 번까지 다시 들을 수 있어요.</p>
+      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">듣기 16 · 독해 16 · 쓰기 8 — 1~3급 30분, 4~6급 35분, 7~9급 40분. 듣기는 자동 재생, 🔊로 2번까지 다시 듣기.</p>
       <div class="dataops"><button class="btn primary" id="btnExamStart">시험 시작</button><a class="btn" href="https://www.chinesetest.cn/HSK" target="_blank" rel="noopener" style="text-decoration:none">공식 샘플 시험지 (chinesetest.cn)</a></div>
     </div>
     <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">듣기 대화 연습 <small>위에서 고른 급수 · 10문항 · 시간 제한 없음 · 다시 듣기 무제한</small></h3>
-      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">A·B 두 사람의 대화를 서로 다른 목소리로 듣고 질문에 답해요. 답을 고르면 대본·번역이 바로 보이고, 대본의 단어를 누르면 뜻이 떠요. (목소리가 하나뿐인 기기에서는 높낮이로 구분)</p>
+      <h3 class="sk-h">듣기 대화 연습 <small>위에서 고른 급수 · 10문항 · 시간 제한 없음</small></h3>
+      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">A·B를 다른 목소리로 듣고 답하면 대본·번역이 바로 보여요.</p>
       <div class="dataops"><button class="btn primary" id="btnLisStart">듣기 연습 시작</button><span class="hint" id="lisStat" style="font-size:13px;color:var(--ink-2);align-self:center"></span></div>
     </div>
     <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">모의고사 오답 단어 <small>독해 빈칸·쓰기 어순에서 틀린 단어. 학습 탭의 복습과는 따로 관리되고, 여기서 맞히면 목록에서 빠져요</small></h3>
+      <h3 class="sk-h">모의고사 오답 단어 <small>빈칸·어순에서 틀린 단어 · 학습 복습과 별개 · 맞히면 빠짐</small></h3>
       <div id="examWrongList" class="res-wrong" style="margin-bottom:10px"></div>
       <div class="dataops"><button class="btn primary" id="btnExamWrongStudy">오답 단어 학습 (뜻→한자)</button><button class="btn" id="btnExamWrongSent">문장으로 (빈칸 채우기)</button><button class="btn" id="btnExamWrongClear">목록 비우기</button></div>
     </div>
@@ -1172,7 +1197,7 @@ function renderQuestion(){
   cur = pickNext();
   answered = false; hintUsed = false; hintLevel = 0;
   const M = mode(); $('quizCard').classList.remove('answered'); $('popup').hidden = true;
-  ans.value = ''; ans.className = M.input==='pinyin' ? 'pymode' : ''; fb.textContent=''; fb.className='feedback'; $('ext').hidden = true; $('gramRel').innerHTML = ''; $('wordRel').innerHTML = '';
+  ans.value = ''; ans.className = M.input==='pinyin' ? 'pymode' : ''; fb.textContent=''; fb.className='feedback'; $('ext').hidden = true; $('gramRel').innerHTML = ''; $('wordRel').innerHTML = ''; $('moreBox').hidden = true;
   if (!cur){ qHanzi.textContent='—'; qKo.textContent='과를 골라 시작하세요'; qEn.textContent=''; return; }
   const p = PROGRESS[cur.id];
   qBox.textContent = (session.wrong.has(cur.id) ? '다시 · ' : '') + (p ? `상자 ${p.box} · ${p.c}○ ${p.w}✕${p.h?` ${p.h}힌트`:''}` : '새 단어');
@@ -1511,7 +1536,7 @@ function showExt(w){
   $('lnkYouglish').textContent = st ? '▶ 유튜브에서 이 문장 (YouGlish)' : '▶ 유튜브 예문 (YouGlish)';
   $('lnkForvo').href = `https://forvo.com/word/${s}/#zh`;
   $('lnkDict').href = `https://zh.dict.naver.com/#/search?query=${s}`;
-  $('ext').hidden = false;
+  $('ext').hidden = false; $('moreBox').hidden = false; if (!('open' in $('moreBox').dataset)){ $('moreBox').open = window.innerWidth > 700; $('moreBox').dataset.open = '1'; }   // 폰에서는 접어 두고, 넓은 화면에서는 펼침 (한 번 사용자가 열고 닫으면 그 상태 유지)
 }
 function altText(w){ return (w.alt&&w.alt.length) ? '다른 읽기: ' + w.alt.map(a=>`${a.py} (${a.en})`).join(' · ') : ''; }
 function reveal(){
