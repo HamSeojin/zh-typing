@@ -440,7 +440,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 
 <div class="wrap">
 <header>
-  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1916</span></small></h1>
+  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1921</span></small></h1>
   <span id="ttsState" style="font-size:12px;color:var(--ink-2)"></span>
 </header>
 <nav role="tablist">
@@ -816,7 +816,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <label class="row" id="aiModelCustomRow" hidden><span>모델 이름 직접 입력</span><input id="aiModel" placeholder="모델 id"></label>
       <label class="row"><span>API 키<small id="aiKeyHint"></small></span><input id="aiKey" type="password" placeholder="API 키 붙여넣기" autocomplete="off"></label>
       <label class="row"><span>답변 길이<small>길수록 토큰(비용)이 더 듦</small></span><select id="aiLen"><option value="short">짧게 (3~5문장)</option><option value="normal" selected>보통</option><option value="long">자세히</option></select></label>
-      <div class="dataops"><button class="btn primary" id="btnAiSave">저장</button><button class="btn" id="btnAiTest">연결 테스트</button><button class="btn" id="btnAiOff">키 지우기</button></div>
+      <div class="dataops"><button class="btn primary" id="btnAiSave">저장</button><button class="btn" id="btnAiTest">연결 테스트</button><button class="btn" id="btnAiOff">이 서비스 키 지우기</button></div>
       <p id="aiStatus" style="margin:6px 0 0;font-size:13px;color:var(--ink-2)"></p>
       <p id="aiUsage" style="margin:2px 0 0;font-size:12px;color:var(--ink-2)"></p>
     </div>
@@ -1812,8 +1812,12 @@ const AI_SERVICES = {
               models:[['gpt-5.4-nano','gpt-5.4-nano — 추천 (저렴)'],['gpt-5.4-mini','gpt-5.4-mini — 더 똑똑'],['gpt-5.4','gpt-5.4 — 비쌈']] },
   custom:   { provider:'openai', base:'', keyHint:'그 서버가 발급한 키', models:[] },
 };
-const AI = Object.assign({ service:'deepseek', provider:'openai', model:'deepseek-flash', base:'https://api.deepseek.com/v1', key:'', len:'normal' }, store.get('zh.ai', {}));
+// AI 설정. 키·모델·주소는 서비스마다 따로 기억(keys/models/bases) → 서비스를 바꿔도 각자 키가 남아 있어 번갈아 쓸 수 있음
+const AI = Object.assign({ service:'deepseek', provider:'openai', model:'deepseek-flash', base:'https://api.deepseek.com/v1', key:'', len:'normal', keys:{}, models:{}, bases:{} }, store.get('zh.ai', {}));
 if (!AI.service) AI.service = AI.provider==='gemini' ? 'gemini' : AI.provider==='claude' ? 'claude' : /deepseek/.test(AI.base) ? 'deepseek' : /openai\.com/.test(AI.base) ? 'openai' : 'custom';
+AI.keys = AI.keys || {}; AI.models = AI.models || {}; AI.bases = AI.bases || {};
+if (AI.key && !AI.keys[AI.service]) AI.keys[AI.service] = AI.key;   // 예전 형식(키 하나)에서 옮겨 오기
+if (AI.model && !AI.models[AI.service]) AI.models[AI.service] = AI.model;
 const AI_USAGE = Object.assign({ n:0, inTok:0, outTok:0 }, store.get('zh.ai_usage', {}));   // 이 기기에서 쓴 양 (대략 추정)
 const AI_NOTES = store.get('zh.ai_notes', {});   // { 문맥키: [{q, a, t}] } 답변 저장 (같은 질문에 또 토큰 안 쓰게). 이 기기에만
 function aiModelOptions(service, selected){
@@ -1823,26 +1827,38 @@ function aiModelOptions(service, selected){
   $('aiModelCustomRow').hidden = known; if (!known) $('aiModel').value = selected || '';
 }
 function aiFormFill(){
-  $('aiService').value = AI.service; $('aiBase').value = AI.base || ''; $('aiKey').value = AI.key || ''; $('aiLen').value = AI.len || 'normal';
-  aiModelOptions(AI.service, AI.model); aiFormHints();
+  $('aiService').value = AI.service; $('aiLen').value = AI.len || 'normal';
+  aiFillService(AI.service); aiFormHints();
+}
+// 서비스를 고르면 그 서비스에 저장해 둔 키·모델·주소를 칸에 채움
+function aiFillService(service){
+  const sv = AI_SERVICES[service];
+  $('aiBase').value = AI.bases[service] || sv.base;
+  $('aiKey').value = AI.keys[service] || '';
+  aiModelOptions(service, AI.models[service] || (sv.models[0] ? sv.models[0][0] : ''));
 }
 function aiFormHints(){
   const sv = AI_SERVICES[$('aiService').value];
   $('aiBaseRow').hidden = $('aiService').value !== 'custom';
   $('aiKeyHint').textContent = sv.keyHint;
   $('aiModelHint').textContent = sv.models.length ? '— 뒤는 참고 설명. 목록에 없는 모델은 직접 입력' : '이 서버가 제공하는 모델 id 를 직접 입력';
-  $('aiStatus').textContent = AI.key ? `저장됨 · ${AI.service} · ${AI.model}` : '아직 키가 없어요 — 키를 넣고 저장 → 연결 테스트';
+  const svc = $('aiService').value, saved = Object.keys(AI.keys).filter(k => AI.keys[k]);
+  const cur = AI.key ? `지금 쓰는 것: ${AI.service} · ${AI.model}` : '아직 키가 없어요 — 키를 넣고 저장 → 연결 테스트';
+  const have = saved.length ? ` · 키 저장된 서비스: ${saved.join(', ')}` : '';
+  $('aiStatus').textContent = (svc !== AI.service && AI.keys[svc] ? `${svc} 키가 저장돼 있어요 — 저장을 누르면 이 서비스로 바뀜. ` : svc !== AI.service ? `${svc} 키를 넣고 저장하면 이 서비스로 바뀜. ` : '') + cur + have;
 }
-$('aiService').onchange = () => { const sv = AI_SERVICES[$('aiService').value]; $('aiBase').value = sv.base; aiModelOptions($('aiService').value, sv.models[0] ? sv.models[0][0] : ''); aiFormHints(); };
+$('aiService').onchange = () => { aiFillService($('aiService').value); aiFormHints(); };
 $('aiModelSel').onchange = () => { $('aiModelCustomRow').hidden = $('aiModelSel').value !== '__custom__'; if ($('aiModelSel').value === '__custom__') $('aiModel').focus(); };
 function aiReadForm(){
   const service = $('aiService').value, sv = AI_SERVICES[service];
   const model = $('aiModelSel').value === '__custom__' ? $('aiModel').value.trim() : $('aiModelSel').value;
-  Object.assign(AI, { service, provider: sv.provider, base: (service === 'custom' ? $('aiBase').value.trim() : sv.base).replace(/\/$/, ''), model, key: $('aiKey').value.trim(), len: $('aiLen').value });
+  const base = (service === 'custom' ? $('aiBase').value.trim() : sv.base).replace(/\/$/, ''), key = $('aiKey').value.trim();
+  AI.keys[service] = key; AI.models[service] = model; if (service === 'custom') AI.bases[service] = base;
+  Object.assign(AI, { service, provider: sv.provider, base, model, key, len: $('aiLen').value });   // key/model/base = 지금 쓰는 서비스 것
   store.set('zh.ai', AI);
 }
 $('btnAiSave').onclick = () => { aiReadForm(); aiFormHints(); showToast('저장했어요'); };
-$('btnAiOff').onclick = () => { AI.key = ''; store.set('zh.ai', AI); $('aiKey').value = ''; aiFormHints(); };
+$('btnAiOff').onclick = () => { const svc = $('aiService').value; delete AI.keys[svc]; if (svc === AI.service) AI.key = ''; store.set('zh.ai', AI); $('aiKey').value = ''; aiFormHints(); showToast(`${svc} 키를 지웠어요`); };
 $('btnAiTest').onclick = async () => { aiReadForm(); if (!AI.model){ $('aiStatus').textContent = '모델 이름을 고르거나 입력해 주세요'; return; } $('aiStatus').textContent = '연결 중…'; try{ const a = await aiCall('연결 테스트입니다. "你好" 의 병음과 뜻을 한 줄로 답하세요.', '짧게 답하세요.'); $('aiStatus').textContent = '✓ 연결 성공 · ' + a.slice(0, 60); }catch(e){ $('aiStatus').textContent = '✕ ' + e.message + (/(Failed to fetch|NetworkError)/i.test(e.message) ? ' — 브라우저에서 직접 호출이 막힌 서버(CORS)이거나 인터넷 문제예요' : ''); } };
 aiFormFill(); aiUsageLine();
 function aiSystem(){
