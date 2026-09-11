@@ -8,11 +8,11 @@
 <meta name="theme-color" content="#141922" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="汉语 단어장">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B7F68'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='serif'%3E汉%3C/text%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-title" content="汉习">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B7F68'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='serif'%3E习%3C/text%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="manifest" href="manifest.json">
-<title>汉语 타자 단어장</title>
+<title>汉习 · 중국어 학습</title>
 <style>img{max-width:100%}</style>
 <script>
 // PWA: 홈 화면 설치·오프라인용 서비스 워커 등록 (https 에서만 동작. claude.ai 게시본에는 없음)
@@ -362,6 +362,7 @@ body.no-tabbar{padding-bottom:24px}
 .apphead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:18px 0 12px}
 .apphead h1{font-family:var(--hanzi);font-weight:700;font-size:24px;margin:0;letter-spacing:.02em}
 .apphead small{font-size:12px;color:var(--ink-2)}
+.apphead .hx{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--accent);margin-left:4px;letter-spacing:.04em}
 /* 하단 탭 */
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:max(0px, calc(env(safe-area-inset-bottom,0px) - 14px))}   /* 아이폰 홈 표시줄 영역: 겹치지 않을 만큼만 띄움 (그대로 두면 아래에 빈 띠가 생김) */
 .tabbar[hidden]{display:none}
@@ -421,6 +422,7 @@ body.no-tabbar{padding-bottom:24px}
 .sheet .unitbar{margin-bottom:0}
 .sheet .unitbar select{flex:1;min-width:0}
 .btn.small{padding:5px 10px;font-size:12px}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
 .sk-h .btn.small{float:right}
 @media (max-width:480px){
   .apphead{padding:12px 0 10px}.apphead h1{font-size:21px}
@@ -566,7 +568,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉语 타자 단어장</h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2004</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2013</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -771,16 +773,18 @@ details.more summary::-webkit-details-marker{display:none}
       <p id="aiStatus" style="margin:6px 0 0;font-size:13px;color:var(--ink-2)"></p>
       <p id="aiUsage" style="margin:2px 0 0;font-size:12px;color:var(--ink-2)"></p>
     </div>
-    <h3>데이터</h3>
-    <p style="margin:0;font-size:13px;color:var(--ink-2)">학습 기록·한국어 뜻·내 단어장·AI 노트 등 모든 기록은 우선 이 기기(브라우저)에 저장되고, 동기화를 켜면 서버에도 복사됩니다. 백업은 "파일로 저장"(폰에서는 공유 시트 → 파일에 저장)하거나 내보내기 → 복사. 가져오기는 지금 기록과 합쳐집니다(덮어쓰지 않음).</p>
+    <h3>백업 · 복원</h3>
+    <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">모든 기록(학습·뜻·단어장·통계·시험·타자·AI 노트)은 먼저 이 기기에 저장되고, 동기화를 켜면 서버에도 복사돼요. 가져오기는 지금 기록과 합쳐집니다.</p>
     <div class="dataops">
-      <button class="btn" id="btnExport">내보내기 (아래 칸에 표시)</button>
-      <button class="btn" id="btnExportFile">파일로 저장 (.json)</button>
-      <button class="btn" id="btnImport">아래 칸 내용 가져오기</button>
+      <button class="btn" id="btnExportFile">⬇ 파일로 저장 (.json)</button>
       <button class="btn" id="btnCopy">복사</button>
-      <button class="btn" id="btnResetProg">학습 기록 초기화</button>
+      <label class="btn" for="importFile" style="cursor:pointer">⬆ 파일 불러오기</label><input type="file" id="importFile" accept=".json,application/json" hidden>
     </div>
-    <textarea class="io" id="io" placeholder='{"ko":{...},"progress":{...}}'></textarea>
+    <details class="more" style="border-top:0;margin-top:6px"><summary>텍스트로 보기 · 붙여넣기</summary>
+      <div class="dataops" style="margin-top:6px"><button class="btn small" id="btnExport">아래 칸에 표시</button><button class="btn small" id="btnImport">아래 칸 내용 가져오기</button></div>
+      <textarea class="io" id="io" placeholder='여기에 백업 텍스트를 붙여넣고 "가져오기"'></textarea>
+    </details>
+    <div class="dataops" style="margin-top:14px"><button class="btn small danger" id="btnResetProg">학습 기록 초기화…</button></div>
     <p style="margin:6px 0 0;font-size:12px;color:var(--ink-2)">단어 <b id="totalWords"></b>개 · 출처: HSK 3.0 목록 + CC-CEDICT (영어 뜻) · 한국어 뜻 입력됨: <b id="koCount">0</b>개</p>
   </div>
   </div>
@@ -1055,7 +1059,7 @@ details.more summary::-webkit-details-marker{display:none}
   <form class="ai-form" id="aiForm"><input id="aiQ" placeholder="질문을 입력하세요 (예: 时间이랑 时候 차이?)" autocomplete="off"><button class="btn primary" type="submit" id="btnAiSend">보내기</button></form>
 </div>
 
-<div class="loading" id="loading"><div class="loading-box"><div class="loading-hz">汉</div><div id="loadingMsg">데이터 불러오는 중…</div><div class="loading-bar"><i id="loadingBar"></i></div></div></div>
+<div class="loading" id="loading"><div class="loading-box"><div class="loading-hz">习</div><div id="loadingMsg">데이터 불러오는 중…</div><div class="loading-bar"><i id="loadingBar"></i></div></div></div>
 <script id="words" type="application/json" data-src="data/words.986408f0.json"></script>
 <script id="sents" type="application/json" data-src="data/sents.ab245fd3.json"></script>
 <script id="strokes" type="application/json" data-src="data/strokes.58e4a29f.json"></script>
@@ -1985,8 +1989,9 @@ applyTheme();
 $('btnExport').onclick = () => { $('io').value = JSON.stringify({ ...snapshot(), exported: new Date().toISOString() }); showToast('아래 칸에 표시됨 — 복사해서 보관하세요'); };
 // 파일로 내려받기 (폰에서는 공유 시트가 떠서 '파일에 저장'을 고르면 됨). claude.ai 게시본 안에서는 내려받기가 막혀 있어 복사 방식을 쓰세요
 function downloadText(name, text, type){ try{ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain;charset=utf-8' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }catch(e){ showToast('이 환경에서는 파일 저장이 안 돼요 — 복사를 이용하세요'); } }
+$('importFile').onchange = async e => { const f = e.target.files[0]; if (!f) return; try{ $('io').value = await f.text(); $('btnImport').click(); }catch(err){ showToast('파일을 읽지 못했어요'); } e.target.value = ''; };
 $('btnExportFile').onclick = () => downloadText(`zh-typing-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify({ ...snapshot(), exported: new Date().toISOString() }), 'application/json');
-$('btnCopy').onclick = async () => { try{ await navigator.clipboard.writeText($('io').value); showToast('복사됨'); }catch(e){ $('io').select(); showToast('Ctrl+C 로 복사하세요'); } };
+$('btnCopy').onclick = async () => { const text = JSON.stringify({ ...snapshot(), exported: new Date().toISOString() }); $('io').value = text; try{ await navigator.clipboard.writeText(text); showToast('백업을 복사했어요 — 메모 앱 등에 붙여넣어 보관'); }catch(e){ $('io').select(); showToast('Ctrl+C 로 복사하세요'); } };
 $('btnImport').onclick = () => {
   try{
     const d = JSON.parse($('io').value);
@@ -2119,7 +2124,7 @@ function aiFormHints(){
   const svc = $('aiService').value, saved = Object.keys(AI.keys).filter(k => AI.keys[k]);
   const cur = AI.key ? `지금 쓰는 것: ${AI.service} · ${AI.model}` : '아직 키가 없어요 — 키를 넣고 저장 → 연결 테스트';
   const have = saved.length ? ` · 키 저장된 서비스: ${saved.join(', ')}` : '';
-  $('aiStatus').textContent = (svc !== AI.service && AI.keys[svc] ? `${svc} 키가 저장돼 있어요 — 저장을 누르면 이 서비스로 바뀜. ` : svc !== AI.service ? `${svc} 키를 넣고 저장하면 이 서비스로 바뀜. ` : '') + cur + have;
+  $('aiStatus').innerHTML = [svc !== AI.service && AI.keys[svc] ? `${svc} 키가 저장돼 있어요 — 저장을 누르면 이 서비스로 바뀜` : svc !== AI.service ? `${svc} 키를 넣고 저장하면 이 서비스로 바뀜` : '', cur, saved.length ? `키 저장된 서비스: ${saved.join(', ')}` : ''].filter(Boolean).join('<br>');
 }
 $('aiService').onchange = () => { aiFillService($('aiService').value); aiFormHints(); };
 $('aiModelSel').onchange = () => { $('aiModelCustomRow').hidden = $('aiModelSel').value !== '__custom__'; if ($('aiModelSel').value === '__custom__') $('aiModel').focus(); };
@@ -2137,7 +2142,7 @@ $('btnAiTest').onclick = async () => { aiReadForm(); if (!AI.model){ $('aiStatus
 aiFormFill(); aiUsageLine();
 function aiSystem(){
   const len = AI.len==='short' ? '3~5문장으로 짧게' : AI.len==='long' ? '필요하면 자세히(600자 이내)' : '핵심만 400자 이내로';
-  return `너는 한국인 학습자를 가르치는 친절한 중국어(보통화) 선생님이다. HSK 3.0 단어장 앱 안에서 질문을 받는다.
+  return `너는 한국인 학습자를 가르치는 친절한 중국어(보통화) 선생님이다. HSK 3.0 학습 앱 '汉习' 안에서 질문을 받는다.
 규칙: 한국어로 답한다. 중국어는 간체로 쓰고 처음 나올 때 병음(성조 부호)을 괄호로 붙인다. 예문은 짧게 1~3개. ${len}. 마크다운 제목·표는 쓰지 말고, 강조는 **굵게** 정도만. 확실하지 않으면 그렇다고 말한다.`;
 }
 // 서버 오류를 알아듣기 쉬운 한국어로. (각 회사가 주는 코드·문구가 달라서 공통 패턴으로 잡음)
