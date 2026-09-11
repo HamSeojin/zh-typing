@@ -60,10 +60,11 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}   /* GitHub Pages 처럼 단독으로 열 때도 hidden 속성이 확실히 먹게 */
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 40px;
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding:0;
   /* 홈 화면 앱(PWA)으로 열면 화면이 상태 표시줄·홈 바 아래까지 확장되므로 그만큼 안쪽 여백을 둠 (일반 브라우저에선 0) */
   padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
-.wrap{max-width:720px;margin:0 auto;zoom:var(--zoom,1)}   /* 글자 크기 설정: 페이지 전체를 배율로 키우고 줄임 */
+.wrap{zoom:var(--zoom,1);padding-inline:16px;box-sizing:border-box}
+.screen{max-width:720px;margin:0 auto}   /* 글자 크기 설정: 페이지 전체를 배율로 키우고 줄임 */
 /* 탭 줄: 좁으면 옆으로만 스크롤. 세로 스크롤은 막아야 손가락을 위아래로 밀 때 탭 글자가 잘리지 않음 */
 nav::-webkit-scrollbar{display:none}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
@@ -354,8 +355,11 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 .loading-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
 /* ═══════════ 앱 껍데기: 화면·하단 탭·상단 줄 ═══════════ */
 :root{--tabbar-h:56px;--sp:12px}
-body{padding-bottom:calc(var(--tabbar-h) + max(0px, calc(env(safe-area-inset-bottom,0px) - 14px)) + 16px)}
-body.no-tabbar{padding-bottom:24px}
+/* 앱 껍데기: 화면 전체를 세로 flex 로 잡고, 내용(.wrap)만 스크롤, 하단 탭은 흐름 안에 둔다.
+   (position:fixed 로 두면 아이폰 홈 화면 앱에서 페이지가 짧을 때 탭이 위로 떠 버리는 버그가 있어서) */
+html,body{height:100%;overflow:hidden}
+body{display:flex;flex-direction:column;margin:0}
+.wrap{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:24px;width:100%}
 .screen[hidden]{display:none}
 .screen{animation:fadein .15s ease}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -364,7 +368,7 @@ body.no-tabbar{padding-bottom:24px}
 .apphead small{font-size:12px;color:var(--ink-2)}
 .apphead .hx{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--accent);margin-left:4px;letter-spacing:.04em}
 /* 하단 탭 */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:max(0px, calc(env(safe-area-inset-bottom,0px) - 14px))}   /* 아이폰 홈 표시줄 영역: 겹치지 않을 만큼만 띄움 (그대로 두면 아래에 빈 띠가 생김) */
+.tabbar{flex:0 0 auto;z-index:25;display:flex;justify-content:center;gap:0;background:var(--paper);border-top:1px solid var(--line);padding-bottom:max(0px, calc(env(safe-area-inset-bottom,0px) - 14px))}   /* 아이폰 홈 표시줄 영역: 겹치지 않을 만큼만 띄움 */
 .tabbar[hidden]{display:none}
 .tabbar button{flex:1;max-width:180px;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:0;font:inherit;font-size:11px;font-weight:500;color:var(--ink-2);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tabbar button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -431,7 +435,7 @@ body.no-tabbar{padding-bottom:24px}
   .hero{padding:16px}.hero-title{font-size:23px}
 }
 @media (min-width:721px){
-  .tabbar{border-top:0;bottom:16px;left:50%;right:auto;transform:translateX(-50%);width:420px;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.15);padding-bottom:0}
+  .tabbar{border-top:0;width:420px;margin:0 auto 12px;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.15);padding-bottom:0;background:var(--card)}
   .tabbar button{height:56px}
 }
 /* AI 선생님 설정: 설명이 길어 좌우 2단이 아니라 위아래로 쌓음 */
@@ -445,6 +449,18 @@ body.no-tabbar{padding-bottom:24px}
   .set label.row:has(> select) > span,.set label.row:has(> input:not([type=checkbox])) > span{flex:1 1 100%}
   .set label.row > select,.set label.row > input[type=range]{width:100%;box-sizing:border-box}
 }
+/* 약한 단어 목록 */
+.sk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.sk-head .sk-h small{display:block;margin:2px 0 0}
+.wk{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 2px;border-top:1px solid var(--line);cursor:pointer}
+.wk:first-child{border-top:0}
+.wk-l{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
+.wk-l b{font-family:var(--hanzi);font-size:20px;font-weight:500}
+.wk-l .py{font-family:var(--mono);font-size:13px;color:var(--accent)}
+.wk-l small{font-size:13px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:14em}
+.wk-r{text-align:right;flex:0 0 auto}
+.wk-r .dots{display:block;font-style:normal;font-size:9px;letter-spacing:2px;color:var(--bad);line-height:1.2}
+.wk-r small{font-size:11px;color:var(--ink-2)}
 /* AI 노트 */
 .notes .nctx{margin:12px 0 4px;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
 .notes .nctx b{font-family:var(--hanzi);font-size:17px;color:var(--ink)}
@@ -491,6 +507,7 @@ body.no-tabbar{padding-bottom:24px}
 .ai-form{display:flex;gap:8px;padding:8px 12px 10px;border-top:1px solid var(--line)}
 .ai-form input{flex:1;min-width:0;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
 body.no-tabbar .popup{bottom:calc(20px + env(safe-area-inset-bottom,0px))}
+.loading{z-index:999}
 .unitbar.toolbar{gap:6px;margin-bottom:10px}
 .unitbar.toolbar .btn{padding:7px 12px;font-size:13px;border-radius:999px}
 /* 정답 확인 후 부가 정보 접기 */
@@ -568,7 +585,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2013</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2023</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -610,7 +627,7 @@ details.more summary::-webkit-details-marker{display:none}
   <div class="segpane" data-pane="mine">
   <div class="card" style="margin-bottom:14px">
     <div class="mine-head">
-      <div><b id="mineCount">0</b>단어 <span class="hint">☆로 담거나 아래에서 직접 추가</span></div>
+      <div><b id="mineCount">0</b>단어</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <select id="mineChunk" aria-label="학습할 묶음"></select>
         <button class="btn primary" id="btnMineStudy">내 단어장 학습</button>
@@ -628,7 +645,7 @@ details.more summary::-webkit-details-marker{display:none}
       <thead><tr><th></th><th>급</th><th>간체</th><th>병음</th><th>한국어 뜻 (클릭해서 수정)</th><th>영어 뜻</th><th>상자</th><th></th></tr></thead>
       <tbody id="mineBody"></tbody>
     </table></div>
-    <p id="mineEmpty" class="hint" style="padding:16px 4px;margin:0" hidden>아직 담은 단어가 없어요. 학습하다 헷갈리는 단어에서 ☆ 를 눌러 보세요.</p>
+    <p id="mineEmpty" class="hint" style="padding:16px 4px;margin:0" hidden>아직 없어요. 학습 화면의 ☆로 담거나 위에서 직접 추가하세요.</p>
   </div>
 
   </div>
@@ -636,7 +653,7 @@ details.more summary::-webkit-details-marker{display:none}
   <div class="card">
 
     <div class="mine-head">
-      <div><b id="mineSentCount">0</b>문장 <span class="hint">문장 연습에서 ☆ 를 누르면 담겨요</span></div>
+      <div><b id="mineSentCount">0</b>문장</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <select id="mineSentMode" aria-label="연습 방식"><option value="cloze">빈칸 채우기</option><option value="dict">문장 받아쓰기</option><option value="order">어순 배열</option></select>
         <button class="btn primary" id="btnMineSentStudy">내 문장 연습</button>
@@ -647,14 +664,14 @@ details.more summary::-webkit-details-marker{display:none}
   </div>
   <div class="segpane" data-pane="wrong" hidden>
     <div class="card" id="wrongCard">
-      <h3 class="sk-h">모의고사 오답 단어 <small>빈칸·어순에서 틀린 단어 · 학습 복습과 별개 · 맞히면 빠짐</small></h3>
+      <h3 class="sk-h">모의고사 오답 단어 <small>맞히면 목록에서 빠짐</small></h3>
       <div id="examWrongList" class="res-wrong" style="margin-bottom:10px"></div>
       <div class="dataops"><button class="btn primary" id="btnExamWrongStudy">오답 단어 학습 (뜻→한자)</button><button class="btn" id="btnExamWrongSent">문장으로 (빈칸 채우기)</button><button class="btn" id="btnExamWrongClear">목록 비우기</button></div>
     </div>
   </div>
   <div class="segpane" data-pane="ai" hidden>
     <div class="card">
-      <h3 class="sk-h">AI 선생님 문답 노트 <small>단어·문법·글에서 물어본 것과 답. 동기화·내보내기에 포함</small></h3>
+      <h3 class="sk-h">AI 문답 노트</h3>
       <div class="dataops" style="margin:0 0 10px"><input id="aiNoteQ" type="search" placeholder="노트 검색" style="flex:1;min-width:140px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)"><button class="btn" id="btnAiNoteCopy">전체 복사</button><button class="btn" id="btnAiNoteFile">파일로 저장 (.md)</button></div>
       <div id="aiNoteList" class="notes"></div>
     </div>
@@ -699,7 +716,7 @@ details.more summary::-webkit-details-marker{display:none}
     <div class="lvprog" id="lvProg"></div>
   </div>
   <div class="card" style="margin-bottom:14px">
-    <h3 class="sk-h">약한 단어 <small>틀림·힌트가 많은 순 (최근 30일 가중)</small><button class="btn small" id="btnWeakStudy">약한 단어 학습</button></h3>
+    <div class="sk-head"><h3 class="sk-h" style="margin:0">약한 단어 <small>틀림·힌트가 많은 순</small></h3><button class="btn small primary" id="btnWeakStudy">이 단어들 학습</button></div>
     <div class="res-wrong" id="weakList"></div>
   </div>
   <div class="card" style="margin-bottom:14px">
@@ -721,40 +738,38 @@ details.more summary::-webkit-details-marker{display:none}
   </div>
   <div class="segpane" data-pane="settings" hidden>
   <div class="card set">
-    <h3>문제 방식</h3>
-    <p style="margin:0 0 4px;font-size:13px;color:var(--ink-2)">모드(익히기 · 뜻→한자 · 한자→병음 · 듣고 쓰기)는 학습 화면 위쪽에서 고릅니다. 병음 색은 성조: <span style="color:var(--t1)">1성</span> <span style="color:var(--t2)">2성</span> <span style="color:var(--t3)">3성</span> <span style="color:var(--t4)">4성</span> <span style="color:var(--t5)">경성</span></p>
-    <label class="row"><span>한국어 뜻 보이기</span><input type="checkbox" id="optShowKo" checked></label>
-    <label class="row"><span>영어 뜻 보이기</span><input type="checkbox" id="optShowEn" checked></label>
-    <label class="row"><span>번체 보이기</span><input type="checkbox" id="optShowTrad"></label>
-    <h3>발음</h3>
-    <p id="ttsState" style="margin:0 0 4px;font-size:12px;color:var(--ink-2)"></p>
-    <label class="row"><span>문제 나올 때 자동 재생<small>정답 확인 후에는 항상 한 번 읽어줌</small></span><input type="checkbox" id="optAutoSpeak"></label>
-    <label class="row"><span>미리 만든 음성(mp3) 우선<small id="mp3State">자연스러운 신경망 음성으로 미리 만들어 둔 발음이 있으면 그걸 먼저 씀 (없는 단어·문장은 아래 브라우저 음성)</small></span><input type="checkbox" id="optMp3"></label>
-    <label class="row"><span>음성<small>브라우저에 설치된 중국어 음성 목록</small></span><select id="optVoice"></select></label>
-    <label class="row"><span>속도 <span id="rateVal">0.9</span></span><input type="range" id="optRate" min="0.5" max="1.3" step="0.1" value="0.9"></label>
-    <h3>출제</h3>
-    <label class="row"><span>하루 목표 문제 수<small>학습 화면과 통계에 달성 여부 표시</small></span>
-      <select id="optGoal"><option value="20">20</option><option value="30">30</option><option value="50">50</option><option value="100">100</option></select></label>
-    <label class="row"><span>한 과의 단어 수<small>급수를 이 크기로 잘라 과를 만듦. 바꾸면 과 번호가 다시 매겨짐</small></span>
-      <select id="optUnitSize"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="50">50</option></select></label>
-    <label class="row"><span>과 안에서 순서<small>빈도순: 자주 쓰는 단어부터 · 무작위: 섞어서 출제</small></span>
-      <select id="optOrder"><option value="freq">빈도순</option><option value="random">무작위</option></select></label>
-    <label class="row"><span>손으로 쓰기: 글자 윤곽 보이기<small>끄면 빈 칸에 기억만으로 써야 함 (어려움)</small></span><input type="checkbox" id="optOutline" checked></label>
-    <label class="row"><span>글자 크기<small>폰에서 크게 보이면 '작게'로</small></span>
+    <h3>표시</h3>
+    <label class="row"><span>한국어 뜻</span><input type="checkbox" id="optShowKo" checked></label>
+    <label class="row"><span>영어 뜻</span><input type="checkbox" id="optShowEn" checked></label>
+    <label class="row"><span>번체자</span><input type="checkbox" id="optShowTrad"></label>
+    <label class="row"><span>글자 크기</span>
       <select id="optZoom"><option value="0.8">작게</option><option value="0.9">약간 작게</option><option value="1">보통</option><option value="1.15">크게</option><option value="1.3">아주 크게</option></select></label>
     <label class="row"><span>테마</span><select id="optTheme"><option value="">시스템</option><option value="light">밝게</option><option value="dark">어둡게</option></select></label>
+    <h3>발음</h3>
+    <label class="row"><span>문제가 나올 때 자동 재생</span><input type="checkbox" id="optAutoSpeak"></label>
+    <label class="row"><span>미리 만든 음성(mp3) 우선<small id="mp3State">있으면 브라우저 음성보다 먼저 재생</small></span><input type="checkbox" id="optMp3"></label>
+    <label class="row"><span>브라우저 음성<small id="ttsState"></small></span><select id="optVoice"></select></label>
+    <label class="row"><span>속도 <span id="rateVal">0.9</span></span><input type="range" id="optRate" min="0.5" max="1.3" step="0.1" value="0.9"></label>
+    <h3>학습</h3>
+    <label class="row"><span>하루 목표</span>
+      <select id="optGoal"><option value="20">20문제</option><option value="30">30문제</option><option value="50">50문제</option><option value="100">100문제</option></select></label>
+    <label class="row"><span>한 과의 단어 수<small>바꾸면 과 번호가 다시 매겨짐</small></span>
+      <select id="optUnitSize"><option value="10">10개</option><option value="20">20개</option><option value="30">30개</option><option value="50">50개</option></select></label>
+    <label class="row"><span>과 안의 출제 순서</span>
+      <select id="optOrder"><option value="freq">자주 쓰는 단어부터</option><option value="random">무작위</option></select></label>
+    <label class="row"><span>손으로 쓰기: 글자 윤곽 보이기<small>끄면 어려움</small></span><input type="checkbox" id="optOutline" checked></label>
     <h3>기기 간 동기화</h3>
     <div id="syncBox">
       <p id="syncStatus" style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">확인 중…</p>
       <div id="gistSetup" hidden>
-        <p style="margin:0 0 6px;font-size:13px;color:var(--ink-2)">GitHub Gist(깃허브의 개인 메모 저장소)에 기록을 올려 두고 다른 기기에서 받아옵니다. GitHub → Settings → Developer settings → Personal access tokens → <b>Tokens (classic)</b> → Generate new token → <b>gist</b> 권한만 체크 → 만들어진 토큰을 아래에 붙여넣기. 다른 기기에서도 같은 토큰을 넣으면 자동으로 이어집니다.</p>
-        <div class="dataops"><input id="gistToken" type="password" placeholder="ghp_… GitHub 토큰" style="flex:1;min-width:200px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)"><button class="btn" id="btnGistConnect">연결</button><button class="btn" id="btnGistOff" hidden>연결 해제</button></div>
+        <div class="dataops"><input id="gistToken" type="password" placeholder="GitHub 토큰 (gist 권한)" style="flex:1;min-width:200px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)"><button class="btn" id="btnGistConnect">연결</button><button class="btn" id="btnGistOff" hidden>연결 해제</button></div>
+        <details class="more" style="border-top:0;margin-top:4px"><summary>토큰 만드는 법</summary><p style="margin:6px 0 0;font-size:13px;color:var(--ink-2)">GitHub → Settings → Developer settings → Personal access tokens → <b>Tokens (classic)</b> → Generate new token → <b>gist</b> 권한만 체크 → 만들어진 토큰을 위 칸에 붙여넣기. 기록은 비공개 Gist(깃허브 개인 메모)에 저장되고, 다른 기기에 같은 토큰을 넣으면 이어져요. 항목마다 더 최근 것이 이기는 방식으로 합쳐집니다.</p></details>
       </div>
-      <div class="dataops" style="margin-top:8px"><button class="btn" id="btnSyncNow">지금 동기화</button></div>
+      <div class="dataops" style="margin-top:8px"><button class="btn small" id="btnSyncNow">지금 동기화</button></div>
     </div>
     <h3>AI 선생님 (선택)</h3>
     <div id="aiBox">
-      <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">문법·뉘앙스 질문을 LLM(대형 언어 모델)에게 바로 물어보는 기능. 본인 API 키를 넣어 쓰며, 키는 <b>이 기기에만</b> 저장되고 동기화·내보내기에 포함되지 않아요(문답 노트는 포함됨 — 단어장 탭 → AI 노트). 질문 하나에 보통 1~10원 정도 들어요.</p>
+      <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">학습 중 "🤖 묻기"로 AI에게 질문하려면 본인 API 키가 필요해요. <details class="more" style="display:inline;border:0;margin:0;padding:0"><summary style="display:inline;padding:0">자세히</summary><span style="display:block;margin-top:6px">키는 이 기기에만 저장되고 동기화·백업에는 들어가지 않아요(문답 내용은 단어장 → AI 노트에 저장·동기화). 질문 하나에 보통 1~10원. 서비스마다 키를 따로 기억하니 바꿔 가며 쓸 수 있어요.</span></details></p>
       <label class="row"><span>서비스</span>
         <select id="aiService">
           <option value="deepseek">DeepSeek — 가장 저렴, 중국어 강함</option>
@@ -763,18 +778,18 @@ details.more summary::-webkit-details-marker{display:none}
           <option value="openai">OpenAI (ChatGPT)</option>
           <option value="custom">기타 OpenAI 호환 서버 (주소 직접 입력)</option>
         </select></label>
-      <label class="row" id="aiBaseRow" hidden><span>API 주소<small>OpenAI 형식(/chat/completions)을 따르는 서버 주소</small></span><input id="aiBase" placeholder="https://…/v1"></label>
+      <label class="row" id="aiBaseRow" hidden><span>API 주소<small>OpenAI 형식 서버</small></span><input id="aiBase" placeholder="https://…/v1"></label>
       <label class="row"><span>모델<small id="aiModelHint"></small></span>
         <select id="aiModelSel"></select></label>
       <label class="row" id="aiModelCustomRow" hidden><span>모델 이름 직접 입력</span><input id="aiModel" placeholder="모델 id"></label>
       <label class="row"><span>API 키<small id="aiKeyHint"></small></span><input id="aiKey" type="password" placeholder="API 키 붙여넣기" autocomplete="off"></label>
-      <label class="row"><span>답변 길이<small>길수록 토큰(비용)이 더 듦</small></span><select id="aiLen"><option value="short">짧게 (3~5문장)</option><option value="normal" selected>보통</option><option value="long">자세히</option></select></label>
+      <label class="row"><span>답변 길이</span><select id="aiLen"><option value="short">짧게 (3~5문장)</option><option value="normal" selected>보통</option><option value="long">자세히</option></select></label>
       <div class="dataops"><button class="btn primary" id="btnAiSave">저장</button><button class="btn" id="btnAiTest">연결 테스트</button><button class="btn" id="btnAiOff">이 서비스 키 지우기</button></div>
       <p id="aiStatus" style="margin:6px 0 0;font-size:13px;color:var(--ink-2)"></p>
       <p id="aiUsage" style="margin:2px 0 0;font-size:12px;color:var(--ink-2)"></p>
     </div>
     <h3>백업 · 복원</h3>
-    <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">모든 기록(학습·뜻·단어장·통계·시험·타자·AI 노트)은 먼저 이 기기에 저장되고, 동기화를 켜면 서버에도 복사돼요. 가져오기는 지금 기록과 합쳐집니다.</p>
+    <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">모든 기록은 이 기기에 저장돼요. 파일로 저장해 두면 기기를 바꿔도 불러올 수 있어요(불러오기는 지금 기록과 합쳐짐).</p>
     <div class="dataops">
       <button class="btn" id="btnExportFile">⬇ 파일로 저장 (.json)</button>
       <button class="btn" id="btnCopy">복사</button>
@@ -868,7 +883,7 @@ details.more summary::-webkit-details-marker{display:none}
   <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">타자 연습</b><span class="tb-right" id="typClock"></span></div>
   <div id="typHome">
     <div class="card">
-      <h3 class="sk-h">설정 <small>기본은 고른 급수에서 이미 학습한 단어(한 번 이상 맞힌 것)만 — 모르는 단어는 칠 수 없으니까</small></h3>
+      <h3 class="sk-h">타자 연습</h3>
       <div class="sh-label">입력 방식</div>
       <div class="lvbar wrap" id="typMode"><label><input type="radio" name="typMode" value="py" checked>병음 (성조 없이, 실제 중국어 타자처럼)</label><label><input type="radio" name="typMode" value="hz">한자 (중국어 입력기)</label></div>
       <div class="sh-label">급수 <small style="font-weight:400">(타자 연습 전용 · 학습 급수와 별개)</small></div>
@@ -963,7 +978,7 @@ details.more summary::-webkit-details-marker{display:none}
   <div class="topbar" id="examTop"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">모의고사 · 듣기</b></div>
   <div id="examHome">
     <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 유형을 본뜬 40문항 (기출 아님)</small></h3>
+      <h3 class="sk-h">HSK 3.0 모의고사 <small>40문항 · 듣기 16 · 독해 16 · 쓰기 8 · 30~40분</small></h3>
       <div class="lvbar" id="examLv">급수
         <label><input type="radio" name="examLv" value="1" checked>1급</label>
         <label><input type="radio" name="examLv" value="2">2급</label>
@@ -973,12 +988,11 @@ details.more summary::-webkit-details-marker{display:none}
         <label><input type="radio" name="examLv" value="6">6급</label>
         <label><input type="radio" name="examLv" value="7">7~9급</label>
       </div>
-      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">듣기 16 · 독해 16 · 쓰기 8 — 1~3급 30분, 4~6급 35분, 7~9급 40분. 듣기는 자동 재생, 🔊로 2번까지 다시 듣기.</p>
+      
       <div class="dataops"><button class="btn primary" id="btnExamStart">시험 시작</button><a class="btn" href="https://www.chinesetest.cn/HSK" target="_blank" rel="noopener" style="text-decoration:none">공식 샘플 시험지 (chinesetest.cn)</a></div>
     </div>
     <div class="card" style="margin-bottom:14px">
-      <h3 class="sk-h">듣기 대화 연습 <small>위에서 고른 급수 · 10문항 · 시간 제한 없음</small></h3>
-      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">A·B를 다른 목소리로 듣고 답하면 대본·번역이 바로 보여요.</p>
+      <h3 class="sk-h">듣기 대화 연습 <small>위 급수 · 10문항 · 제한 시간 없음</small></h3>
       <div class="dataops"><button class="btn primary" id="btnLisStart">듣기 연습 시작</button><span class="hint" id="lisStat" style="font-size:13px;color:var(--ink-2);align-self:center"></span></div>
     </div>
     <div class="card"><h3 class="sk-h">지난 시험</h3><div class="lvprog" id="examHistory"></div></div>
@@ -1901,7 +1915,7 @@ function go(name){
   document.querySelectorAll('#tabbar button').forEach(b => b.setAttribute('aria-selected', b.dataset.go === root));
   $('popup').hidden = true; $('aiSheet').hidden = true; closeStartSheet();
   if (typ && name !== 'typing'){ clearInterval(typ.tick); typ = null; }
-  curScreen = name; window.scrollTo({ top: 0 });
+  curScreen = name; $('app').scrollTo({ top: 0 });
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); }
   if (name === 'more') renderStats();
@@ -2026,7 +2040,7 @@ function openPassage(id){
   $('ptitle').innerHTML = tapHtml(curPassage.title);
   renderPassageText();
   $('pq').innerHTML = curPassage.qs.map((q,qi) => `<div class="qblock" data-qi="${qi}"><div class="q">${qi+1}. ${tapHtml(q.q)}<small class="qko" hidden>${q.qko}</small></div><div class="opts">${q.opts.map((o,oi)=>`<button data-qi="${qi}" data-oi="${oi}"><span class="otext">${tapHtml(o)}</span><small hidden>${q.optsko[oi]||''}</small></button>`).join('')}</div><div class="pres"></div></div>`).join('');
-  window.scrollTo({top:0});
+  $('app').scrollTo({top:0});
 }
 function renderPassageText(){
   const showPy = $('rdPy').checked, showKo = $('rdKo').checked;
@@ -2049,7 +2063,7 @@ function showLookup(el){
     `<div class="acts"><button data-say="${tok}">🔊 발음</button>${ws.length===1?`<button data-fav="${ws[0].id}">${isFav(ws[0].id)?'★ 내 단어장에서 빼기':'☆ 내 단어장에 담기'}</button><button data-ai="${ws[0].id}">🤖 묻기</button>`:''}<button data-close="1">닫기</button></div>`;
 }
 // 읽기 본문 · 학습 카드의 문장 · 내 문장 목록 어디서든 단어를 누르면 풍선
-for (const id of ['ptext','qHanzi','mineSents','ptitle','examBody','wordRel']) $(id).addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
+for (const id of ['ptext','qHanzi','mineSents','ptitle','examBody','wordRel','weakList']) $(id).addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
 $('popup').addEventListener('click', e => {
   const s = e.target.closest('[data-say]'); if (s) speak(s.dataset.say);
   const f = e.target.closest('[data-fav]'); if (f){ const on = toggleFav(+f.dataset.fav); f.textContent = on ? '★ 내 단어장에서 빼기' : '☆ 내 단어장에 담기'; showToast(on?'내 단어장에 담았어요':'뺐어요'); }
@@ -2528,7 +2542,7 @@ function openGram(id){
     </div>`;
   $('gramCard').dataset.ids = ids.join(',');
   const idx = GRAM.indexOf(g); $('btnGramPrev').disabled = idx <= 0; $('btnGramNext').disabled = idx >= GRAM.length - 1;
-  window.scrollTo({top:0});
+  $('app').scrollTo({top:0});
 }
 $('gramCard').addEventListener('click', e => {
   const tk = e.target.closest('.tok'); if (tk){ showLookup(tk); return; }
@@ -2677,7 +2691,7 @@ function finishExam(timeout){
   $('examResult').hidden = false; $('examTop').hidden = false; exam = null;
   $('btnExamAgain').onclick = startExam; $('btnExamHome').onclick = renderExamHome;
   $('examResult').addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
-  updateStats(); window.scrollTo({top:0});
+  updateStats(); $('app').scrollTo({top:0});
 }
 function renderExamWrong(){
   const wids = examWrongIds();
@@ -2744,7 +2758,7 @@ function renderStats(){
   const weak = Object.entries(PROGRESS).map(([id,p]) => { const recent = p.t && now - p.t < 30*DAY ? 1.5 : 1; return { id:+id, score: ((p.w||0)*2 + (p.h||0) - (p.c||0)*0.5) * recent, p }; })
     .filter(x => x.score > 0 && BY_ID.has(x.id)).sort((a,b) => b.score - a.score).slice(0, 20);
   window.weakIds = weak.map(x => x.id);
-  $('weakList').innerHTML = weak.map(x => { const w = BY_ID.get(x.id); return `<span class="w" title="틀림 ${x.p.w||0} · 힌트 ${x.p.h||0} · 맞힘 ${x.p.c||0}"><b>${w.s}</b>${w.py} <small>${KO[w.s]||w.ko||''} · ✕${x.p.w||0} 힌트${x.p.h||0}</small></span>`; }).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 틀린 단어가 없어요</span>';
+  $('weakList').innerHTML = weak.map(x => { const w = BY_ID.get(x.id); const bad = Math.min(5, x.p.w||0); return `<div class="wk tok" data-tok="${w.s}"><div class="wk-l"><b>${w.s}</b><span class="py">${w.py}</span><small>${KO[w.s]||w.ko||''}</small></div><div class="wk-r"><i class="dots">${'●'.repeat(bad)}${'○'.repeat(5-bad)}</i><small>틀림 ${x.p.w||0} · 힌트 ${x.p.h||0}</small></div></div>`; }).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 약한 단어가 없어요 — 학습하다 틀리면 여기 모여요</span>';
   // 헷갈리는 짝
   const pairs = []; for (const a in STATS.confuse) for (const b in STATS.confuse[a]) if (BY_ID.has(+a) && BY_ID.has(+b)) pairs.push({ a:BY_ID.get(+a), b:BY_ID.get(+b), n:STATS.confuse[a][b] });
   pairs.sort((x,y) => y.n - x.n);
@@ -2772,7 +2786,7 @@ function renderMineSents(){
   $('mineSentCount').textContent = ws.length;
   $('mineSents').innerHTML = ws.map(w => { const st = sentOf(w); return `<div class="srow"><button class="star on" data-favs="${w.id}" title="내 문장에서 빼기">★</button>
     <div><div class="szh">${sentTokensHtml(st, w.s)}</div><div class="spy">${st.py}</div><div class="sko">${st.ko}</div></div>
-    <button class="btn icon" data-say="${st.zh}" title="문장 듣기">🔊</button></div>`; }).join('') || '<p class="hint" style="padding:12px 4px;margin:0;font-size:13px;color:var(--ink-2)">아직 담은 문장이 없어요.</p>';
+    <button class="btn icon" data-say="${st.zh}" title="문장 듣기">🔊</button></div>`; }).join('') || '<p class="hint" style="padding:12px 4px;margin:0;font-size:13px;color:var(--ink-2)">아직 없어요. 문장 연습에서 ☆를 누르면 담겨요.</p>';
 }
 $('mineSents').addEventListener('click', e => {
   const b = e.target.closest('[data-say]'); if (b) speak(b.dataset.say);
