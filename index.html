@@ -476,6 +476,12 @@ body{display:flex;flex-direction:column;margin:0}
 .notes .n .meta{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11px;color:var(--ink-2)}
 .notes .n .meta button{font:inherit;font-size:11px;background:none;border:0;color:var(--accent);cursor:pointer;padding:0}
 .notes .n .meta button.del{color:var(--bad)}
+.notes .n.star{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.notes .n .meta button.on{color:#d9a400}
+.notes .a mark{background:color-mix(in srgb,#ffd54a 55%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+.notes .memo{margin-top:6px;font-size:13px;color:var(--ink);background:var(--good-bg);border-left:3px solid var(--accent);padding:6px 8px;border-radius:6px;white-space:pre-wrap}
+.seg.small{margin-bottom:8px}.seg.small button{font-size:12px;padding:5px 4px}
+.notes .n .a{-webkit-user-select:text;user-select:text}
 /* 타자 연습 */
 .typ-stats{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin-bottom:10px}
 .typ-stats b{font-family:var(--mono);color:var(--ink);font-size:15px}
@@ -588,7 +594,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2301</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2329</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -676,6 +682,7 @@ details.more summary::-webkit-details-marker{display:none}
     <div class="card">
       <h3 class="sk-h">AI 문답 노트</h3>
       <div class="dataops" style="margin:0 0 10px"><input id="aiNoteQ" type="search" placeholder="노트 검색" style="flex:1;min-width:140px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)"><button class="btn" id="btnAiNoteCopy">전체 복사</button><button class="btn" id="btnAiNoteFile">파일로 저장 (.md)</button></div>
+      <div class="seg small" id="aiNoteFilters"></div>
       <div id="aiNoteList" class="notes"></div>
     </div>
   </div>
@@ -803,7 +810,6 @@ details.more summary::-webkit-details-marker{display:none}
       <textarea class="io" id="io" placeholder='여기에 백업 텍스트를 붙여넣고 "가져오기"'></textarea>
     </details>
     <div class="dataops" style="margin-top:14px"><button class="btn small danger" id="btnResetProg">학습 기록 초기화…</button></div>
-    <p id="diag" style="margin:6px 0 0;font-size:11px;color:var(--ink-2);font-family:var(--mono)"></p>
     <p style="margin:6px 0 0;font-size:12px;color:var(--ink-2)">단어 <b id="totalWords"></b>개 · 출처: HSK 3.0 목록 + CC-CEDICT (영어 뜻) · 한국어 뜻 입력됨: <b id="koCount">0</b>개</p>
   </div>
   </div>
@@ -1922,7 +1928,7 @@ function go(name){
   curScreen = name; $('app').scrollTo({ top: 0 });
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); }
-  if (name === 'more'){ renderStats(); renderDiag(); }
+  if (name === 'more') renderStats();
   if (name === 'read') renderReadList();
   if (name === 'gram') renderGramList();
   if (name === 'exam') renderExamHome();
@@ -1969,14 +1975,6 @@ function sessTitleText(){
   const m = MODES[SETTINGS.study] || MODES.test;
   if (session && session.type !== 'unit') return `${session.meta && session.meta.label ? session.meta.label : session.type==='review' ? '복습' : '내 단어장'} · ${m.name}`;
   const u = units()[currentUnitIndex()]; return `${u ? u.label.replace(/ \(.*\)$/, '') : ''} · ${m.name}`;
-}
-// 화면 배치 진단 (문제 생겼을 때 숫자를 보고 원인을 찾기 위한 것)
-function renderDiag(){
-  try{
-    const tb = $('tabbar').getBoundingClientRect(), sab = getComputedStyle(document.documentElement).getPropertyValue('--sab') || '';
-    const probe = document.createElement('div'); probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);width:1px;visibility:hidden'; document.body.appendChild(probe); const sa = probe.getBoundingClientRect().height; probe.remove();
-    $('diag').textContent = `진단 ${$('appVer').textContent} · 기기 ${screen.width}×${screen.height} · 화면 ${innerWidth}×${innerHeight} · 문서 ${document.documentElement.clientHeight} · 탭바 ${Math.round(tb.top)}~${Math.round(tb.bottom)} · 안전영역(아래) ${Math.round(sa)} · standalone ${navigator.standalone===true ? 'Y' : 'N'} · 배율 ${SETTINGS.zoom||1}`;
-  }catch(e){}
 }
 function renderHome(){
   updateStats(); renderUnitBar();
@@ -2169,7 +2167,8 @@ aiFormFill(); aiUsageLine();
 function aiSystem(){
   const len = AI.len==='short' ? '3~5문장으로 짧게' : AI.len==='long' ? '필요하면 자세히(600자 이내)' : '핵심만 400자 이내로';
   return `너는 한국인 학습자를 가르치는 친절한 중국어(보통화) 선생님이다. HSK 3.0 학습 앱 '汉习' 안에서 질문을 받는다.
-규칙: 한국어로 답한다. 중국어는 간체로 쓰고 처음 나올 때 병음(성조 부호)을 괄호로 붙인다. 예문은 짧게 1~3개. ${len}. 마크다운 제목·표는 쓰지 말고, 강조는 **굵게** 정도만. 확실하지 않으면 그렇다고 말한다.`;
+규칙: 한국어로 답한다. 중국어는 간체로 쓰고 처음 나올 때 병음(성조 부호)을 괄호로 붙인다. 예문은 짧게 1~3개. ${len}. 마크다운 제목·표는 쓰지 말고, 강조는 **굵게** 정도만. 확실하지 않으면 그렇다고 말한다.
+첫 문장부터 바로 본론으로 들어간다. "좋은 질문이에요", "예리하시네요", "물론이죠" 같은 칭찬·인사·쿠션어, 질문을 되풀이하는 도입부, "도움이 되셨길 바라요" 같은 맺음말은 절대 쓰지 않는다.`;
 }
 // 서버 오류를 알아듣기 쉬운 한국어로. (각 회사가 주는 코드·문구가 달라서 공통 패턴으로 잡음)
 function aiFriendlyError(status, msg){
@@ -2381,25 +2380,63 @@ function aiNoteLabel(key){
   if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: `${pg.title} <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">읽기</small>`, ctx: () => aiPassageCtx(pg) } : null; }
   return null;
 }
+let aiNoteFilter = 'all';   // all | star | hl
+function aiTouch(n){ n.u = Date.now(); store.set('zh.ai_notes', AI_NOTES); }
+// 답변 본문에 형광펜(hl: 사용자가 고른 문구들)을 <mark> 로 입힘
+function aiFmtHl(text, hl){
+  let html = aiFmt(text);
+  for (const h of (hl || [])){ if (!h) continue; const esc = aiFmt(h).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); html = html.replace(new RegExp(esc, 'g'), m => `<mark>${m}</mark>`); }
+  return html;
+}
 function renderAiNotes(){
   const q = ($('aiNoteQ').value || '').trim().toLowerCase();
-  const groups = Object.entries(AI_NOTES).map(([k, arr]) => ({ k, arr: arr.filter(n => !n.del && (!q || (n.q + n.a).toLowerCase().includes(q))) })).filter(g => g.arr.length);
+  const keep = n => !n.del && (aiNoteFilter === 'all' || (aiNoteFilter === 'star' && n.star) || (aiNoteFilter === 'hl' && ((n.hl && n.hl.length) || n.memo))) && (!q || (n.q + n.a + (n.memo||'') + (n.hl||[]).join(' ')).toLowerCase().includes(q));
+  const groups = Object.entries(AI_NOTES).map(([k, arr]) => ({ k, arr: arr.filter(keep) })).filter(g => g.arr.length);
   groups.sort((a, b) => Math.max(...b.arr.map(n => n.t)) - Math.max(...a.arr.map(n => n.t)));
+  const total = Object.values(AI_NOTES).flat().filter(n => !n.del).length, stars = Object.values(AI_NOTES).flat().filter(n => !n.del && n.star).length;
+  $('aiNoteFilters').innerHTML = [['all',`전체 ${total}`],['star',`★ 중요 ${stars}`],['hl','형광펜·메모']].map(([k,l]) => `<button data-nf="${k}" aria-selected="${aiNoteFilter===k}">${l}</button>`).join('');
   $('aiNoteList').innerHTML = groups.map(g => { const lb = aiNoteLabel(g.k); if (!lb) return ''; return `<div class="nctx"><b>${lb.label}</b><button class="btn small" data-nopen="${g.k}">🤖 이어서 묻기</button></div>` +
-    g.arr.slice().reverse().map(n => `<div class="n" data-nk="${g.k}" data-nt="${n.t}"><div class="q">${aiFmt(n.q)}</div><div class="a">${aiFmt(n.a)}</div><div class="meta"><span>${new Date(n.t).toLocaleString()}</span><button data-ntoggle="1">펼치기/접기</button><button class="del" data-ndel="1">삭제</button></div></div>`).join(''); }).join('')
-    || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q ? '검색 결과가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 🤖 묻기를 눌러 보세요.'}</p>`;
+    g.arr.slice().reverse().map(n => `<div class="n ${n.star?'star':''}" data-nk="${g.k}" data-nt="${n.t}">
+      <div class="q">${aiFmt(n.q)}</div>
+      <div class="a">${aiFmtHl(n.a, n.hl)}</div>
+      ${n.memo ? `<div class="memo">✎ ${aiFmt(n.memo)}</div>` : ''}
+      <div class="meta"><span>${new Date(n.t).toLocaleDateString()}</span>
+        <button data-nstar="1" class="${n.star?'on':''}" title="중요 표시">${n.star?'★':'☆'}</button>
+        <button data-nhl="1" title="답변에서 글자를 드래그해 고른 뒤 누르면 형광펜">🖍 형광펜</button>
+        <button data-nmemo="1" title="내 메모">✎ 메모</button>
+        <button data-ncopy="1">복사</button>
+        <button data-ntoggle="1">${'펼치기'}</button>
+        <button class="del" data-ndel="1">삭제</button></div></div>`).join(''); }).join('')
+    || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q || aiNoteFilter!=='all' ? '해당하는 노트가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 🤖 묻기를 눌러 보세요.'}</p>`;
 }
 $('aiNoteQ').oninput = renderAiNotes;
+$('aiNoteFilters').addEventListener('click', e => { const b = e.target.closest('[data-nf]'); if (b){ aiNoteFilter = b.dataset.nf; renderAiNotes(); } });
+function noteOf(el){ const arr = AI_NOTES[el.dataset.nk] || []; return arr.find(x => String(x.t) === el.dataset.nt); }
+// 형광펜: 버튼을 '누르는 순간'(pointerdown) 선택된 글자를 읽는다 — 클릭이 끝나면 선택이 풀려 버리므로
+$('aiNoteList').addEventListener('pointerdown', e => {
+  const b = e.target.closest('[data-nhl]'); if (!b) return; e.preventDefault();
+  const n = b.closest('.n'), it = noteOf(n); if (!it) return;
+  const sel = (window.getSelection() ? window.getSelection().toString() : '').trim();
+  if (!sel){ showToast('먼저 답변에서 형광펜 칠할 글자를 드래그해 고르세요'); return; }
+  it.hl = it.hl || []; const i = it.hl.indexOf(sel);
+  if (i >= 0){ it.hl.splice(i, 1); showToast('형광펜을 지웠어요'); } else { it.hl.push(sel.slice(0, 200)); showToast('형광펜을 칠했어요'); }
+  aiTouch(it); window.getSelection().removeAllRanges(); const open = n.classList.contains('open'); renderAiNotes(); if (open){ const el = [...document.querySelectorAll('.n')].find(x => x.dataset.nt === n.dataset.nt); if (el) el.classList.add('open'); }
+});
 $('aiNoteList').addEventListener('click', e => {
   const o = e.target.closest('[data-nopen]'); if (o){ const lb = aiNoteLabel(o.dataset.nopen); if (lb) aiOpen(lb.ctx()); return; }
-  const n = e.target.closest('.n'); if (!n) return;
-  if (e.target.closest('[data-ntoggle]')){ n.classList.toggle('open'); return; }
-  if (e.target.closest('[data-ndel]')){ const arr = AI_NOTES[n.dataset.nk] || []; const it = arr.find(x => String(x.t) === n.dataset.nt); if (it){ it.del = 1; store.set('zh.ai_notes', AI_NOTES); } renderAiNotes(); return; }
-  n.classList.toggle('open');
+  const n = e.target.closest('.n'); if (!n) return; const it = noteOf(n);
+  if (e.target.closest('[data-nhl]')) return;   // pointerdown 에서 처리
+  if (e.target.closest('[data-ntoggle]')){ n.classList.toggle('open'); e.target.closest('[data-ntoggle]').textContent = n.classList.contains('open') ? '접기' : '펼치기'; return; }
+  if (e.target.closest('[data-nstar]')){ if (it){ it.star = it.star ? 0 : 1; aiTouch(it); } renderAiNotes(); return; }
+  if (e.target.closest('[data-nmemo]')){ if (!it) return; const m = prompt('이 답변에 붙일 메모 (비우면 삭제)', it.memo || ''); if (m === null) return; it.memo = m.trim(); aiTouch(it); renderAiNotes(); return; }
+  if (e.target.closest('[data-ncopy]')){ if (!it) return; const text = `Q: ${it.q}\nA: ${it.a}${it.memo ? '\n메모: ' + it.memo : ''}`; navigator.clipboard.writeText(text).then(() => showToast('복사했어요')).catch(() => showToast('복사 실패')); return; }
+  if (e.target.closest('[data-ndel]')){ if (it){ it.del = 1; aiTouch(it); } renderAiNotes(); return; }
+  if (e.target.closest('mark')) return;
+  if (!window.getSelection().toString()) n.classList.toggle('open');
 });
 function aiNotesText(){
   const lines = [`# AI 선생님 문답 노트 (${new Date().toLocaleDateString()})`, ''];
-  for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label.replace(/<[^>]+>/g,'')}`); for (const n of live) lines.push(`- (${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}`); lines.push(''); }
+  for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label.replace(/<[^>]+>/g,'')}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${n.hl && n.hl.length ? '\n  형광펜: ' + n.hl.join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
   return lines.join('\n');
 }
 $('btnAiNoteCopy').onclick = async () => { const text = aiNotesText(); try{ await navigator.clipboard.writeText(text); showToast('복사했어요 — 메모 앱 등에 붙여넣기'); }catch(e){ $('io').value = text; showToast('더보기 → 설정 → 데이터 칸에 넣어 뒀어요'); } };
@@ -2914,7 +2951,7 @@ function mergeState(a, b){
   { const m = new Map(); for (const x of [...(a.exams||[]), ...(b.exams||[])]) m.set(x.t, x); out.exams = [...m.values()].sort((x,y)=>x.t-y.t).slice(-50); }
   { const m = new Map(); for (const x of [...(a.typing||[]), ...(b.typing||[])]) m.set(x.t, x); out.typing = [...m.values()].sort((x,y)=>x.t-y.t).slice(-50); }
   // AI 문답 노트: 문맥(단어·문법·글)별로 두 쪽 문답을 시각(t) 기준 합침, 삭제 표시(del)는 이김
-  out.ai_notes = {}; for (const k of keys(a.ai_notes, b.ai_notes)){ const m = new Map(); for (const n of [...(a.ai_notes?.[k]||[]), ...(b.ai_notes?.[k]||[])]){ const o = m.get(n.t); m.set(n.t, (o && o.del) ? o : n); } const arr = [...m.values()].sort((x,y)=>x.t-y.t).slice(-30); if (arr.length) out.ai_notes[k] = arr; }
+  out.ai_notes = {}; for (const k of keys(a.ai_notes, b.ai_notes)){ const m = new Map(); for (const n of [...(a.ai_notes?.[k]||[]), ...(b.ai_notes?.[k]||[])]){ const o = m.get(n.t); m.set(n.t, (o && (o.u||0) >= (n.u||0)) ? o : n); } const arr = [...m.values()].sort((x,y)=>x.t-y.t).slice(-30); if (arr.length) out.ai_notes[k] = arr; }
   out.fav_s = {}; for (const k of keys(a.fav_s, b.fav_s)){ const p=a.fav_s?.[k]||0, q=b.fav_s?.[k]||0; out.fav_s[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   out.exam_wrong = {}; for (const k of keys(a.exam_wrong, b.exam_wrong)){ const p=a.exam_wrong?.[k]||0, q=b.exam_wrong?.[k]||0; out.exam_wrong[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   for (const k of keys(a.custom_del, b.custom_del)) out.custom_del[k] = Math.max(a.custom_del?.[k]||0, b.custom_del?.[k]||0);
