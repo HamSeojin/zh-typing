@@ -1,0 +1,1379 @@
+<title>汉语 타자 단어장</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* ── 색·글꼴 토큰 (한 곳에서만 정의하고 아래에서는 var()로 가져다 씀) ── */
+:root{
+  --paper:#F4F6F9;      /* 바탕: 살짝 푸른 기가 도는 종이색 */
+  --card:#FFFFFF;
+  --ink:#1A2130;        /* 본문 글자 */
+  --ink-2:#5B6577;      /* 보조 글자 */
+  --line:#D9DEE6;
+  --accent:#2B7F68;     /* 옥색(玉) — 이 앱의 포인트 색 */
+  --accent-ink:#FFFFFF;
+  --good:#2B7F68; --good-bg:#E3F3EE;
+  --bad:#C0392B;  --bad-bg:#FBE9E6;
+  --t1:#2F6FD6; --t2:#2B8F5A; --t3:#7A4FBF; --t4:#C0392B; --t5:#8A94A6; /* 성조 1~4, 경성 */
+  --hanzi:'Noto Serif SC','Source Han Serif SC','PingFang SC','Microsoft YaHei',serif;
+  --body:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141922; --card:#1C2331; --ink:#E8ECF2; --ink-2:#98A3B5; --line:#2E3746;
+    --accent:#4DB894; --accent-ink:#0F1A16;
+    --good:#4DB894; --good-bg:#1B3128; --bad:#E76F5F; --bad-bg:#3A211E;
+    --t1:#6D9BEB; --t2:#5BC286; --t3:#A98BE0; --t4:#E76F5F; --t5:#8A94A6;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141922; --card:#1C2331; --ink:#E8ECF2; --ink-2:#98A3B5; --line:#2E3746;
+  --accent:#4DB894; --accent-ink:#0F1A16;
+  --good:#4DB894; --good-bg:#1B3128; --bad:#E76F5F; --bad-bg:#3A211E;
+  --t1:#6D9BEB; --t2:#5BC286; --t3:#A98BE0; --t4:#E76F5F; --t5:#8A94A6;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}   /* GitHub Pages 처럼 단독으로 열 때도 hidden 속성이 확실히 먹게 */
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 40px}
+.wrap{max-width:720px;margin:0 auto;zoom:var(--zoom,1)}   /* 글자 크기 설정: 페이지 전체를 배율로 키우고 줄임 */
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:18px 10px}
+header h1{font-family:var(--hanzi);font-weight:700;font-size:22px;margin:0;letter-spacing:.02em}
+header h1 small{font-family:var(--body);font-weight:500;font-size:13px;color:var(--ink-2);margin-left:8px}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;font:inherit;font-weight:500;color:var(--ink-2);cursor:pointer;margin-bottom:-1px;white-space:nowrap;flex:0 0 auto}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.panel[hidden]{display:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.stat b{display:block;font-family:var(--mono);font-size:20px;font-variant-numeric:tabular-nums;font-weight:500}
+.stat span{font-size:12px;color:var(--ink-2);letter-spacing:.04em}
+.lvbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:14px;font-size:13px;color:var(--ink-2)}
+.lvbar label{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border:1px solid var(--line);border-radius:999px;background:var(--card);cursor:pointer;color:var(--ink)}
+.lvbar label:has(input:checked){background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.lvbar input{display:none}
+.unitbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.unitbar select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);max-width:100%}
+.unitbar .btn{padding:8px 12px}
+.uprog{flex:1;min-width:140px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.uprog-bar{flex:1;height:8px;border-radius:999px;background:var(--line);overflow:hidden;position:relative}
+.uprog-bar::after{content:"";position:absolute;inset:0;width:var(--p,0%);background:var(--accent);border-radius:999px;transition:width .25s}
+.result h2{margin:0 0 12px;font-size:20px}
+.res-stats{display:flex;gap:10px;flex-wrap:wrap}
+.res-stats div{flex:1;min-width:100px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+.res-stats b{display:block;font-family:var(--mono);font-size:22px;font-weight:500}
+.res-stats span{font-size:12px;color:var(--ink-2)}
+.res-wrong{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+.res-wrong .w{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:14px}
+.res-wrong .w b{font-family:var(--hanzi);font-size:18px;font-weight:500;margin-right:6px}
+.res-wrong .w small{color:var(--ink-2)}
+.q-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-2);letter-spacing:.04em}
+.q-meta .box{font-family:var(--mono)}
+.prompt{text-align:center;padding-block:18px 8px;min-height:120px}
+.hanzi{font-family:var(--hanzi);font-size:64px;line-height:1.2;font-weight:500;letter-spacing:.06em;text-wrap:balance}
+/* 정답 숨김: 글자 하나당 점선 빈칸 하나. (□ 글자를 쓰면 글꼴 깨짐처럼 보여서 CSS 상자로 그림) */
+.hanzi .blank{display:inline-block;width:.95em;height:1.05em;border:2px dashed var(--line);border-radius:6px;vertical-align:-.12em;margin:0 .06em}
+.pinyin{font-family:var(--mono);font-size:22px;margin-top:4px;letter-spacing:.02em}
+.pinyin .s1{color:var(--t1)}.pinyin .s2{color:var(--t2)}.pinyin .s3{color:var(--t3)}.pinyin .s4{color:var(--t4)}.pinyin .s5{color:var(--t5)}
+.meaning{margin-top:10px;font-size:17px;max-width:60ch;margin-inline:auto}
+.meaning .ko{font-weight:500}
+.meaning .en{color:var(--ink-2);font-size:14px;margin-top:2px}
+.meaning .ko.empty{color:var(--ink-2);font-weight:400;font-style:italic;font-size:14px}
+.trad{font-family:var(--hanzi);color:var(--ink-2);font-size:14px;margin-top:4px}
+.answer{display:flex;gap:8px;margin-top:16px}
+.answer input{flex:1;font:inherit;font-size:22px;font-family:var(--hanzi);padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-width:0}
+.answer input.pymode{font-family:var(--mono);font-size:20px}
+.answer input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.answer input.good{border-color:var(--good);background:var(--good-bg)}
+.answer input.bad{border-color:var(--bad);background:var(--bad-bg)}
+button.btn{font:inherit;font-weight:500;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;white-space:nowrap}
+button.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.btn.icon{padding:8px 12px;font-size:18px;line-height:1}
+button.btn:focus-visible,nav button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.feedback{margin-top:12px;min-height:26px;font-size:15px}
+.feedback.good{color:var(--good)}.feedback.bad{color:var(--bad)}
+.feedback .ans{font-family:var(--hanzi);font-size:20px;margin-left:6px}
+.extlinks{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.extlinks a.btn{text-decoration:none;font-size:13px;padding:7px 12px;color:var(--ink)}
+.toolrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;justify-content:space-between;align-items:center}
+.toolrow .hint{font-size:12px;color:var(--ink-2)}
+.koedit{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.koedit label{font-size:12px;color:var(--ink-2);white-space:nowrap}
+.koedit input{flex:1;min-width:160px;font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+.koedit input:focus{outline:2px solid var(--accent);outline-offset:1px}
+/* 설정 */
+.set{display:grid;gap:10px}
+.set h3{margin:14px 0 4px;font-size:13px;letter-spacing:.06em;color:var(--ink-2);text-transform:uppercase}
+.set label.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.set label.row span small{display:block;color:var(--ink-2);font-size:12px}
+.set select,.set input[type=range]{font:inherit}
+.set input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.dataops{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);padding:8px;margin-top:8px}
+/* 통계 */
+.sk-h{margin:0 0 12px;font-size:14px;font-weight:700}
+.sk-h small{font-weight:400;color:var(--ink-2);margin-left:6px}
+.heat-wrap{display:flex;gap:6px;overflow-x:auto}
+.heat-days{display:grid;grid-template-rows:repeat(7,14px);gap:3px;font-size:10px;color:var(--ink-2);line-height:14px}
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,14px);gap:3px}
+.heat i,.heat-legend i{display:block;width:14px;height:14px;border-radius:3px;background:var(--h0)}
+.heat i.future{visibility:hidden}
+.heat-legend{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-2);margin-top:8px;justify-content:flex-end}
+.heat-legend i{display:inline-block}
+:root{--h0:#E6EAF0;--h1:#BFE3D6;--h2:#7FC7AE;--h3:#3F9E82;--h4:#1E6B57}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--h0:#27303F;--h1:#1F4A3C;--h2:#2A7A5E;--h3:#3FAE87;--h4:#7BE0BC}}
+:root[data-theme="dark"]{--h0:#27303F;--h1:#1F4A3C;--h2:#2A7A5E;--h3:#3FAE87;--h4:#7BE0BC}
+.c0{background:var(--h0)!important}.c1{background:var(--h1)!important}.c2{background:var(--h2)!important}.c3{background:var(--h3)!important}.c4{background:var(--h4)!important}
+.bars{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;align-items:end;height:136px;padding-top:16px;box-sizing:border-box;border-bottom:1px solid var(--line)}
+.bars .b{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.bars .b i{display:block;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;opacity:.9}
+.bars .b:hover i{opacity:1}
+.bars .b span{position:absolute;top:-16px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.bars-x{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;font-size:10px;color:var(--ink-2);text-align:center;margin-top:4px;font-variant-numeric:tabular-nums}
+.lvprog{display:grid;gap:8px}
+.lvprog .row{display:grid;grid-template-columns:64px 1fr 110px;align-items:center;gap:10px;font-size:13px}
+.lvprog .track{height:10px;background:var(--line);border-radius:999px;overflow:hidden}
+.lvprog .fill{height:100%;background:var(--accent);border-radius:999px}
+.lvprog .num{font-family:var(--mono);font-size:12px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+#btnKoToggle{display:none}
+.writers{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.writer{border:1.5px dashed var(--line);border-radius:12px;background:var(--card);touch-action:none;position:relative;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:50% 50%;background-position:center}
+.writer.done{border-style:solid;border-color:var(--good)}
+.writer.active{border-color:var(--accent);border-style:solid}
+.writer svg{position:relative}
+.writer-note{width:100%;text-align:center;font-size:12px;color:var(--ink-2)}
+@media (max-width:480px){.modebar{grid-template-columns:repeat(3,1fr)}.tone-syl button{padding:6px 8px;min-width:38px;font-size:14px}}
+.modebar.sent{grid-template-columns:auto repeat(3,1fr);margin-top:-6px}
+.modelabel{font-size:12px;color:var(--ink-2);align-self:center;padding:0 4px;letter-spacing:.04em}
+.hanzi.sent{font-size:30px;letter-spacing:.04em;line-height:1.5}
+.hanzi.sent .blank{width:.9em;height:1em;vertical-align:-.1em}
+.hanzi.sent mark{background:var(--good-bg);color:var(--good);padding:0 .08em;border-radius:4px}
+.hanzi.sent .wrongch{color:var(--bad);text-decoration:underline wavy var(--bad)}
+.orderArea{margin-top:10px}
+.tokens{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:44px;padding:8px;border-radius:10px}
+.tokens.built{border:1.5px dashed var(--line);background:var(--paper)}
+.tokens.pool{margin-top:8px}
+.tokens button{font:inherit;font-family:var(--hanzi);font-size:22px;padding:6px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer}
+.tokens.built button{border-color:var(--accent)}
+.answer.hiddenInput input{display:none}
+@media (max-width:480px){.modebar.sent{grid-template-columns:auto repeat(3,1fr)}.modebar.sent button{padding:6px 2px}.modebar.sent button b{font-size:12px}.hanzi.sent{font-size:24px}.tokens button{font-size:19px;padding:5px 10px}}
+/* 학습 모드 선택 */
+.modebar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px}
+.sayArea{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.sayArea .mic{font:inherit;font-size:18px;font-weight:600;padding:14px 26px;border-radius:999px;border:2px solid var(--accent);background:var(--card);color:var(--ink);cursor:pointer}
+.sayArea .mic.listening{background:var(--bad-bg);border-color:var(--bad);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.35)}50%{box-shadow:0 0 0 10px rgba(192,57,43,0)}}
+.sayArea .heard{font-family:var(--hanzi);font-size:22px;min-height:1.4em}
+.sayArea .note{font-size:12px;color:var(--ink-2);text-align:center}
+@media (prefers-reduced-motion:reduce){.sayArea .mic.listening{animation:none}}
+.toneArea{margin-top:10px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.tone-syl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+.tone-syl .syl{font-family:var(--mono);font-size:20px;min-width:64px;text-align:right}
+.tone-syl button{font:inherit;font-family:var(--mono);font-size:16px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer;min-width:44px}
+.tone-syl button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--good-bg)}
+.tone-syl button.t1{color:var(--t1)}.tone-syl button.t2{color:var(--t2)}.tone-syl button.t3{color:var(--t3)}.tone-syl button.t4{color:var(--t4)}.tone-syl button.t5{color:var(--t5)}
+.tone-syl.good .syl{color:var(--good)}.tone-syl.bad .syl{color:var(--bad)}
+.modebar button{font:inherit;padding:8px 6px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer;text-align:center;line-height:1.25}
+.modebar button b{display:block;font-weight:600;font-size:14px}
+.modebar button small{display:block;font-size:11px;color:var(--ink-2);margin-top:2px}
+.modebar button[aria-checked="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--good-bg)}
+.modebar button[aria-checked="true"] small{color:var(--ink)}
+@media (max-width:480px){.modebar{grid-template-columns:repeat(2,1fr)}.modebar button small{display:none}}
+/* 내 단어장 */
+.mine-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.mine-head b{font-family:var(--mono);font-size:20px;font-weight:500;margin-right:4px}
+.mine-head .hint{font-size:12px;color:var(--ink-2);display:block}
+.mine-head select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+.addform{display:grid;grid-template-columns:1.2fr 1.4fr 2fr auto;gap:8px;padding-top:12px;border-top:1px dashed var(--line)}
+.addform input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);min-width:0}
+.addform input:focus{outline:2px solid var(--accent);outline-offset:1px}
+@media (max-width:560px){.addform{grid-template-columns:1fr 1fr}}
+button.star{background:none;border:0;font-size:18px;cursor:pointer;color:var(--ink-2);padding:2px 4px;line-height:1}
+button.star.on{color:var(--accent)}
+button.del{background:none;border:0;cursor:pointer;color:var(--ink-2);font-size:14px;padding:4px}
+button.del:hover{color:var(--bad)}
+/* 폰 폭에서는 표를 카드 모양으로: 한 단어가 한 덩어리로 보이게 */
+@media (max-width:600px){
+  .tblwrap table thead{display:none}
+  .tblwrap table,.tblwrap tbody,.tblwrap tr,.tblwrap td{display:block;width:100%;box-sizing:border-box}
+  .tblwrap tr{display:grid;grid-template-columns:auto auto 1fr auto;grid-template-areas:"star lv hanzi say" "py py py py" "ko ko ko ko" "en en en en" "box box box box";gap:2px 8px;padding:10px 4px;border-bottom:1px solid var(--line);align-items:center}
+  .tblwrap td{border:0;padding:0}
+  .tblwrap td:nth-child(1){grid-area:star}.tblwrap td.b:nth-child(2){grid-area:lv}.tblwrap td.h{grid-area:hanzi;font-size:22px}
+  .tblwrap td.p{grid-area:py}.tblwrap td.k{grid-area:ko}.tblwrap td.e{grid-area:en;max-width:none}
+  .tblwrap td.b:nth-child(7){grid-area:box;font-size:11px}.tblwrap td:last-child{grid-area:say;text-align:right}
+  .tblwrap td.k input{border-color:var(--line);padding:6px 8px}
+  .tblwrap td.k input::placeholder{color:var(--ink-2)}
+}
+/* 단어장 */
+.search{display:flex;gap:8px;margin-bottom:10px}
+.search input{flex:1;font:inherit;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.tblwrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--ink-2);letter-spacing:.04em;font-weight:500}
+td.h{font-family:var(--hanzi);font-size:18px;white-space:nowrap}
+td.p{font-family:var(--mono);white-space:nowrap}
+td.e{color:var(--ink-2);font-size:13px;max-width:28ch;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}   /* 영어 뜻은 2줄까지만 */
+td.k input{width:100%;min-width:120px;font:inherit;padding:4px 6px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ink)}
+td.k input:hover{border-color:var(--line)}
+td.k input:focus{outline:none;border-color:var(--accent);background:var(--paper)}
+td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+.pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px;font-size:13px;color:var(--ink-2)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+@media (max-width:480px){
+  .stats{grid-template-columns:repeat(2,1fr);gap:8px}.stat{padding:8px 10px}.stat b{font-size:17px}
+  .hanzi{font-size:48px}.meaning{font-size:15px}.meaning .en{font-size:13px}
+  header h1{font-size:19px}header{padding-block:12px 6px}
+  .lvbar{gap:4px}.lvbar label{padding:3px 8px;font-size:12px}
+  .card{padding:12px}.toolrow .hint{display:none}#ttsState{display:none}
+  /* 키보드가 올라와도 문제~입력칸이 한 화면에 들어오게: 위쪽 요소를 줄이거나 숨김 */
+  #tab-study .stats{display:none}               /* 통계 탭에 같은 숫자가 있음 */
+  .modebar{gap:4px;margin-bottom:8px}.modebar button{padding:6px 4px}.modebar button b{font-size:13px}
+  .unitbar{gap:6px;margin-bottom:8px}.unitbar select{padding:6px 8px;font-size:13px}.unitbar .btn{padding:6px 10px}
+  .lvbar{margin-bottom:8px}
+  .prompt{padding-block:6px 2px;min-height:0}
+  .hanzi{font-size:40px;line-height:1.15}.hanzi .blank{width:.9em;height:1em}
+  .pinyin{font-size:17px;margin-top:2px}
+  .trad{display:none}#quizCard.answered .trad{display:block;font-size:12px}   /* 다른 읽기·번체는 답 확인 후에만 */
+  .meaning{margin-top:6px;font-size:15px}.meaning .en{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;font-size:12px}
+  .answer{margin-top:10px;gap:6px}.answer input{font-size:20px;padding:8px 10px}
+  .answer .btn.icon{padding:8px 10px}.answer .btn.primary{padding:8px 12px}
+  .feedback{margin-top:8px;min-height:0;font-size:14px}
+  .extlinks{margin-top:6px;gap:6px}.extlinks a.btn{font-size:12px;padding:5px 8px}
+  .toolrow{margin-top:8px}.toolrow .btn{padding:7px 10px;font-size:13px}
+  #btnKoToggle{display:inline-block}
+  .koedit{display:none}#quizCard.show-ko .koedit{display:flex;margin-top:8px;padding-top:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">__APP_VERSION__</span></small></h1>
+  <span id="ttsState" style="font-size:12px;color:var(--ink-2)"></span>
+</header>
+<nav role="tablist">
+  <button role="tab" aria-selected="true" data-tab="study">학습</button>
+  <button role="tab" aria-selected="false" data-tab="stats">통계</button>
+  <button role="tab" aria-selected="false" data-tab="mine">내 단어장</button>
+  <button role="tab" aria-selected="false" data-tab="list">전체 단어</button>
+  <button role="tab" aria-selected="false" data-tab="settings">설정 · 데이터</button>
+</nav>
+
+<!-- ───────── 학습 탭 ───────── -->
+<section class="panel" id="tab-study">
+  <div class="stats">
+    <div class="stat"><b id="stToday">0</b><span>오늘 푼 문제</span></div>
+    <div class="stat"><b id="stAcc">–</b><span>오늘 정답률</span></div>
+    <div class="stat"><b id="stDue">0</b><span>복습 예정</span></div>
+    <div class="stat"><b id="stLearned">0</b><span>학습한 단어</span></div>
+  </div>
+  <div class="lvbar" id="lvbar">급수
+    <label><input type="checkbox" value="1" checked>1급</label>
+    <label><input type="checkbox" value="2">2급</label>
+    <label><input type="checkbox" value="3">3급</label>
+    <label><input type="checkbox" value="4">4급</label>
+    <label><input type="checkbox" value="5">5급</label>
+    <label><input type="checkbox" value="6">6급</label>
+    <label><input type="checkbox" value="7">7~9급</label>
+    <span id="lvCount" style="margin-left:auto"></span>
+  </div>
+  <div class="modebar" id="modebar" role="radiogroup" aria-label="단어 학습 모드"></div>
+  <div class="modebar sent" id="modebar2" role="radiogroup" aria-label="문장 학습 모드"></div>
+  <div class="unitbar">
+    <select id="unitSel" aria-label="과 선택"></select>
+    <button class="btn" id="btnUnitPrev" title="이전 과">‹</button>
+    <button class="btn" id="btnUnitNext" title="다음 과">›</button>
+    <button class="btn" id="btnReview">복습 (<span id="reviewN">0</span>)</button>
+    <div class="uprog"><div class="uprog-bar" id="uprogBar"></div><span id="uprogText"></span></div>
+  </div>
+
+  <div class="card result" id="resultCard" hidden>
+    <h2 id="resTitle">과 완료</h2>
+    <div class="res-stats"><div><b id="resAcc">–</b><span>정답률</span></div><div><b id="resN">0</b><span>문제 수</span></div><div><b id="resWrong">0</b><span>틀린 단어</span></div></div>
+    <div id="resWrongList" class="res-wrong"></div>
+    <div class="dataops" style="margin-top:16px">
+      <button class="btn primary" id="btnResNext">다음 과 →</button>
+      <button class="btn" id="btnResRetry">이 과 다시</button>
+      <button class="btn" id="btnResWrong">틀린 것만 다시</button>
+    </div>
+  </div>
+
+  <div class="card" id="quizCard">
+    <div class="q-meta"><span id="qKind">뜻을 보고 한자를 입력하세요</span><span class="box" id="qBox"></span></div>
+    <div class="prompt">
+      <div class="hanzi" id="qHanzi"></div>
+      <div class="pinyin" id="qPinyin"></div>
+      <div class="trad" id="qTrad"></div>
+      <div class="meaning"><div class="ko" id="qKo"></div><div class="en" id="qEn"></div></div>
+      <div class="writers" id="writers" hidden></div>
+      <div class="toneArea" id="toneArea" hidden></div>
+      <div class="sayArea" id="sayArea" hidden>
+        <button type="button" class="mic" id="btnMic">🎤 누르고 말하기</button>
+        <div class="heard" id="heard"></div>
+        <div class="note" id="sayNote"></div>
+      </div>
+      <div class="orderArea" id="orderArea" hidden>
+        <div class="tokens built" id="built" aria-label="만든 문장"></div>
+        <div class="tokens pool" id="pool" aria-label="남은 어절"></div>
+      </div>
+    </div>
+    <div class="answer">
+      <input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="여기에 입력하고 Enter" aria-label="답 입력">
+      <button class="btn icon" id="btnSpeak" title="발음 듣기 (Alt+P)">🔊</button>
+      <button class="btn icon" id="btnStar" title="내 단어장에 담기 / 빼기 (Alt+S)">☆</button>
+      <button class="btn primary" id="btnCheck">확인</button>
+    </div>
+    <div class="feedback" id="fb"></div>
+    <div class="extlinks" id="ext" hidden>
+      <a class="btn" id="lnkYouglish" target="_blank" rel="noopener">▶ 유튜브 예문 (YouGlish)</a>
+      <a class="btn" id="lnkForvo" target="_blank" rel="noopener">🎙 원어민 발음 (Forvo)</a>
+      <a class="btn" id="lnkDict" target="_blank" rel="noopener">📖 네이버 사전</a>
+    </div>
+    <div class="toolrow">
+      <span class="hint">Enter: 확인 → 다음 · Alt+P: 발음 · Alt+H: 힌트 · Alt+S: 내 단어장</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="btnHint">힌트</button>
+        <button class="btn" id="btnSkip">건너뛰기</button>
+        <button class="btn" id="btnStrokes" title="획순 애니메이션 보기">✍ 획순</button>
+        <button class="btn" id="btnKoToggle">뜻 수정</button>
+      </div>
+    </div>
+    <div class="koedit">
+      <label for="koInput">한국어 뜻 직접 입력</label>
+      <input id="koInput" placeholder="예: 안녕하세요 (인사)">
+      <button class="btn" id="btnKoSave">저장</button>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── 통계 탭 ───────── -->
+<section class="panel" id="tab-stats" hidden>
+  <div class="stats">
+    <div class="stat"><b id="skStreak">0</b><span>연속 학습일</span></div>
+    <div class="stat"><b id="skWeek">0</b><span>최근 7일 푼 문제</span></div>
+    <div class="stat"><b id="skLearned">0</b><span>학습한 단어 (전체)</span></div>
+    <div class="stat"><b id="skAcc">–</b><span>전체 정답률</span></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">학습 달력 <small>최근 16주 · 색이 진할수록 많이 품</small></h3>
+    <div class="heat-wrap"><div class="heat-days"><span>월</span><span></span><span>수</span><span></span><span>금</span><span></span><span></span></div><div class="heat" id="heat"></div></div>
+    <div class="heat-legend">적게 <i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i> 많이</div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">최근 14일 <small>하루에 푼 문제 수 · 막대 위에 마우스를 올리면 자세히</small></h3>
+    <div class="bars" id="dayBars"></div><div class="bars-x" id="dayBarsX"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">급수별 진도 <small>한 번 이상 맞힌 단어 / 전체</small></h3>
+    <div class="lvprog" id="lvProg"></div>
+  </div>
+  <div class="card">
+    <h3 class="sk-h">기억 단계 분포 <small>상자가 높을수록 오래 기억한 단어 · 다음 복습까지 0/1/3/7/14/30/60일</small></h3>
+    <div class="lvprog" id="boxDist"></div>
+  </div>
+</section>
+
+<!-- ───────── 내 단어장 탭 ───────── -->
+<section class="panel" id="tab-mine" hidden>
+  <div class="card" style="margin-bottom:14px">
+    <div class="mine-head">
+      <div><b id="mineCount">0</b>단어 <span class="hint">학습 화면의 ☆ 버튼(Alt+S)이나 전체 단어 목록에서 담거나, 아래에서 직접 추가</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="mineChunk" aria-label="학습할 묶음"></select>
+        <button class="btn primary" id="btnMineStudy">내 단어장 학습</button>
+      </div>
+    </div>
+    <form class="addform" id="addForm">
+      <input id="addS" placeholder="한자 (예: 加油)" required aria-label="한자">
+      <input id="addPy" placeholder="병음 (jiā yóu 또는 jia1 you2)" aria-label="병음">
+      <input id="addKo" placeholder="한국어 뜻 (예: 힘내다; 주유하다)" aria-label="한국어 뜻">
+      <button class="btn" type="submit">+ 추가</button>
+    </form>
+  </div>
+  <div class="card" style="padding:8px 12px">
+    <div class="tblwrap"><table>
+      <thead><tr><th></th><th>급</th><th>간체</th><th>병음</th><th>한국어 뜻 (클릭해서 수정)</th><th>영어 뜻</th><th>상자</th><th></th></tr></thead>
+      <tbody id="mineBody"></tbody>
+    </table></div>
+    <p id="mineEmpty" class="hint" style="padding:16px 4px;margin:0" hidden>아직 담은 단어가 없어요. 학습하다 헷갈리는 단어에서 ☆ 를 눌러 보세요.</p>
+  </div>
+</section>
+
+<!-- ───────── 단어장 탭 ───────── -->
+<section class="panel" id="tab-list" hidden>
+  <div class="search">
+    <input id="q" placeholder="한자 · 병음 · 뜻 검색 (예: 学, xue, study)">
+    <select id="listLv"><option value="">전체 급수</option><option value="1">1급</option><option value="2">2급</option><option value="3">3급</option><option value="4">4급</option><option value="5">5급</option><option value="6">6급</option><option value="7">7~9급</option></select>
+  </div>
+  <div class="card" style="padding:8px 12px">
+    <div class="tblwrap"><table>
+      <thead><tr><th></th><th>급</th><th>간체</th><th>병음</th><th>한국어 뜻 (클릭해서 입력)</th><th>영어 뜻</th><th>상자</th><th></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table></div>
+    <div class="pager"><button class="btn" id="pgPrev">‹</button><span id="pgInfo"></span><button class="btn" id="pgNext">›</button></div>
+  </div>
+</section>
+
+<!-- ───────── 설정 탭 ───────── -->
+<section class="panel" id="tab-settings" hidden>
+  <div class="card set">
+    <h3>문제 방식</h3>
+    <p style="margin:0 0 4px;font-size:13px;color:var(--ink-2)">모드(익히기 · 뜻→한자 · 한자→병음 · 듣고 쓰기)는 학습 화면 위쪽에서 고릅니다. 병음 색은 성조: <span style="color:var(--t1)">1성</span> <span style="color:var(--t2)">2성</span> <span style="color:var(--t3)">3성</span> <span style="color:var(--t4)">4성</span> <span style="color:var(--t5)">경성</span></p>
+    <label class="row"><span>한국어 뜻 보이기</span><input type="checkbox" id="optShowKo" checked></label>
+    <label class="row"><span>영어 뜻 보이기</span><input type="checkbox" id="optShowEn" checked></label>
+    <label class="row"><span>번체 보이기</span><input type="checkbox" id="optShowTrad"></label>
+    <h3>발음</h3>
+    <label class="row"><span>문제 나올 때 자동 재생<small>정답 확인 후에는 항상 한 번 읽어줌</small></span><input type="checkbox" id="optAutoSpeak"></label>
+    <label class="row"><span>음성<small>브라우저에 설치된 중국어 음성 목록</small></span><select id="optVoice"></select></label>
+    <label class="row"><span>속도 <span id="rateVal">0.9</span></span><input type="range" id="optRate" min="0.5" max="1.3" step="0.1" value="0.9"></label>
+    <h3>출제</h3>
+    <label class="row"><span>한 과의 단어 수<small>급수를 이 크기로 잘라 과를 만듦. 바꾸면 과 번호가 다시 매겨짐</small></span>
+      <select id="optUnitSize"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="50">50</option></select></label>
+    <label class="row"><span>과 안에서 순서<small>빈도순: 자주 쓰는 단어부터 · 무작위: 섞어서 출제</small></span>
+      <select id="optOrder"><option value="freq">빈도순</option><option value="random">무작위</option></select></label>
+    <label class="row"><span>손으로 쓰기: 글자 윤곽 보이기<small>끄면 빈 칸에 기억만으로 써야 함 (어려움)</small></span><input type="checkbox" id="optOutline" checked></label>
+    <label class="row"><span>글자 크기<small>폰에서 크게 보이면 '작게'로</small></span>
+      <select id="optZoom"><option value="0.8">작게</option><option value="0.9">약간 작게</option><option value="1">보통</option><option value="1.15">크게</option><option value="1.3">아주 크게</option></select></label>
+    <label class="row"><span>테마</span><select id="optTheme"><option value="">시스템</option><option value="light">밝게</option><option value="dark">어둡게</option></select></label>
+    <h3>기기 간 동기화</h3>
+    <div id="syncBox">
+      <p id="syncStatus" style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">확인 중…</p>
+      <div id="gistSetup" hidden>
+        <p style="margin:0 0 6px;font-size:13px;color:var(--ink-2)">GitHub Gist(깃허브의 개인 메모 저장소)에 기록을 올려 두고 다른 기기에서 받아옵니다. GitHub → Settings → Developer settings → Personal access tokens → <b>Tokens (classic)</b> → Generate new token → <b>gist</b> 권한만 체크 → 만들어진 토큰을 아래에 붙여넣기. 다른 기기에서도 같은 토큰을 넣으면 자동으로 이어집니다.</p>
+        <div class="dataops"><input id="gistToken" type="password" placeholder="ghp_… GitHub 토큰" style="flex:1;min-width:200px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)"><button class="btn" id="btnGistConnect">연결</button><button class="btn" id="btnGistOff" hidden>연결 해제</button></div>
+      </div>
+      <div class="dataops" style="margin-top:8px"><button class="btn" id="btnSyncNow">지금 동기화</button></div>
+    </div>
+    <h3>데이터</h3>
+    <p style="margin:0;font-size:13px;color:var(--ink-2)">학습 기록과 직접 입력한 한국어 뜻은 이 브라우저에만 저장됩니다. 다른 기기로 옮기려면 내보내기 → 붙여넣기 → 가져오기.</p>
+    <div class="dataops">
+      <button class="btn" id="btnExport">내보내기 (아래 칸에 표시)</button>
+      <button class="btn" id="btnImport">아래 칸 내용 가져오기</button>
+      <button class="btn" id="btnCopy">복사</button>
+      <button class="btn" id="btnResetProg">학습 기록 초기화</button>
+    </div>
+    <textarea class="io" id="io" placeholder='{"ko":{...},"progress":{...}}'></textarea>
+    <p style="margin:6px 0 0;font-size:12px;color:var(--ink-2)">단어 <b id="totalWords"></b>개 · 출처: HSK 3.0 목록 + CC-CEDICT (영어 뜻) · 한국어 뜻 입력됨: <b id="koCount">0</b>개</p>
+  </div>
+</section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script id="words" type="application/json">__WORDS_JSON__</script>
+<script id="sents" type="application/json">__SENTS_JSON__</script>
+<script id="strokes" type="application/json">__STROKES_JSON__</script>
+<script>/* hanzi-writer (MIT, https://github.com/chanind/hanzi-writer) — 획순 애니메이션·쓰기 퀴즈 라이브러리 */
+__HANZI_WRITER_JS__</script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   데이터 로드
+   ─ words.json 내용이 위 <script type="application/json"> 안에 통째로 들어 있음.
+     (파일 하나로 어디서든 열리게 하려고 데이터를 페이지에 '내장'한 것)
+   ═══════════════════════════════════════════════════════════ */
+const DATA = JSON.parse(document.getElementById('words').textContent);
+const WORDS = DATA.words;
+// 예문: { 단어id: {zh:'我很忙。', seg:['我','很','忙','。'], py:'wǒ hěn máng 。', ko:'나는 바쁘다.'} } — 현재 HSK 1~3급만
+const SENTS = JSON.parse(document.getElementById('sents').textContent).sentences;
+function sentOf(w){ return SENTS[String(w.id)] || null; }
+const BY_ID = new Map(WORDS.map(w => [w.id, w]));
+
+/* ── localStorage: 브라우저가 제공하는 작은 저장 공간(키-값). 새로고침해도 남음.
+      다만 시크릿 창 등에서는 막힐 수 있어 항상 try/catch 로 감싼다. ── */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
+};
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del']);
+const KO       = store.get('zh.ko', {});        // { "你好": "안녕하세요" }
+// 내 단어장: 별표(FAV)로 담은 HSK 단어 + 직접 추가한 단어(CUSTOM). 직접 추가한 단어는 id 100000 부터
+const FAV    = store.get('zh.fav', {});           // { id: 담은 시각 }
+const CUSTOM = store.get('zh.custom', []);        // [{id, s, t, py, pyn, en, ko, lv:0, alt:[], custom:true}]
+for (const w of CUSTOM) BY_ID.set(w.id, w);
+const CUSTOM_DEL = store.get('zh.custom_del', {});   // 지운 직접 추가 단어 {id: 지운 시각} — 다른 기기에서도 지워지게
+function isFav(id){ return FAV[id] > 0; }               // FAV 값: 양수 = 담은 시각, 음수 = 뺀 시각 (빼기도 동기화되게 흔적을 남김)
+function toggleFav(id){ FAV[id] = isFav(id) ? -Date.now() : Date.now(); store.set('zh.fav', FAV); return isFav(id); }
+function mineWords(){ return [...Object.keys(FAV).filter(k => FAV[k] > 0).map(k => BY_ID.get(+k)).filter(Boolean), ...CUSTOM.filter(w => !isFav(w.id))]
+  .sort((a,b) => (FAV[b.id]||b.added||0) - (FAV[a.id]||a.added||0)); }   // 최근에 담은 것부터
+const PROGRESS = store.get('zh.progress', {});  // { "12": {box:2, due:<ms>, c:3, w:1} }
+const SETTINGS = Object.assign({
+  mode:'hanzi', showHanzi:false, showPinyin:false, showKo:true, showEn:true, showTrad:false,
+  autoSpeak:false, voice:'', rate:0.9, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true
+}, store.get('zh.settings', {}));
+const TODAY = store.get('zh.today', {date:'', n:0, ok:0});
+const dayKey = () => new Date().toISOString().slice(0,10);
+if (TODAY.date !== dayKey()) { TODAY.date = dayKey(); TODAY.n = 0; TODAY.ok = 0; }
+// 일별 학습 기록: { "2026-09-10": {n:푼 문제, ok:정답, nw:처음 본 단어 수, u:끝낸 과 수} } — 통계 탭에서 사용
+const HISTORY = store.get('zh.history', {});
+function histToday(){ const k = dayKey(); return HISTORY[k] || (HISTORY[k] = {n:0, ok:0, nw:0, u:0}); }
+
+/* ═══════════ 간격 반복 (SRS: Spaced Repetition System) ═══════════
+   맞힐수록 '상자(box)' 번호가 올라가고, 상자가 높을수록 다음 복습까지 간격이 길어짐.
+   틀리면 상자 0 으로 내려와 당장 다시 나옴. */
+const INTERVAL_DAYS = [0, 1, 3, 7, 14, 30, 60];
+const DAY = 86400000;
+function prog(id){ return PROGRESS[id] || (PROGRESS[id] = {box:0, due:0, c:0, w:0}); }
+function markResult(id, ok, hinted){
+  const p = prog(id); p.t = Date.now();   // t: 마지막 변경 시각 (기기 간 병합용)
+  if (!ok){ p.w++; p.box = 0; p.due = Date.now(); }                                  // 틀림: 상자 0, 바로 복습 대상
+  else if (hinted){ p.h = (p.h||0) + 1; p.box = Math.min(p.box, 1); p.due = Date.now(); }  // 힌트 보고 맞힘: 아직 못 외운 것 → 바로 복습 대상 (상자 최대 1)
+  else { p.c++; p.box = Math.min(p.box+1, INTERVAL_DAYS.length-1); p.due = Date.now() + INTERVAL_DAYS[p.box]*DAY; }
+  store.set('zh.progress', PROGRESS);
+}
+
+/* ═══════════ 학습 모드 ═══════════
+   learn  익히기   : 한자·병음·뜻 모두 보여주고 따라 입력 (새 단어 첫 대면용)
+   test   뜻→한자  : 뜻만 보고 한자 입력 (본 시험)
+   pinyin 한자→병음: 한자 보고 병음 입력
+   listen 듣고 쓰기: 발음을 듣고 뜻을 참고해 한자 입력 (한자·병음 숨김, 힌트 = 병음) */
+const MODES = {
+  learn:  { name:'익히기',   desc:'한자·병음·뜻을 보고 따라 입력', input:'hanzi',  showH:true,  showP:true,  showM:true,  speak:true  },
+  test:   { name:'뜻→한자',  desc:'뜻만 보고 한자 입력',            input:'hanzi',  showH:false, showP:false, showM:true,  speak:false },
+  pinyin: { name:'한자→병음', desc:'한자 보고 병음 입력',            input:'pinyin', showH:true,  showP:false, showM:true,  speak:false },
+  listen: { name:'듣고 쓰기', desc:'발음 듣고 (뜻 참고) 한자 입력', input:'hanzi',  showH:false, showP:false, showM:true,  speak:true  },
+  write:  { name:'손으로 쓰기', desc:'뜻·병음 보고 획순대로 그리기',  input:'draw',   showH:false, showP:true,  showM:true,  speak:false },
+  tone:   { name:'성조 맞히기', desc:'발음 듣고 음절마다 성조 고르기',  input:'tone',   showH:false, showP:false, showM:true,  speak:true  },
+  say:    { name:'말하기',     desc:'단어를 소리 내어 읽으면 음성 인식으로 판정', input:'say', showH:true, showP:true, showM:true, speak:false },
+  // 문장 연습 (예문이 있는 단어만 — 없으면 뜻→한자로 대체)
+  cloze:  { name:'빈칸 채우기', desc:'예문의 빈칸에 들어갈 단어 입력', input:'hanzi', kind:'sent', showM:true, speak:false, group:'sent' },
+  dict:   { name:'문장 받아쓰기', desc:'문장을 듣고 전체를 입력',        input:'sent',  kind:'sent', showM:true, speak:true,  group:'sent' },
+  order:  { name:'어순 배열',   desc:'흩어진 어절을 순서대로 눌러 완성', input:'order', kind:'sent', showM:true, speak:false, group:'sent' },
+  // 듣고 쓰기에도 뜻을 보여주는 이유: 중국어는 같은 발음(shì = 是·事·十·试…)인 단어가 많아 소리만으로는 어느 단어인지 정할 수 없음
+};
+function mode(){ const m = MODES[SETTINGS.study] || MODES.test; return (m.kind==='sent' && cur && !sentOf(cur)) ? MODES.test : m; }   // 예문 없는 단어는 뜻→한자로
+
+/* ═══════════ 과(課) 나누기 ═══════════
+   급수 안의 단어를 빈도순으로 UNIT_SIZE 개씩 잘라 "1급 3과" 처럼 부른다.
+   한 세션 = 한 과. 과 안의 단어를 전부 한 번씩 맞히면 세션이 끝나고 결과 화면이 뜬다. */
+function pool(){ return WORDS.filter(w => SETTINGS.levels.includes(w.lv)); }
+function unitSize(){ return SETTINGS.unitSize || 20; }
+function units(){                       // 현재 급수의 과 목록 [{key, label, words}]
+  const ws = pool(), n = unitSize(), out = [];
+  const lvName = l => l===7 ? '7~9급' : l+'급';
+  for (let i = 0; i < ws.length; i += n){
+    const chunk = ws.slice(i, i+n);
+    const lv = SETTINGS.levels.length===1 ? lvName(SETTINGS.levels[0]) : SETTINGS.levels.map(lvName).join('+');
+    out.push({ key: SETTINGS.levels.join('_')+'-'+n+'-'+(i/n), label: `${lv} ${i/n+1}과 (${i+1}~${i+chunk.length})`, words: chunk });
+  }
+  return out;
+}
+const UNITS_DONE = store.get('zh.units', {});   // { key: {acc, date} } 완료한 과 기록
+
+/* ═══════════ 세션 (한 과 또는 복습 한 묶음) ═══════════
+   queue: 아직 안 맞힌 단어 id 목록. 틀리면 뒤로 다시 넣어서 그 세션 안에 반드시 한 번은 맞히게 함. */
+let session = null;
+function startSession(type, words, meta){
+  const ids = words.map(w => w.id);
+  if (SETTINGS.order === 'random' || type === 'review') ids.sort(() => Math.random() - .5);
+  session = { type, ids, queue: ids.slice(), total: ids.length, answered: 0, ok: 0, wrong: new Set(), meta: meta||{} };
+  $('resultCard').hidden = true; $('quizCard').hidden = false;
+  renderQuestion();
+}
+function pickNext(){
+  if (!session || !session.queue.length) return null;
+  return BY_ID.get(session.queue[0]);
+}
+function advance(ok){                    // 답을 확인한 뒤 큐 정리
+  const id = session.queue.shift();
+  session.answered++;
+  if (ok) session.ok++;
+  else { session.wrong.add(id); session.queue.push(id); }   // 틀린 단어는 세션 끝에 다시
+}
+function finishSession(){
+  const s = session, acc = s.answered ? Math.round(s.ok / s.answered * 100) : 0;
+  if (s.type === 'unit'){ UNITS_DONE[s.meta.key] = { acc, date: dayKey(), t: Date.now() }; store.set('zh.units', UNITS_DONE); histToday().u++; store.set('zh.history', HISTORY); }
+  $('resTitle').textContent = (s.type === 'review' ? '복습 완료' : (s.meta.label || '과') + ' 완료') + (acc === 100 ? ' 🎉' : '');
+  $('btnResRetry').hidden = s.type === 'review';
+  $('resAcc').textContent = acc + '%'; $('resN').textContent = s.answered; $('resWrong').textContent = s.wrong.size;
+  $('resWrongList').innerHTML = [...s.wrong].map(id => { const w = BY_ID.get(id); return `<span class="w"><b>${w.s}</b>${w.py} <small>${KO[w.s]||w.ko}</small></span>`; }).join('') || '<span style="color:var(--ink-2);font-size:13px">틀린 단어 없음</span>';
+  $('btnResWrong').hidden = !s.wrong.size;
+  $('btnResNext').textContent = s.type === 'unit' ? '다음 과 →' : '↩ 과 학습으로';
+  $('quizCard').hidden = true; $('resultCard').hidden = false;
+  renderUnitBar();
+}
+function currentUnitIndex(){ const us = units(); const i = us.findIndex(u => u.key === SETTINGS.unit); return i < 0 ? 0 : i; }
+function startUnit(i){
+  const us = units(); if (!us.length) return;
+  i = Math.max(0, Math.min(i, us.length-1));
+  SETTINGS.unit = us[i].key; store.set('zh.settings', SETTINGS);
+  startSession('unit', us[i].words, { key: us[i].key, label: us[i].label, index: i });
+}
+function dueWords(){ const now = Date.now(); return WORDS.filter(w => PROGRESS[w.id] && PROGRESS[w.id].due <= now); }
+function startReview(){
+  const due = dueWords().slice(0, 30);   // 한 번에 최대 30개
+  if (!due.length){ showToast('복습 예정 단어가 없어요'); return; }
+  startSession('review', due, {});
+}
+function renderUnitBar(){
+  const us = units(), sel = $('unitSel'), cur = SETTINGS.unit;
+  sel.innerHTML = us.map((u,i) => `<option value="${i}" ${u.key===cur?'selected':''}>${UNITS_DONE[u.key] ? '✓ ' : ''}${u.label}${UNITS_DONE[u.key] ? ` · ${UNITS_DONE[u.key].acc}%` : ''}</option>`).join('');
+  const done = us.filter(u => UNITS_DONE[u.key]).length;
+  $('lvCount').textContent = `${us.length}과 중 ${done}과 완료`;
+  const inUnit = !session || session.type === 'unit';
+  $('btnReview').innerHTML = inUnit ? `복습 (<span id="reviewN">${dueWords().length}</span>)` : `↩ 과 학습으로 (${session.type==='review'?'복습':'내 단어장'} 중)`;
+  $('btnReview').classList.toggle('primary', !inUnit);
+  if (session){
+    const p = session.type==='unit' ? Math.round((session.total - session.queue.length) / session.total * 100) : Math.round((session.total - session.queue.length) / session.total * 100);
+    $('uprogBar').style.setProperty('--p', p + '%');
+    $('uprogText').textContent = (session.type==='review' ? '복습 ' : session.type==='mine' ? '내 단어장 ' : '') + `${session.total - session.queue.length}/${session.total} 맞힘`;
+  }
+}
+
+/* ═══════════ 병음 처리 ═══════════ */
+// 성조 부호가 붙은 병음(nǐ) → 숫자 병음(ni3). 채점할 때 두 표기를 하나로 맞추기 위해 사용.
+const TONE_MAP = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4',
+  'ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'v1','ǘ':'v2','ǚ':'v3','ǜ':'v4','ü':'v','ń':'n2','ň':'n3','ǹ':'n4','ḿ':'m2'};
+function normPinyin(s){
+  // 소문자화 → 공백/어포스트로피 단위로 끊고 → 성조부호를 숫자로 바꿔 음절 끝에 붙임 ("hǎo"→"hao3")
+  // → 구두점 제거, ü→v, 경성(5/0) 제거. 결과가 같으면 정답으로 본다.
+  return s.toLowerCase().split(/[\s'’\-]+/).map(tok => {
+    let out = '', pend = null;                 // pend: 음절 끝에서 붙일 성조 숫자
+    const chars = [...tok];
+    for (let i = 0; i < chars.length; i++){
+      const ch = chars[i], m = TONE_MAP[ch];
+      if (m){ if (pend) out += pend; out += m[0]; pend = m[1] || null; continue; }
+      if (pend){
+        const next = chars[i+1] || '';
+        const isVowel = /[aeiouv]/.test(ch);
+        // n / ng / r 이 뒤에 모음 없이 오면 이 음절의 받침으로 본다
+        const isCoda = (ch==='n' || ch==='r' || (ch==='g' && out.endsWith('n'))) && !/[aeiouv]/.test(next);
+        if (!isVowel && !isCoda){ out += pend; pend = null; }
+      }
+      out += ch;
+    }
+    if (pend) out += pend;
+    return out;
+  }).join('').replace(/[^a-z0-9]/g,'').replace(/[50]/g,'');
+}
+// 병음 문자열을 음절별 <span class="sN"> 으로 색칠. 숫자 병음(pyn)에서 성조를 읽는다.
+function renderPinyin(w){
+  const marks = w.py.split(/\s+/), nums = w.pyn.split(/\s+/);
+  if (marks.length !== nums.length) return w.py;
+  return marks.map((m,i)=>{ const t = (nums[i].match(/[1-5]$/)||['5'])[0]; return `<span class="s${t}">${m}</span>`; }).join(' ');
+}
+
+/* ═══════════ 발음 (TTS: Text-to-Speech, 글자를 음성으로 읽어주는 브라우저 기능) ═══════════ */
+let voices = [];
+function loadVoices(){
+  if (!('speechSynthesis' in window)) { ttsState.textContent = '이 브라우저는 음성 합성을 지원하지 않음'; return; }
+  voices = speechSynthesis.getVoices().filter(v => /^zh|cmn/i.test(v.lang));
+  optVoice.innerHTML = voices.length ? voices.map(v=>`<option value="${v.name}">${v.name} (${v.lang})</option>`).join('') : '<option value="">중국어 음성 없음</option>';
+  if (SETTINGS.voice && voices.some(v=>v.name===SETTINGS.voice)) optVoice.value = SETTINGS.voice;
+  ttsState.textContent = voices.length ? `🔊 ${voices.length}개 중국어 음성` : '⚠ 중국어 음성 없음 — OS 언어팩 설치 필요';
+}
+function speak(text){
+  if (!('speechSynthesis' in window) || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-CN'; u.rate = SETTINGS.rate;
+  const v = voices.find(v=>v.name===optVoice.value) || voices[0];
+  if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+
+/* ═══════════ 화면 요소 ═══════════ */
+const $ = id => document.getElementById(id);
+const qHanzi=$('qHanzi'), qPinyin=$('qPinyin'), qTrad=$('qTrad'), qKo=$('qKo'), qEn=$('qEn'), qKind=$('qKind'), qBox=$('qBox');
+const ans=$('ans'), fb=$('fb'), koInput=$('koInput'), toast=$('toast');
+const ttsState=$('ttsState'), optVoice=$('optVoice');
+
+let cur = null, answered = false, hintUsed = false;
+
+function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1600); }
+
+function renderQuestion(){
+  if (session && !session.queue.length){ finishSession(); cur = null; return; }
+  cur = pickNext();
+  answered = false; hintUsed = false; hintLevel = 0;
+  const M = mode(); $('quizCard').classList.remove('answered');
+  ans.value = ''; ans.className = M.input==='pinyin' ? 'pymode' : ''; fb.textContent=''; fb.className='feedback'; $('ext').hidden = true;
+  if (!cur){ qHanzi.textContent='—'; qKo.textContent='과를 골라 시작하세요'; qEn.textContent=''; return; }
+  const p = PROGRESS[cur.id];
+  qBox.textContent = (session.wrong.has(cur.id) ? '다시 · ' : '') + (p ? `상자 ${p.box} · ${p.c}○ ${p.w}✕${p.h?` ${p.h}힌트`:''}` : '새 단어');
+  qKind.textContent = M.input==='pinyin' ? '병음을 입력하세요 (예: ni3hao3)' : (SETTINGS.study==='listen' ? '발음을 듣고 한자를 입력하세요 (🔊 다시 듣기 · 뜻은 참고용)' : SETTINGS.study==='learn' ? '보고 따라 입력하세요' : '한자를 입력하세요');
+  ans.placeholder = M.input==='pinyin' ? 'ni3 hao3 또는 nǐ hǎo' : '한자 입력 후 Enter';
+  const showH = M.showH;
+  // 숨길 때는 한자를 아예 넣지 않고 글자 수만큼 □ 로 표시 (예전엔 투명 글자로 숨겼는데 윤곽이 비쳐 보였음)
+  // 쓰기 칸을 비우면 페이지가 잠깐 짧아져 스크롤이 위로 튀므로, 새 칸이 만들어질 때까지 높이를 유지
+  { const wz = $('writers'); if (!wz.hidden && wz.offsetHeight){ wz.style.minHeight = wz.offsetHeight + 'px'; setTimeout(() => { wz.style.minHeight = ''; }, 400); } }
+  $('orderArea').hidden = true; $('writers').hidden = true; $('writers').innerHTML = ''; document.querySelector('.answer').classList.remove('hiddenInput');
+  const ko = KO[cur.s] || cur.ko;
+  $('toneArea').hidden = true; $('sayArea').hidden = true;
+  if (M.input === 'say'){
+    qKind.textContent = '단어를 소리 내어 읽으세요';
+    qHanzi.textContent = cur.s; qHanzi.className = 'hanzi';
+    qPinyin.innerHTML = renderPinyin(cur); qTrad.textContent = '';
+    qKo.textContent = SETTINGS.showKo ? (ko || '') : ''; qKo.className = 'ko';
+    qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0, 2).join(' ; ') : '';
+    document.querySelector('.answer').classList.add('hiddenInput');
+    startSay();
+  } else if (M.input === 'tone'){
+    qKind.textContent = '발음을 듣고 음절마다 성조를 고르세요 (키보드 1~5, 5=경성)';
+    qHanzi.innerHTML = renderMask(cur.s, 0); qHanzi.className = 'hanzi';
+    qPinyin.innerHTML = `<span style="color:var(--ink-2)">${tonelessPy(cur.py)}</span>`; qTrad.textContent = '';
+    qKo.textContent = SETTINGS.showKo ? (ko || '') : ''; qKo.className = 'ko';
+    qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0, 2).join(' ; ') : '';
+    document.querySelector('.answer').classList.add('hiddenInput');
+    startToneQuiz();
+  } else if (M.input === 'draw'){
+    qKind.textContent = '뜻과 병음을 보고 획순대로 그리세요';
+    qHanzi.innerHTML = renderMask(cur.s, 0); qHanzi.className = 'hanzi';
+    qPinyin.innerHTML = renderPinyin(cur); qTrad.textContent = '';
+    qKo.textContent = SETTINGS.showKo ? (ko || '(한국어 뜻 미입력)') : ''; qKo.className = 'ko';
+    qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0, window.innerWidth < 480 ? 2 : 4).join(' ; ') : '';
+    document.querySelector('.answer').classList.add('hiddenInput');
+    if (window.innerWidth < 480){ qHanzi.innerHTML = ''; qEn.textContent = ''; }   // 폰: 쓰기 칸을 위해 공간 절약
+    $('writers').hidden = false;   // 높이 유지용 (minHeight) — 실제 칸은 바로 아래에서 만듦
+    setTimeout(startWriteQuiz, 0);
+  } else if (M.kind === 'sent'){
+    renderSentQuestion(M, ko);
+  } else {
+  if (showH) qHanzi.textContent = cur.s; else qHanzi.innerHTML = renderMask(cur.s, 0);
+  qHanzi.className = 'hanzi';
+  const showP = M.showP;
+  qPinyin.innerHTML = showP ? renderPinyin(cur) : '';
+  qTrad.textContent = [(SETTINGS.showTrad && cur.t && cur.t!==cur.s) ? `번체 ${cur.t}` : '', showP ? altText(cur) : ''].filter(Boolean).join('  ·  ');
+  qKo.textContent = (M.showM && SETTINGS.showKo) ? (ko || '(한국어 뜻 미입력)') : (M.showM ? '' : '🔊 발음을 듣고 입력하세요');
+  qKo.className = 'ko' + (ko && M.showM ? '' : ' empty');
+  qEn.textContent = (M.showM && SETTINGS.showEn) ? cur.en.split(' ; ').slice(0, window.innerWidth < 480 ? 2 : 4).join(' ; ') : '';   // 영어 뜻은 앞 4개(폰은 2개)까지만
+  }
+  koInput.value = ko || '';
+  updateStar();
+  if (!['order','write','tone','say'].includes(SETTINGS.study)) ans.focus();
+  if (M.speak || SETTINGS.autoSpeak) speak(M.kind==='sent' ? sentOf(cur).zh : cur.s);
+  updateStats(); renderUnitBar();
+  if (window.innerWidth < 480 && session && session.answered > 0){ const r = $('quizCard').getBoundingClientRect(); if (r.top < 0 || r.top > 120) $('quizCard').scrollIntoView({ block:'start', behavior:'smooth' }); }
+}
+/* ═══════════ 획순 쓰기 (hanzi-writer) ═══════════
+   획순 데이터는 HSK 1~3급 한자 900자를 앱 안에 내장. 그 밖의 글자는 인터넷(jsdelivr)에서 받아옴
+   — GitHub Pages 에서는 되고, claude.ai 게시 페이지 안에서는 외부 접속이 막혀 안 됨. */
+const STROKES = JSON.parse(document.getElementById('strokes').textContent || '{}');
+function charDataLoader(ch, onLoad, onErr){
+  if (STROKES[ch]) return onLoad(STROKES[ch]);
+  fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(ch)}.json`).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(onLoad).catch(onErr);
+}
+function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+function writerSize(n){
+  const avail = Math.min(document.querySelector('.wrap').clientWidth - 40, 560);
+  const perRow = Math.min(Math.max(n,1), 2);
+  return Math.max(120, Math.min(260, Math.floor((avail - 12*(perRow-1)) / perRow)));
+}
+function writerOpts(extra){
+  const size = writerOpts.size || 130;
+  return Object.assign({ width:size, height:size, padding:8, charDataLoader, strokeColor:cssVar('--ink'), outlineColor:cssVar('--line'), radicalColor:cssVar('--accent'),
+    drawingColor:cssVar('--accent'), drawingWidth:14, strokeAnimationSpeed:1.2, delayBetweenStrokes:180, showCharacter:false, showOutline:SETTINGS.outline !== false, onLoadCharDataError(){} }, extra);
+}
+let writers = [], writeMistakes = 0, writeDone = 0;
+function buildWriters(chars, opts){
+  const box = $('writers'); box.innerHTML = ''; box.hidden = false; writers = [];
+  writerOpts.size = writerSize(chars.length);
+  for (const ch of chars){
+    const el = document.createElement('div'); el.className = 'writer'; box.appendChild(el);
+    if (typeof HanziWriter === 'undefined'){ el.textContent = ch; continue; }
+    try{ writers.push({ ch, el, w: HanziWriter.create(el, ch, writerOpts(opts)) }); }catch(e){ el.textContent = ch; }
+  }
+  return writers;
+}
+// 쓰기 모드: 글자를 하나씩 퀴즈로. 모두 끝나면 채점
+function startWriteQuiz(){
+  const chars = [...cur.s].filter(c => /[\u4e00-\u9fff]/.test(c));
+  writeMistakes = 0; writeDone = 0;
+  buildWriters(chars, { showCharacter:false });
+  if (!writers.length){ const n = document.createElement('div'); n.className='writer-note'; n.textContent='획순 데이터를 불러오지 못했어요 (이 글자는 GitHub Pages 버전에서만 지원)'; $('writers').appendChild(n); return; }
+  const note = document.createElement('div'); note.className = 'writer-note'; note.textContent = '첫 글자부터 획순대로 그리세요 (틀린 획은 빨갛게)'; $('writers').appendChild(note);
+  const next = i => {
+    if (i >= writers.length){ finishWrite(); return; }
+    writers.forEach((x,k) => x.el.classList.toggle('active', k===i));
+    writers[i].w.quiz({ showHintAfterMisses: 2, highlightOnComplete: true,
+      onMistake(){ writeMistakes++; },
+      onComplete(){ writers[i].el.classList.add('done'); writers[i].el.classList.remove('active'); writeDone++; setTimeout(() => next(i+1), 350); } });
+  };
+  next(0);
+}
+function finishWrite(){
+  const chars = writers.length;
+  const ok = writeMistakes <= chars * 2;         // 글자당 실수 2획까지는 통과
+  hintUsed = hintUsed || writeMistakes > 0;       // 실수가 있었으면 복습 목록에
+  ans.value = ok ? cur.s : '(쓰기 실패)';
+  check(); $('writers').hidden = false;           // 채점 후에도 쓴 글자는 남겨 둠
+  if (ok) fb.innerHTML = `정답 ✓ 실수 ${writeMistakes}획` + (writeMistakes ? ' <small style="color:var(--ink-2)">(실수 있음 — 복습 목록에 추가)</small>' : '');
+  else fb.innerHTML = `오답 ✕ 실수 ${writeMistakes}획 — 획순을 다시 보세요`;
+}
+// 획순 애니메이션 (정답 확인 후 또는 익히기 모드에서)
+function showStrokeAnim(){
+  if (!cur) return;
+  const chars = [...cur.s].filter(c => /[\u4e00-\u9fff]/.test(c));
+  if (!answered && !['learn'].includes(SETTINGS.study)){ hintUsed = true; qBox.textContent = '힌트: 획순 보기'; reveal(); }
+  buildWriters(chars, { showCharacter:true, showOutline:true });
+  (async () => { for (const x of writers){ try{ await x.w.animateCharacter(); }catch(e){} } })();
+}
+$('btnStrokes').onclick = showStrokeAnim;
+
+/* ═══════════ 말하기 (음성 인식) ═══════════
+   브라우저의 SpeechRecognition(말소리 → 글자)에 중국어(zh-CN)로 듣게 하고, 알아들은 글자가 정답 단어와 같으면 통과.
+   같은 발음의 다른 단어(동음이의어)로 알아들었으면 "발음은 맞음"으로 인정. 정밀한 발음 점수는 아님. */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let recog = null;
+function startSay(){
+  $('sayArea').hidden = false; $('heard').textContent = ''; $('btnMic').classList.remove('listening'); $('btnMic').disabled = false;
+  $('sayNote').textContent = SR ? '버튼(또는 스페이스)을 누른 뒤 단어를 읽으세요. 첫 사용 시 마이크 허용을 물어봐요.' : '이 브라우저는 음성 인식을 지원하지 않아요 (iPhone 사파리·크롬·엣지에서 가능)';
+  $('btnMic').disabled = !SR;
+}
+const BY_S = new Map(WORDS.map(w => [w.s, w]));
+function judgeSpeech(alts){
+  const clean = s => s.replace(/[\s。，！？、；：""''（）!?,.]/g, '');
+  for (const a of alts){ const s = clean(a); if (s === cur.s || (cur.t && s === cur.t)) return { ok:true, heard:a, exact:true }; }
+  for (const a of alts){ const s = clean(a); const w = BY_S.get(s); if (w && normPinyin(w.pyn) === normPinyin(cur.pyn)) return { ok:true, heard:a, exact:false }; }
+  for (const a of alts){ const s = clean(a); if (s.includes(cur.s)) return { ok:true, heard:a, exact:true }; }
+  return { ok:false, heard: alts[0] || '' };
+}
+$('btnMic').onclick = () => {
+  if (!SR || answered) return;
+  if (recog){ try{ recog.stop(); }catch(e){} recog = null; return; }
+  recog = new SR(); recog.lang = 'zh-CN'; recog.interimResults = true; recog.maxAlternatives = 5; recog.continuous = false;
+  $('btnMic').classList.add('listening'); $('btnMic').textContent = '듣는 중… (다시 누르면 중지)'; $('heard').textContent = '';
+  let finals = [];
+  recog.onresult = e => { const res = e.results[e.results.length-1]; $('heard').textContent = res[0].transcript; if (res.isFinal){ finals = [...res].map(r => r.transcript); } };
+  recog.onerror = e => { $('sayNote').textContent = e.error === 'not-allowed' ? '마이크 사용이 허용되지 않았어요. 브라우저 주소창의 자물쇠/설정에서 마이크를 허용해 주세요.' : e.error === 'no-speech' ? '소리를 못 들었어요. 다시 눌러 보세요.' : '음성 인식 오류: ' + e.error; };
+  recog.onend = () => {
+    recog = null; $('btnMic').classList.remove('listening'); $('btnMic').textContent = '🎤 누르고 말하기';
+    if (!finals.length || answered) return;
+    const j = judgeSpeech(finals);
+    $('heard').textContent = '들린 말: ' + j.heard;
+    ans.value = j.ok ? cur.s : '(발음 불일치: ' + j.heard + ')';
+    check();
+    if (j.ok) fb.innerHTML = '정답 ✓ ' + (j.exact ? '정확히 알아들었어요' : `같은 발음의 다른 단어(${j.heard})로 들렸지만 발음은 맞아요`);
+    else fb.innerHTML = `오답 ✕ "${j.heard}" 로 들렸어요 — 정답 <span class="ans">${cur.s}</span> ${cur.py}. 🔊로 듣고 다시 해 보세요`;
+  };
+  try{ recog.start(); }catch(e){ $('sayNote').textContent = '음성 인식을 시작할 수 없어요: ' + e.message; recog = null; }
+};
+
+/* ═══════════ 성조 맞히기 ═══════════
+   성조 부호를 뗀 병음(ni hao)과 뜻을 보여주고 발음을 들려준 뒤, 음절마다 1~4성/경성을 고르게 한다.
+   정답은 숫자 병음(pyn)의 숫자. 3성이 연달아 오면 앞 3성은 2성으로 발음되므로(성조 변화) 그것도 정답으로 인정. */
+function tonelessPy(py){ return py.normalize('NFD').replace(/[\u0300-\u036f]/g, '').normalize('NFC'); }
+let toneAns = [], toneCursor = 0;
+function toneTargets(){ return cur.pyn.split(/\s+/).map(s => +(s.match(/[1-5]$/)||['5'])[0]); }
+function startToneQuiz(){
+  const syls = tonelessPy(cur.py).split(/\s+/), targets = toneTargets();
+  toneAns = syls.map(()=>0); toneCursor = 0;
+  const area = $('toneArea'); area.hidden = false;
+  area.innerHTML = syls.map((s,i) => `<div class="tone-syl" data-i="${i}"><span class="syl">${s}</span>` +
+    [1,2,3,4,5].map(tn => `<button type="button" class="t${tn}" data-i="${i}" data-t="${tn}" aria-pressed="false">${tn===5?'경':tn+'성'}</button>`).join('') + `</div>`).join('');
+}
+$('toneArea').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (!b || answered) return; pickTone(+b.dataset.i, +b.dataset.t); });
+function pickTone(i, tn){
+  if (answered || i >= toneAns.length) return;
+  toneAns[i] = tn; toneCursor = Math.min(i + 1, toneAns.length - 1);
+  document.querySelectorAll(`#toneArea [data-i="${i}"][data-t]`).forEach(b => b.setAttribute('aria-pressed', +b.dataset.t === tn));
+  if (toneAns.every(x => x > 0)) finishTone();
+}
+function finishTone(){
+  const targets = toneTargets(); let ok = true;
+  toneAns.forEach((a, i) => {
+    let good = a === targets[i];
+    if (!good && targets[i] === 3 && a === 2 && targets[i+1] === 3) good = true;   // 3성+3성 → 2성+3성 변화 인정
+    if (!good) ok = false;
+    const row = document.querySelector(`#toneArea [data-i="${i}"].tone-syl`); row.classList.add(good ? 'good' : 'bad');
+    row.querySelector('.syl').textContent = cur.py.split(/\s+/)[i];   // 정답 성조 부호로 바꿔 보여줌
+  });
+  ans.value = ok ? cur.s : '(성조 오답)';
+  check();
+  fb.innerHTML = (ok ? '정답 ✓ ' : '오답 ✕ ') + `성조: ${targets.map(t=>t===5?'경성':t+'성').join(' · ')}`;
+}
+
+/* ═══════════ 문장 연습 ═══════════ */
+const SENT_PUNCT = /[。，！？、；：""''（）!?,.\s]/g;
+function stripSent(s){ return s.replace(SENT_PUNCT, ''); }
+let orderBuilt = [], orderPool = [];
+// 문장에서 대상 단어를 빈칸으로 (첫 번째 등장만)
+function clozeHtml(zh, word){
+  const i = zh.indexOf(word); if (i < 0) return zh;
+  return zh.slice(0,i) + [...word].map(()=>'<span class="blank"></span>').join('') + zh.slice(i+word.length);
+}
+function renderSentQuestion(M, ko){
+  const st = sentOf(cur);
+  qHanzi.className = 'hanzi sent'; qPinyin.innerHTML = ''; qTrad.textContent = '';
+  qEn.textContent = ''; qKo.className = 'ko';
+  if (SETTINGS.study === 'cloze'){
+    qKind.textContent = '빈칸에 들어갈 단어를 입력하세요';
+    qHanzi.innerHTML = clozeHtml(st.zh, cur.s);
+    qKo.textContent = st.ko + (SETTINGS.showKo && ko ? `  (빈칸: ${ko})` : '');
+    ans.placeholder = '빈칸 단어 입력 후 Enter';
+  } else if (SETTINGS.study === 'dict'){
+    qKind.textContent = '문장을 듣고 전체를 입력하세요 (🔊 다시 듣기)';
+    qHanzi.innerHTML = [...stripSent(st.zh)].map(()=>'<span class="blank"></span>').join('');
+    qKo.textContent = st.ko;
+    ans.placeholder = '문장 전체 입력 후 Enter (구두점 생략 가능)';
+  } else { // order
+    qKind.textContent = '어절을 순서대로 눌러 문장을 만드세요';
+    qHanzi.innerHTML = ''; qKo.textContent = st.ko;
+    orderBuilt = []; orderPool = st.seg.map((tok,i)=>({tok,i})).sort(()=>Math.random()-.5);
+    $('orderArea').hidden = false; document.querySelector('.answer').classList.add('hiddenInput');
+    renderOrder();
+    ans.placeholder = '';
+  }
+}
+function renderOrder(){
+  $('built').innerHTML = orderBuilt.map((o,k)=>`<button type="button" data-b="${k}">${o.tok}</button>`).join('') || '<span style="color:var(--ink-2);font-size:13px;align-self:center">여기에 문장이 만들어져요</span>';
+  $('pool').innerHTML = orderPool.map((o,k)=>`<button type="button" data-p="${k}">${o.tok}</button>`).join('');
+}
+$('pool').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if (!b || answered) return; orderBuilt.push(orderPool.splice(+b.dataset.p,1)[0]); renderOrder(); if (!orderPool.length) check(); });
+$('built').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (!b || answered) return; orderPool.push(orderBuilt.splice(+b.dataset.b,1)[0]); renderOrder(); });
+// 받아쓰기 채점: 구두점·공백 제거 후 비교. 틀린 글자 표시용 diff
+function diffHtml(answer, given){
+  const a = [...answer], g = [...given];
+  return a.map((c,i) => g[i]===c ? c : `<span class="wrongch">${c}</span>`).join('') + (g.length > a.length ? ` <small style="color:var(--bad)">(+${g.length-a.length}자 초과)</small>` : '');
+}
+function checkSent(raw){
+  const st = sentOf(cur);
+  if (SETTINGS.study === 'cloze') return { ok: raw.replace(/\s/g,'') === cur.s };
+  if (SETTINGS.study === 'dict'){ const a = stripSent(st.zh), g = stripSent(raw); return { ok: a === g, given: g }; }
+  const built = orderBuilt.map(o=>o.tok).join('');
+  return { ok: stripSent(built) === stripSent(st.zh), given: built };
+}
+function revealSent(res){
+  const st = sentOf(cur);
+  const highlighted = st.zh.replace(cur.s, `<mark>${cur.s}</mark>`);
+  qHanzi.innerHTML = (SETTINGS.study==='dict' && !res.ok && res.given) ? diffHtml(stripSent(st.zh), res.given) : highlighted;
+  qPinyin.innerHTML = `<span style="font-size:.8em">${st.py}</span>`;
+  const ko = KO[cur.s] || cur.ko;
+  qKo.textContent = st.ko; qTrad.textContent = `${cur.s} ${cur.py} — ${ko}`;
+  $('orderArea').hidden = true; document.querySelector('.answer').classList.remove('hiddenInput');
+}
+// 정답 확인 후 외부 서비스 링크: YouGlish(유튜브 자막에서 단어 쓰인 장면 검색), Forvo(원어민 녹음), 네이버 중국어사전
+function showExt(w){
+  const s = encodeURIComponent(w.s);
+  $('lnkYouglish').href = `https://youglish.com/pronounce/${s}/chinese`;
+  $('lnkForvo').href = `https://forvo.com/word/${s}/#zh`;
+  $('lnkDict').href = `https://zh.dict.naver.com/#/search?query=${s}`;
+  $('ext').hidden = false;
+}
+function altText(w){ return (w.alt&&w.alt.length) ? '다른 읽기: ' + w.alt.map(a=>`${a.py} (${a.en})`).join(' · ') : ''; }
+function reveal(){
+  qHanzi.className='hanzi'; qHanzi.textContent = cur.s; qPinyin.innerHTML = renderPinyin(cur);
+  if (!mode().showM){ const ko = KO[cur.s] || cur.ko; qKo.textContent = ko; qKo.className = 'ko'; qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0,2).join(' ; ') : ''; }
+  const parts = [qTrad.textContent, altText(cur)].filter(Boolean); qTrad.textContent = parts.join('  ·  ');
+}
+
+function check(){
+  if (!cur) return;
+  if (answered){ renderQuestion(); return; }   // 두 번째 Enter = 다음 문제
+  let raw = ans.value.trim();
+  const M = mode(), isSent = M.kind === 'sent';
+  if (M.input==='draw' && !raw){ if (!writers.length) return; hintUsed = true; ans.value = '(포기)'; writers.forEach(x => { try{ x.w.cancelQuiz(); x.w.showCharacter(); }catch(e){} }); raw = ans.value; }   // 안 그리고 확인 = 정답 보기(오답 처리)
+  else if (M.input==='tone' && !raw){ toneAns = toneAns.map(x => x || 9); finishTone(); return; }
+  else if (M.input==='say' && !raw){ showToast('🎤 버튼을 누르고 읽어 보세요'); return; }
+  if (!raw && !(isSent && SETTINGS.study==='order')) return;
+  let ok, sentRes = null;
+  if (isSent){ sentRes = checkSent(raw); ok = sentRes.ok; }
+  // 병음 모드: 대표 읽기뿐 아니라 다른 읽기(说 shuō/shuì)도 정답으로 인정
+  else if (M.input==='pinyin') ok = [cur.pyn, ...(cur.alt||[]).map(a=>a.pyn)].some(p => normPinyin(raw) === normPinyin(p));
+  else ok = raw.replace(/\s/g,'') === cur.s || (cur.t && raw.replace(/\s/g,'')===cur.t);
+  answered = true; $('quizCard').classList.add('answered');
+  const firstSeen = !PROGRESS[cur.id];    // 이 단어를 오늘 처음 봤는지 (통계용)
+  // 힌트를 봤거나 '익히기' 모드(답이 다 보이는 상태)면 맞혀도 외운 걸로 치지 않고 복습 목록에 넣는다
+  const hinted = hintUsed || SETTINGS.study === 'learn';
+  markResult(cur.id, ok, hinted);
+  TODAY.n++; if (ok) TODAY.ok++; store.set('zh.today', TODAY);
+  { const h = histToday(); h.n++; if (ok) h.ok++; if (firstSeen) h.nw++; store.set('zh.history', HISTORY); }
+  advance(ok);
+  ans.classList.add(ok ? 'good' : 'bad');
+  fb.className = 'feedback ' + (ok ? 'good' : 'bad');
+  if (isSent) fb.innerHTML = ok ? `정답 ✓` : (SETTINGS.study==='cloze' ? `오답 ✕ 정답: <span class="ans">${cur.s}</span>` : `오답 ✕ 정답 문장을 확인하세요`);
+  else fb.innerHTML = ok ? `정답 ✓ <span class="ans">${cur.s}</span> <span style="font-family:var(--mono)">${cur.py}</span>`
+                    : `오답 ✕ 정답: <span class="ans">${cur.s}</span> <span style="font-family:var(--mono)">${cur.py}</span>${cur.t&&cur.t!==cur.s?` <span style="color:var(--ink-2)">(번체 ${cur.t})</span>`:''}`;
+  if (ok && hintUsed) fb.innerHTML += ' <small style="color:var(--ink-2)">(힌트 사용 — 복습 목록에 추가)</small>';
+  else if (ok && SETTINGS.study === 'learn') fb.innerHTML += ' <small style="color:var(--ink-2)">(익히기 — 복습 목록에 추가)</small>';
+  if (isSent) revealSent(sentRes); else reveal();
+  showExt(cur);
+  speak(isSent ? sentOf(cur).zh : cur.s);
+  updateStats(); renderUnitBar();
+}
+// 앞 n 글자는 보여주고 나머지는 점선 빈칸으로
+function renderMask(s, n){
+  const chars = [...s];
+  return chars.map((c,i) => i < n ? c : '<span class="blank" aria-label="빈칸"></span>').join('');
+}
+let hintLevel = 0;   // 힌트를 누른 횟수. 누를수록 단계적으로 더 공개
+function hint(){
+  if (!cur || answered) return;
+  hintUsed = true; hintLevel++;
+  const chars = [...cur.s], pys = cur.py.split(' '), pyns = cur.pyn.split(' ');
+  if (mode().kind === 'sent'){
+    // 문장 모드: 힌트 = 문장 전체 병음 (빈칸 자리도 병음이 보이니 사실상 답에 가까움 → 복습 대상)
+    qPinyin.innerHTML = `<span style="font-size:.8em">${sentOf(cur).py}</span>`; qBox.textContent = '힌트: 문장 병음 공개';
+  } else if (mode().input==='pinyin'){
+    // 병음 모드: 누를 때마다 음절 하나씩 더 공개
+    const n = Math.min(hintLevel, pys.length);
+    qPinyin.innerHTML = renderPinyin({py: pys.slice(0,n).join(' '), pyn: pyns.slice(0,n).join(' ')}) + (n < pys.length ? ' …' : '');
+    qBox.textContent = n >= pys.length ? '힌트: 전부 공개' : `힌트 ${n}/${pys.length} 음절`;
+  } else {
+    // 한자 모드: 힌트 = 병음 보여주기 (한자는 건드리지 않음)
+    qPinyin.innerHTML = renderPinyin(cur);
+    qBox.textContent = '힌트: 병음 공개';
+  }
+  ans.focus();
+}
+function skip(){ if(!cur || !session) return; session.queue.push(session.queue.shift()); renderQuestion(); }   // 건너뛰면 이 과의 맨 뒤로
+
+function updateStats(){
+  $('stToday').textContent = TODAY.n;
+  $('stAcc').textContent = TODAY.n ? Math.round(TODAY.ok/TODAY.n*100)+'%' : '–';
+  const ws = pool(), now = Date.now();
+  $('stDue').textContent = ws.filter(w=>PROGRESS[w.id]&&PROGRESS[w.id].due<=now).length;
+  $('stLearned').textContent = ws.filter(w=>PROGRESS[w.id]&&PROGRESS[w.id].box>=1).length + ' / ' + ws.length;
+  $('koCount').textContent = Object.keys(KO).filter(k=>KO[k]).length;
+}
+
+/* ═══════════ 한국어 뜻 저장 ═══════════ */
+const KO_T = store.get('zh.ko_t', {});   // 한국어 뜻을 고친 시각 (병합용)
+function saveKo(s, val){
+  val = val.trim();
+  if (val) KO[s] = val; else delete KO[s];
+  KO_T[s] = Date.now(); store.set('zh.ko_t', KO_T);
+  store.set('zh.ko', KO);
+  if (cur && cur.s===s && SETTINGS.showKo){ qKo.textContent = val || '(한국어 뜻 미입력)'; qKo.className='ko'+(val?'':' empty'); }
+  updateStats();
+}
+$('btnKoSave').onclick = () => { if(cur){ saveKo(cur.s, koInput.value); showToast('한국어 뜻 저장됨'); ans.focus(); } };
+koInput.addEventListener('keydown', e => { if (e.key==='Enter'){ e.preventDefault(); $('btnKoSave').click(); } });
+
+/* ═══════════ 이벤트 ═══════════ */
+$('btnCheck').onclick = check;
+ans.addEventListener('keydown', e => { if (e.key==='Enter' && !e.isComposing){ e.preventDefault(); check(); } });
+$('btnSpeak').onclick = () => { if(!cur) return; const M = mode(); if (M.kind==='sent'){ if (SETTINGS.study==='cloze' && !answered){ hintUsed = true; qBox.textContent='힌트: 문장 듣기'; } speak(sentOf(cur).zh); } else speak(cur.s); if (SETTINGS.study!=='order') ans.focus(); };
+function updateStar(){ const on = cur && isFav(cur.id); $('btnStar').textContent = on ? '★' : '☆'; $('btnStar').style.color = on ? 'var(--accent)' : ''; }
+$('btnStar').onclick = () => { if(!cur) return; const on = toggleFav(cur.id); updateStar(); showToast(on ? '내 단어장에 담았어요' : '내 단어장에서 뺐어요'); ans.focus(); };
+$('btnHint').onclick = hint;
+$('btnKoToggle').onclick = () => { $('quizCard').classList.toggle('show-ko'); if ($('quizCard').classList.contains('show-ko')) koInput.focus(); };
+$('btnSkip').onclick = skip;
+document.addEventListener('keydown', e => {
+  if (SETTINGS.study==='tone' && !answered && /^[1-5]$/.test(e.key) && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){ e.preventDefault(); pickTone(toneCursor, +e.key); return; }
+  if (e.key===' ' && SETTINGS.study==='say' && !answered && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){ e.preventDefault(); $('btnMic').click(); return; }
+  if (e.key==='Enter' && ['order','write','tone','say'].includes(SETTINGS.study) && !e.isComposing && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)){ e.preventDefault(); check(); }
+  if (e.altKey && e.key.toLowerCase()==='p'){ e.preventDefault(); if(cur) speak(cur.s); }
+  if (e.altKey && e.key.toLowerCase()==='h'){ e.preventDefault(); hint(); }
+  if (e.altKey && e.key.toLowerCase()==='s'){ e.preventDefault(); $('btnStar').click(); }
+});
+// 급수 선택
+const lvInputs = [...document.querySelectorAll('#lvbar input')];
+// 급수는 한 번에 하나만 선택. Shift 를 누른 채 클릭하면 여러 급수를 함께 선택할 수 있음
+lvInputs.forEach(i => { i.checked = SETTINGS.levels.includes(+i.value); i.onclick = (e) => {
+  if (!e.shiftKey) lvInputs.forEach(x => { if (x!==i) x.checked = false; });
+  i.checked = true;
+  SETTINGS.levels = lvInputs.filter(x=>x.checked).map(x=>+x.value);
+  store.set('zh.settings', SETTINGS);
+  const us = units(); const firstUndone = us.findIndex(u => !UNITS_DONE[u.key]);
+  startUnit(firstUndone < 0 ? 0 : firstUndone);   // 그 급수에서 아직 안 끝낸 첫 과부터
+}});
+// 학습 모드 버튼
+function renderModeBar(){
+  const btn = ([k,m]) => `<button role="radio" aria-checked="${SETTINGS.study===k}" data-mode="${k}" title="${m.desc}"><b>${m.name}</b><small>${m.desc}</small></button>`;
+  const es = Object.entries(MODES);
+  $('modebar').innerHTML = es.filter(([k,m])=>!m.group).map(btn).join('');
+  $('modebar2').innerHTML = `<span class="modelabel">문장</span>` + es.filter(([k,m])=>m.group==='sent').map(btn).join('');
+}
+$('modebar2').addEventListener('click', e => $('modebar').onclick(e));
+$('modebar').onclick = (e) => {
+  const b = e.target.closest('[data-mode]'); if (!b) return;
+  SETTINGS.study = b.dataset.mode; store.set('zh.settings', SETTINGS); renderModeBar();
+  if (cur && !answered){ hintUsed=false; hintLevel=0; renderQuestion(); } else ans.focus();
+};
+renderModeBar();
+// 과 선택 · 이전/다음 · 복습 · 결과 화면 버튼
+$('unitSel').onchange = e => startUnit(+e.target.value);
+$('btnUnitPrev').onclick = () => startUnit(currentUnitIndex() - 1);
+$('btnUnitNext').onclick = () => startUnit(currentUnitIndex() + 1);
+$('btnReview').onclick = () => { if (session && session.type !== 'unit') startUnit(currentUnitIndex()); else startReview(); };
+$('btnResNext').onclick = () => { const i = currentUnitIndex(); if (session && session.type !== 'unit') startUnit(i); else if (i + 1 < units().length) startUnit(i + 1); else showToast('이 급수의 마지막 과예요'); };
+$('btnResRetry').onclick = () => { if (session.type==='mine') $('btnMineStudy').click(); else startUnit(currentUnitIndex()); };
+$('btnResWrong').onclick = () => { const ws = [...session.wrong].map(id => BY_ID.get(id)); startSession('review', ws, {}); };
+// 탭
+document.querySelectorAll('nav [role=tab]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav [role=tab]').forEach(x=>x.setAttribute('aria-selected', x===b));
+  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== 'tab-'+b.dataset.tab);
+  if (b.dataset.tab==='list') renderList();
+  if (b.dataset.tab==='mine') renderMine();
+  if (b.dataset.tab==='stats') renderStats();
+  if (b.dataset.tab==='study') ans.focus();
+});
+
+/* ═══════════ 설정 ═══════════ */
+function bindOpt(id, key, evt='change'){
+  const el = $(id);
+  if (el.type==='checkbox') el.checked = !!SETTINGS[key]; else el.value = SETTINGS[key];
+  el.addEventListener(evt, () => {
+    SETTINGS[key] = el.type==='checkbox' ? el.checked : (el.type==='range' ? +el.value : el.value);
+    store.set('zh.settings', SETTINGS);
+    if (key==='theme') applyTheme();
+    if (key==='zoom') applyZoom();
+    if (key==='rate') $('rateVal').textContent = SETTINGS.rate;
+    if (key==='unitSize'){ SETTINGS.unitSize = +SETTINGS.unitSize; store.set('zh.settings', SETTINGS); startUnit(0); return; }
+    if (['showKo','showEn','showTrad'].includes(key) && cur && !answered){ hintUsed=false; hintLevel=0; renderQuestion(); }
+  });
+}
+['optShowKo:showKo','optShowEn:showEn','optShowTrad:showTrad',
+ 'optAutoSpeak:autoSpeak','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
+bindOpt('optRate','rate','input'); $('rateVal').textContent = SETTINGS.rate;
+function applyZoom(){ document.documentElement.style.setProperty('--zoom', SETTINGS.zoom || 1); }
+applyZoom();
+function applyTheme(){ if (SETTINGS.theme) document.documentElement.dataset.theme = SETTINGS.theme; else delete document.documentElement.dataset.theme; }
+applyTheme();
+
+// 데이터 내보내기/가져오기 — JSON 텍스트를 칸에 보여주고 복사해 옮기는 방식
+$('btnExport').onclick = () => { $('io').value = JSON.stringify({ko:KO, progress:PROGRESS, units:UNITS_DONE, history:HISTORY, fav:FAV, custom:CUSTOM, exported:new Date().toISOString()}); showToast('아래 칸에 표시됨 — 복사해서 보관하세요'); };
+$('btnCopy').onclick = async () => { try{ await navigator.clipboard.writeText($('io').value); showToast('복사됨'); }catch(e){ $('io').select(); showToast('Ctrl+C 로 복사하세요'); } };
+$('btnImport').onclick = () => {
+  try{
+    const d = JSON.parse($('io').value);
+    if (d.ko) Object.assign(KO, d.ko);
+    if (d.progress) Object.assign(PROGRESS, d.progress);
+    if (d.units) { Object.assign(UNITS_DONE, d.units); store.set('zh.units', UNITS_DONE); }
+    if (d.history) { Object.assign(HISTORY, d.history); store.set('zh.history', HISTORY); }
+    if (d.fav) { Object.assign(FAV, d.fav); store.set('zh.fav', FAV); }
+    if (d.custom) { for (const w of d.custom) if (!CUSTOM.some(x=>x.id===w.id)) { CUSTOM.push(w); BY_ID.set(w.id, w); } store.set('zh.custom', CUSTOM); }
+    store.set('zh.ko', KO); store.set('zh.progress', PROGRESS);
+    showToast(`가져옴: 뜻 ${Object.keys(d.ko||{}).length}개, 기록 ${Object.keys(d.progress||{}).length}개`); updateStats();
+  }catch(e){ showToast('JSON 형식이 아닙니다'); }
+};
+$('btnResetProg').onclick = () => { if (confirm('학습 기록과 과 완료 기록을 모두 지울까요? (한국어 뜻은 유지)')){ for(const k in PROGRESS) delete PROGRESS[k]; store.set('zh.progress',PROGRESS); for(const k in UNITS_DONE) delete UNITS_DONE[k]; store.set('zh.units',UNITS_DONE); for(const k in HISTORY) delete HISTORY[k]; store.set('zh.history',HISTORY); TODAY.n=0;TODAY.ok=0; store.set('zh.today',TODAY); startUnit(0); } };
+$('totalWords').textContent = WORDS.length;
+
+/* ═══════════ 통계 ═══════════ */
+function isoDay(d){ return d.toISOString().slice(0,10); }
+function renderStats(){
+  const today = new Date(); today.setHours(12,0,0,0);
+  // 연속 학습일: 오늘(또는 어제)부터 거꾸로 기록이 있는 날을 셈
+  let streak = 0; { const d = new Date(today); if (!HISTORY[isoDay(d)]) d.setDate(d.getDate()-1); while (HISTORY[isoDay(d)] && HISTORY[isoDay(d)].n > 0){ streak++; d.setDate(d.getDate()-1); } }
+  let week = 0; for (let i=0;i<7;i++){ const d=new Date(today); d.setDate(d.getDate()-i); week += (HISTORY[isoDay(d)]||{n:0}).n; }
+  const allN = Object.values(HISTORY).reduce((a,h)=>a+h.n,0), allOk = Object.values(HISTORY).reduce((a,h)=>a+h.ok,0);
+  $('skStreak').textContent = streak + '일';
+  $('skWeek').textContent = week;
+  $('skLearned').textContent = WORDS.filter(w=>PROGRESS[w.id]&&PROGRESS[w.id].box>=1).length;
+  $('skAcc').textContent = allN ? Math.round(allOk/allN*100)+'%' : '–';
+
+  // 달력 히트맵: 16주 × 7일, 월요일 시작. 색 단계는 그날 푼 문제 수 기준
+  const heat = $('heat'); heat.innerHTML = '';
+  const dow = (today.getDay()+6)%7;                     // 월=0 … 일=6
+  const start = new Date(today); start.setDate(today.getDate() - dow - 7*15);
+  const lvl = n => n===0?0 : n<10?1 : n<30?2 : n<60?3 : 4;
+  for (let i=0;i<16*7;i++){
+    const d = new Date(start); d.setDate(start.getDate()+i); const k = isoDay(d); const h = HISTORY[k];
+    const el = document.createElement('i');
+    if (d > today) el.className = 'future';
+    else { el.className = 'c'+lvl(h?h.n:0); el.title = `${k}: ${h?h.n:0}문제${h&&h.n?` · 정답 ${Math.round(h.ok/h.n*100)}% · 새 단어 ${h.nw}`:''}`; }
+    heat.appendChild(el);
+  }
+  // 최근 14일 막대
+  const days = []; for (let i=13;i>=0;i--){ const d=new Date(today); d.setDate(d.getDate()-i); days.push([isoDay(d), HISTORY[isoDay(d)]||{n:0,ok:0,nw:0}, d]); }
+  const max = Math.max(1, ...days.map(x=>x[1].n));
+  $('dayBars').innerHTML = days.map(([k,h,d]) => `<div class="b" title="${k}: ${h.n}문제 · 정답 ${h.n?Math.round(h.ok/h.n*100):0}% · 새 단어 ${h.nw}">${h.n?`<span>${h.n}</span>`:''}<i style="height:${Math.round(h.n/max*100)}%"></i></div>`).join('');
+  $('dayBarsX').innerHTML = days.map(([k,h,d]) => `<span>${d.getMonth()+1}/${d.getDate()}</span>`).join('');
+  // 급수별 진도
+  const lvName = l => l===7?'7~9급':l+'급';
+  $('lvProg').innerHTML = [1,2,3,4,5,6,7].map(l => { const ws = WORDS.filter(w=>w.lv===l); const done = ws.filter(w=>PROGRESS[w.id]&&PROGRESS[w.id].box>=1).length;
+    return `<div class="row"><span>${lvName(l)}</span><div class="track"><div class="fill" style="width:${done/ws.length*100}%"></div></div><span class="num">${done} / ${ws.length} (${Math.round(done/ws.length*100)}%)</span></div>`; }).join('');
+  // 기억 단계 분포
+  const boxes = INTERVAL_DAYS.map(()=>0); for (const id in PROGRESS) boxes[PROGRESS[id].box]++;
+  const bmax = Math.max(1, ...boxes);
+  $('boxDist').innerHTML = boxes.map((n,i) => `<div class="row"><span>상자 ${i}</span><div class="track"><div class="fill" style="width:${n/bmax*100}%;opacity:${.45+i*.09}"></div></div><span class="num">${n}단어 · ${INTERVAL_DAYS[i]}일</span></div>`).join('');
+}
+
+/* ═══════════ 내 단어장 ═══════════ */
+function mineChunks(){ const ws = mineWords(), n = unitSize(), out = []; for (let i=0;i<ws.length;i+=n) out.push(ws.slice(i,i+n)); return out; }
+function renderMine(){
+  const ws = mineWords();
+  $('mineCount').textContent = ws.length;
+  $('mineEmpty').hidden = ws.length > 0;
+  const chunks = mineChunks();
+  $('mineChunk').innerHTML = chunks.length <= 1 ? `<option value="0">전체 (${ws.length}단어)</option>`
+    : `<option value="all">전체 (${ws.length}단어)</option>` + chunks.map((c,i)=>`<option value="${i}">${i+1}묶음 (${i*unitSize()+1}~${i*unitSize()+c.length})</option>`).join('');
+  $('mineBody').innerHTML = ws.map(w => { const p = PROGRESS[w.id];
+    return `<tr><td><button class="star on" data-fav="${w.id}" title="내 단어장에서 빼기">★</button></td><td class="b">${w.custom?'직접':(w.lv===7?'7-9':w.lv)}</td><td class="h">${w.s}</td>
+      <td class="p">${renderPinyin(w)}</td><td class="k"><input data-s="${w.s}" value="${(KO[w.s]||w.ko||'').replace(/"/g,'&quot;')}" placeholder="뜻 입력"></td>
+      <td class="e">${w.en||''}</td><td class="b">${p?`${p.box} (${p.c}○${p.w}✕)`:'–'}</td>
+      <td style="white-space:nowrap"><button class="btn icon" data-say="${w.s}" title="발음">🔊</button>${w.custom?` <button class="del" data-del="${w.id}" title="삭제">삭제</button>`:''}</td></tr>`; }).join('');
+}
+$('mineBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-say]'); if (b) speak(b.dataset.say);
+  const f = e.target.closest('[data-fav]'); if (f){ toggleFav(+f.dataset.fav); if (cur && cur.id===+f.dataset.fav) updateStar(); renderMine(); }
+  const d = e.target.closest('[data-del]'); if (d){ const i = CUSTOM.findIndex(w=>w.id===+d.dataset.del); if (i>=0){ CUSTOM_DEL[CUSTOM[i].id] = Date.now(); store.set('zh.custom_del', CUSTOM_DEL); if (FAV[CUSTOM[i].id]) FAV[CUSTOM[i].id] = -Date.now(); CUSTOM.splice(i,1); store.set('zh.custom', CUSTOM); store.set('zh.fav', FAV); renderMine(); } }
+});
+$('mineBody').addEventListener('change', e => { if (e.target.dataset.s){ saveKo(e.target.dataset.s, e.target.value); showToast('저장됨'); } });
+// 직접 추가: 병음은 부호/숫자 어느 쪽으로 넣어도 되고, 숫자 병음(pyn)은 채점용으로 자동 생성
+$('addForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const s = $('addS').value.trim(), py = $('addPy').value.trim(), ko = $('addKo').value.trim();
+  if (!s) return;
+  const exists = WORDS.find(w => w.s === s);
+  if (exists){ FAV[exists.id] = Date.now(); store.set('zh.fav', FAV); if (ko) saveKo(s, ko); showToast(`${s} 는 HSK 단어라 별표로 담았어요`); }
+  else {
+    const toks = py.split(/\s+/).filter(Boolean);
+    const id = 100000 + (CUSTOM.length ? Math.max(...CUSTOM.map(w=>w.id)) - 100000 + 1 : 0);
+    const w = { id, s, t: s, py: toks.join(' '), pyn: toks.map(x => normPinyin(x)).join(' '), en: '', ko, lv: 0, alt: [], custom: true, added: Date.now() };
+    CUSTOM.push(w); BY_ID.set(id, w); store.set('zh.custom', CUSTOM); showToast(`${s} 추가됨`);
+  }
+  $('addS').value = $('addPy').value = $('addKo').value = ''; $('addS').focus(); renderMine();
+});
+$('btnMineStudy').onclick = () => {
+  const ws = mineWords(); if (!ws.length){ showToast('내 단어장이 비어 있어요'); return; }
+  const v = $('mineChunk').value, chunks = mineChunks();
+  const pick = (v==='all' || chunks.length<=1) ? ws : chunks[+v];
+  document.querySelector('nav [data-tab=study]').click();
+  startSession('mine', pick, { label: '내 단어장' });
+};
+
+/* ═══════════ 단어장 목록 ═══════════ */
+let page = 0; const PAGE = 50;
+function filtered(){
+  const q = $('q').value.trim().toLowerCase(), lv = $('listLv').value;
+  return WORDS.filter(w => (!lv || w.lv==+lv) && (!q || w.s.includes(q) || w.t.includes(q) || w.pyn.replace(/\s/g,'').includes(q.replace(/\s/g,'')) || w.py.includes(q) || w.en.toLowerCase().includes(q) || (KO[w.s]||'').includes(q)));
+}
+function renderList(){
+  const rows = filtered(); const pages = Math.max(1, Math.ceil(rows.length/PAGE)); page = Math.min(page, pages-1);
+  $('pgInfo').textContent = `${rows.length}단어 · ${page+1} / ${pages}`;
+  $('tbody').innerHTML = rows.slice(page*PAGE, page*PAGE+PAGE).map(w => {
+    const p = PROGRESS[w.id];
+    return `<tr><td><button class="star ${isFav(w.id)?'on':''}" data-fav="${w.id}" title="내 단어장">${isFav(w.id)?'★':'☆'}</button></td><td class="b">${w.lv===7?'7-9':w.lv}</td><td class="h">${w.s}</td><td class="p">${renderPinyin(w)}${w.alt&&w.alt.length?`<br><small style="color:var(--ink-2)">${w.alt.map(a=>a.py).join(' / ')}</small>`:''}</td>
+      <td class="k"><input data-s="${w.s}" value="${(KO[w.s]||w.ko||'').replace(/"/g,'&quot;')}" placeholder="뜻 입력"></td>
+      <td class="e">${w.en}</td><td class="b">${p?`${p.box} (${p.c}○${p.w}✕)`:'–'}</td>
+      <td><button class="btn icon" data-say="${w.s}" title="발음">🔊</button></td></tr>`;
+  }).join('');
+}
+$('tbody').addEventListener('change', e => { if (e.target.dataset.s){ saveKo(e.target.dataset.s, e.target.value); showToast('저장됨'); } });
+$('tbody').addEventListener('click', e => {
+  const b = e.target.closest('[data-say]'); if (b) speak(b.dataset.say);
+  const f = e.target.closest('[data-fav]'); if (f){ const on = toggleFav(+f.dataset.fav); f.textContent = on?'★':'☆'; f.classList.toggle('on', on); if (cur && cur.id===+f.dataset.fav) updateStar(); }
+});
+$('q').addEventListener('input', () => { page=0; renderList(); });
+$('listLv').addEventListener('change', () => { page=0; renderList(); });
+$('pgPrev').onclick = () => { if(page>0){page--; renderList();} };
+$('pgNext').onclick = () => { page++; renderList(); };
+
+/* ═══════════ 기기 간 동기화 ═══════════
+   원리: 각 기기는 평소처럼 localStorage 에 쓰고, 바뀐 뒤 몇 초 후에 "서버"에 올린다.
+   열 때·화면에 돌아올 때는 서버 것을 받아 로컬과 병합(merge)한다.
+   병합은 항목마다 "더 최근에 바뀐 쪽"을 고르는 방식(타임스탬프 t 비교).
+   서버는 둘 중 하나: claude.ai 게시 페이지에선 계정 저장소(db), GitHub Pages 등에선 GitHub Gist. */
+const SYNC_DOC = 'zh-typing-sync.json';
+let backend = null, syncTimer = null, syncing = false, lastSyncAt = 0;
+function setSyncStatus(msg){ const el = $('syncStatus'); if (el) el.textContent = msg; }
+function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, custom: CUSTOM, custom_del: CUSTOM_DEL, updatedAt: Date.now() }; }
+// 두 상태를 병합해 하나로. 각 항목은 타임스탬프가 큰 쪽이 이김
+function mergeState(a, b){
+  if (!a) return b; if (!b) return a;
+  const out = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{} };
+  const keys = (x,y) => new Set([...Object.keys(x||{}), ...Object.keys(y||{})]);
+  for (const k of keys(a.progress, b.progress)){ const p=a.progress?.[k], q=b.progress?.[k]; out.progress[k] = !p ? q : !q ? p : ((q.t||0) > (p.t||0) ? q : p); }
+  for (const k of keys(a.ko_t, b.ko_t)){ const ta=a.ko_t?.[k]||0, tb=b.ko_t?.[k]||0; const src = tb > ta ? b : a; out.ko_t[k] = Math.max(ta,tb); if (src.ko?.[k]) out.ko[k] = src.ko[k]; }
+  for (const k of keys(a.ko, b.ko)) if (!(k in out.ko_t)) out.ko[k] = a.ko?.[k] || b.ko?.[k];   // 시각 기록이 없는 옛 항목
+  for (const k of keys(a.units, b.units)){ const p=a.units?.[k], q=b.units?.[k]; out.units[k] = !p ? q : !q ? p : ((q.t||0) > (p.t||0) ? q : p); }
+  for (const k of keys(a.history, b.history)){ const p=a.history?.[k]||{}, q=b.history?.[k]||{}; out.history[k] = { n:Math.max(p.n||0,q.n||0), ok:Math.max(p.ok||0,q.ok||0), nw:Math.max(p.nw||0,q.nw||0), u:Math.max(p.u||0,q.u||0) }; }
+  for (const k of keys(a.fav, b.fav)){ const p=a.fav?.[k]||0, q=b.fav?.[k]||0; out.fav[k] = Math.abs(q) > Math.abs(p) ? q : p; }
+  for (const k of keys(a.custom_del, b.custom_del)) out.custom_del[k] = Math.max(a.custom_del?.[k]||0, b.custom_del?.[k]||0);
+  const byId = new Map(); for (const w of [...(a.custom||[]), ...(b.custom||[])]) if (!byId.has(w.id) || (w.added||0) > (byId.get(w.id).added||0)) byId.set(w.id, w);
+  out.custom = [...byId.values()].filter(w => !(out.custom_del[w.id] > (w.added||0)));
+  out.updatedAt = Math.max(a.updatedAt||0, b.updatedAt||0);
+  return out;
+}
+function applyState(s){   // 병합 결과를 앱의 메모리·localStorage 에 반영 (참조는 유지)
+  const swap = (obj, src) => { for (const k in obj) delete obj[k]; Object.assign(obj, src||{}); };
+  swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(CUSTOM_DEL, s.custom_del);
+  CUSTOM.length = 0; for (const w of s.custom||[]) { CUSTOM.push(w); BY_ID.set(w.id, w); }
+  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL }[k])); }catch(e){} };
+  for (const k of SYNC_KEYS) silent(k);
+}
+// ── 백엔드 1: claude.ai 계정 저장소 (db). 문서 하나가 256KB 제한이라 진도는 1,000단어씩 쪼갬
+function claudeBackend(db){
+  const shard = id => 'p' + Math.floor(+id / 1000);
+  return {
+    name: 'claude.ai 계정 저장소',
+    async pull(){
+      const snap = await db.collection('zhsync').get(); if (snap.empty) return null;
+      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, updatedAt:0 };
+      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, custom:v.custom||[], custom_del:v.custom_del||{}, updatedAt:v.updatedAt||0 }); } }
+      return s;
+    },
+    async push(s, prev){
+      const shards = {}; for (const id in s.progress){ (shards[shard(id)] ||= {})[id] = s.progress[id]; }
+      const prevShards = {}; for (const id in (prev?.progress||{})){ (prevShards[shard(id)] ||= {})[id] = prev.progress[id]; }
+      for (const k in shards) if (JSON.stringify(shards[k]) !== JSON.stringify(prevShards[k]||{})) await db.doc('zhsync/'+k).set({ progress: shards[k] });
+      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, custom:s.custom, custom_del:s.custom_del, updatedAt:s.updatedAt };
+      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, custom:prev.custom, custom_del:prev.custom_del } : null;
+      if (!prev || JSON.stringify({...misc, updatedAt:0}) !== JSON.stringify({...prevMisc, updatedAt:0})) await db.doc('zhsync/misc').set(misc);
+    }
+  };
+}
+// ── 백엔드 2: GitHub Gist (토큰 필요). 비공개 gist 하나에 JSON 파일 하나
+function gistBackend(token){
+  const H = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' };
+  let gistId = store.get('zh.gist_id', null);
+  async function find(){
+    if (gistId) return gistId;
+    const r = await fetch('https://api.github.com/gists?per_page=100', { headers: H }); if (!r.ok) throw new Error('토큰 확인 실패 (' + r.status + ')');
+    const g = (await r.json()).find(g => g.files && g.files[SYNC_DOC]); if (g){ gistId = g.id; store.set('zh.gist_id', gistId); }
+    return gistId;
+  }
+  return {
+    name: 'GitHub Gist',
+    async pull(){
+      const id = await find(); if (!id) return null;
+      const r = await fetch('https://api.github.com/gists/' + id, { headers: H }); if (!r.ok) throw new Error('불러오기 실패 (' + r.status + ')');
+      const f = (await r.json()).files[SYNC_DOC]; if (!f) return null;
+      const text = f.truncated ? await (await fetch(f.raw_url)).text() : f.content;
+      return JSON.parse(text);
+    },
+    async push(s){
+      const body = JSON.stringify({ description: 'zh-typing 학습 기록 동기화', public: false, files: { [SYNC_DOC]: { content: JSON.stringify(s) } } });
+      const id = await find();
+      const r = await fetch(id ? 'https://api.github.com/gists/' + id : 'https://api.github.com/gists', { method: id ? 'PATCH' : 'POST', headers: H, body });
+      if (!r.ok) throw new Error('올리기 실패 (' + r.status + ')');
+      if (!id){ gistId = (await r.json()).id; store.set('zh.gist_id', gistId); }
+    }
+  };
+}
+let lastRemote = null;
+async function syncNow(reason){
+  if (!backend || syncing) return; syncing = true;
+  try{
+    setSyncStatus(`${backend.name}: 동기화 중…`);
+    const remote = await backend.pull();
+    const merged = mergeState(snapshot(), remote);
+    applyState(merged);
+    if (!remote || JSON.stringify({...merged, updatedAt:0}) !== JSON.stringify({...remote, updatedAt:0})) await backend.push(merged, remote);
+    lastRemote = merged; lastSyncAt = Date.now();
+    setSyncStatus(`${backend.name}: 동기화됨 (${new Date().toLocaleTimeString()})`);
+    updateStats(); renderUnitBar(); renderModeBar();
+    if (document.querySelector('nav [data-tab=mine][aria-selected=true]')) renderMine();
+    if (document.querySelector('nav [data-tab=stats][aria-selected=true]')) renderStats();
+  }catch(e){ setSyncStatus(`${backend.name}: 실패 — ${e.message||e}`); }
+  finally{ syncing = false; }
+}
+function scheduleSync(){ if (!backend) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncNow('change'), 4000); }   // 바뀐 뒤 4초 후 올림
+async function initSync(){
+  // 1) claude.ai 안에서 열렸으면 계정 저장소 시도
+  if (window.claude && typeof window.claude.use === 'function'){
+    const db = await window.claude.use('db');
+    if (db){ backend = claudeBackend(db); $('gistSetup').hidden = true; await syncNow('init'); return; }
+  }
+  // 2) 아니면 GitHub Gist (토큰이 있으면 바로 연결)
+  $('gistSetup').hidden = false;
+  const token = store.get('zh.gist_token', null);
+  if (token){ backend = gistBackend(token); $('btnGistOff').hidden = false; $('gistToken').value = token; await syncNow('init'); }
+  else setSyncStatus('동기화 꺼짐 — 이 기기에만 저장 중. GitHub 토큰을 넣으면 기기 간에 이어집니다.');
+}
+$('btnGistConnect').onclick = async () => { const tk = $('gistToken').value.trim(); if (!tk){ showToast('토큰을 넣어 주세요'); return; } store.set('zh.gist_token', tk); backend = gistBackend(tk); $('btnGistOff').hidden = false; await syncNow('connect'); };
+$('btnGistOff').onclick = () => { try{ localStorage.removeItem('zh.gist_token'); localStorage.removeItem('zh.gist_id'); }catch(e){} backend = null; $('btnGistOff').hidden = true; $('gistToken').value=''; setSyncStatus('동기화 꺼짐 — 이 기기에만 저장 중.'); };
+$('btnSyncNow').onclick = () => { if (backend) syncNow('manual'); else showToast('동기화가 연결돼 있지 않아요'); };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && backend && Date.now() - lastSyncAt > 30000) syncNow('visible'); });
+window.addEventListener('pagehide', () => { if (backend && syncTimer){ clearTimeout(syncTimer); syncNow('leave'); } });
+initSync();
+
+/* ═══════════ 시작 ═══════════ */
+loadVoices();
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
+startUnit(currentUnitIndex());
+</script>
