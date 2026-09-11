@@ -343,7 +343,7 @@ body{display:flex;flex-direction:column;margin:0}
 .apphead small{font-size:12px;color:var(--ink-2)}
 .apphead .hx{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--accent);margin-left:4px;letter-spacing:.04em}
 /* 하단 탭 */
-.tabbar{flex:0 0 auto;z-index:25;display:flex;justify-content:center;gap:0;background:var(--paper);border-top:1px solid var(--line);padding-bottom:max(0px, calc(env(safe-area-inset-bottom,0px) - 14px))}   /* 아이폰 홈 표시줄 영역: 겹치지 않을 만큼만 띄움 */
+.tabbar{flex:0 0 auto;z-index:25;display:flex;justify-content:center;gap:0;background:var(--paper);border-top:1px solid var(--line);padding-bottom:max(0px, calc(env(safe-area-inset-bottom,0px) - 14px), var(--extra-bottom,0px))}   /* 아이폰 홈 표시줄 영역 + 웹뷰가 보고한 높이보다 실제 화면이 더 클 때의 차이(--extra-bottom, JS 가 잼) */
 .tabbar[hidden]{display:none}
 .tabbar button{flex:1;max-width:180px;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:0;font:inherit;font-size:11px;font-weight:500;color:var(--ink-2);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tabbar button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -1937,9 +1937,19 @@ function renderDiag(){
   try{
     const tb = $('tabbar').getBoundingClientRect(), sab = getComputedStyle(document.documentElement).getPropertyValue('--sab') || '';
     const probe = document.createElement('div'); probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);width:1px;visibility:hidden'; document.body.appendChild(probe); const sa = probe.getBoundingClientRect().height; probe.remove();
-    $('diag').textContent = `진단 ${$('appVer').textContent} · 화면 ${innerWidth}×${innerHeight} · 문서 ${document.documentElement.clientHeight} · 탭바 ${Math.round(tb.top)}~${Math.round(tb.bottom)} · 안전영역(아래) ${Math.round(sa)} · standalone ${navigator.standalone===true ? 'Y' : 'N'} · 배율 ${SETTINGS.zoom||1}`;
+    $('diag').textContent = `진단 ${$('appVer').textContent} · 기기 ${screen.width}×${screen.height} · 화면 ${innerWidth}×${innerHeight} · 보정 ${getComputedStyle(document.documentElement).getPropertyValue('--extra-bottom')} · 문서 ${document.documentElement.clientHeight} · 탭바 ${Math.round(tb.top)}~${Math.round(tb.bottom)} · 안전영역(아래) ${Math.round(sa)} · standalone ${navigator.standalone===true ? 'Y' : 'N'} · 배율 ${SETTINGS.zoom||1}`;
   }catch(e){}
 }
+// 아이폰 홈 화면 앱: 웹뷰가 알려주는 높이(innerHeight)가 실제 화면(screen.height)보다 작게 나오는 경우가 있음(예: 812 vs 874).
+// 그러면 그 차이만큼 아래에 빈 띠가 생기므로, 차이를 재서 탭 바를 그만큼 늘린다 (아이콘은 홈 바 위로 오게 14px 뺌)
+function fixExtraBottom(){
+  try{
+    const standalone = navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+    const extra = standalone ? Math.round(screen.height - innerHeight) : 0;
+    document.documentElement.style.setProperty('--extra-bottom', (extra > 0 && extra < 140 ? Math.max(0, extra - 14) : 0) + 'px');
+  }catch(e){}
+}
+fixExtraBottom(); addEventListener('resize', fixExtraBottom); addEventListener('orientationchange', () => setTimeout(fixExtraBottom, 300));
 function renderHome(){
   updateStats(); renderUnitBar();
   const due = dueWords().length; $('homeDue').textContent = due;
