@@ -143,7 +143,11 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .pq .opts button.good{border-color:var(--good);background:var(--good-bg)}
 .pq .opts button.bad{border-color:var(--bad);background:var(--bad-bg)}
 .pq .pres{font-size:14px;padding:8px 0}
-.popup{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.18);width:max-content;max-width:min(calc(100vw - 32px),440px);box-sizing:border-box;z-index:20;font-size:14px;line-height:1.5}
+.popup{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--card);color:var(--ink);border:2px solid var(--accent);border-radius:12px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.35),0 0 0 6px color-mix(in srgb,var(--accent) 18%,transparent);width:max-content;max-width:min(calc(100vw - 32px),440px);box-sizing:border-box;z-index:20;font-size:14px;line-height:1.5}
+.popup::before{content:'';position:absolute;top:6px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--line)}   /* 시트임을 알리는 손잡이 */
+.popup{padding-top:16px}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .popup{background:#233042;box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 0 6px color-mix(in srgb,var(--accent) 22%,transparent)}}
+:root[data-theme=dark] .popup{background:#233042;box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 0 6px color-mix(in srgb,var(--accent) 22%,transparent)}
 .popup > div:not(.acts){display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
 .popup b{font-family:var(--hanzi);font-size:22px}
 .popup .py{font-family:var(--mono);color:var(--accent)}
@@ -537,6 +541,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <label class="tog"><input type="checkbox" id="rdPy"> 병음</label>
       <label class="tog"><input type="checkbox" id="rdKo"> 번역</label>
       <button class="btn icon" id="btnReadSpeak" title="전체 읽어주기">🔊</button>
+      <button class="btn" id="btnReadAsk" title="AI 선생님에게 이 글에 대해 묻기">🤖 묻기</button>
       <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
     </div>
     <div class="card" id="readCard">
@@ -786,6 +791,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <label class="row"><span>답변 길이<small>길수록 토큰(비용)이 더 듦</small></span><select id="aiLen"><option value="short">짧게 (3~5문장)</option><option value="normal" selected>보통</option><option value="long">자세히</option></select></label>
       <div class="dataops"><button class="btn primary" id="btnAiSave">저장</button><button class="btn" id="btnAiTest">연결 테스트</button><button class="btn" id="btnAiOff">키 지우기</button></div>
       <p id="aiStatus" style="margin:6px 0 0;font-size:13px;color:var(--ink-2)"></p>
+      <p id="aiUsage" style="margin:2px 0 0;font-size:12px;color:var(--ink-2)"></p>
     </div>
     <h3>데이터</h3>
     <p style="margin:0;font-size:13px;color:var(--ink-2)">학습 기록과 직접 입력한 한국어 뜻은 이 브라우저에만 저장됩니다. 다른 기기로 옮기려면 내보내기 → 붙여넣기 → 가져오기.</p>
@@ -1770,6 +1776,7 @@ const AI_SERVICES = {
 };
 const AI = Object.assign({ service:'deepseek', provider:'openai', model:'deepseek-flash', base:'https://api.deepseek.com/v1', key:'', len:'normal' }, store.get('zh.ai', {}));
 if (!AI.service) AI.service = AI.provider==='gemini' ? 'gemini' : AI.provider==='claude' ? 'claude' : /deepseek/.test(AI.base) ? 'deepseek' : /openai\.com/.test(AI.base) ? 'openai' : 'custom';
+const AI_USAGE = Object.assign({ n:0, inTok:0, outTok:0 }, store.get('zh.ai_usage', {}));   // 이 기기에서 쓴 양 (대략 추정)
 const AI_NOTES = store.get('zh.ai_notes', {});   // { 문맥키: [{q, a, t}] } 답변 저장 (같은 질문에 또 토큰 안 쓰게). 이 기기에만
 function aiModelOptions(service, selected){
   const sv = AI_SERVICES[service]; const known = sv.models.some(m => m[0] === selected);
@@ -1799,11 +1806,32 @@ function aiReadForm(){
 $('btnAiSave').onclick = () => { aiReadForm(); aiFormHints(); showToast('저장했어요'); };
 $('btnAiOff').onclick = () => { AI.key = ''; store.set('zh.ai', AI); $('aiKey').value = ''; aiFormHints(); };
 $('btnAiTest').onclick = async () => { aiReadForm(); if (!AI.model){ $('aiStatus').textContent = '모델 이름을 고르거나 입력해 주세요'; return; } $('aiStatus').textContent = '연결 중…'; try{ const a = await aiCall('연결 테스트입니다. "你好" 의 병음과 뜻을 한 줄로 답하세요.', '짧게 답하세요.'); $('aiStatus').textContent = '✓ 연결 성공 · ' + a.slice(0, 60); }catch(e){ $('aiStatus').textContent = '✕ ' + e.message + (/(Failed to fetch|NetworkError)/i.test(e.message) ? ' — 브라우저에서 직접 호출이 막힌 서버(CORS)이거나 인터넷 문제예요' : ''); } };
-aiFormFill();
+aiFormFill(); aiUsageLine();
 function aiSystem(){
   const len = AI.len==='short' ? '3~5문장으로 짧게' : AI.len==='long' ? '필요하면 자세히(600자 이내)' : '핵심만 400자 이내로';
   return `너는 한국인 학습자를 가르치는 친절한 중국어(보통화) 선생님이다. HSK 3.0 단어장 앱 안에서 질문을 받는다.
 규칙: 한국어로 답한다. 중국어는 간체로 쓰고 처음 나올 때 병음(성조 부호)을 괄호로 붙인다. 예문은 짧게 1~3개. ${len}. 마크다운 제목·표는 쓰지 말고, 강조는 **굵게** 정도만. 확실하지 않으면 그렇다고 말한다.`;
+}
+// 서버 오류를 알아듣기 쉬운 한국어로. (각 회사가 주는 코드·문구가 달라서 공통 패턴으로 잡음)
+function aiFriendlyError(status, msg){
+  const m = String(msg || ''); const svc = AI.service;
+  const topup = svc==='deepseek' ? 'platform.deepseek.com → Top up' : svc==='openai' ? 'platform.openai.com → Billing' : svc==='claude' ? 'platform.claude.com → Billing' : '해당 서비스 결제 페이지';
+  if (status === 402 || /insufficient.?(balance|quota|credit)|balance is (too )?low|exceeded your current quota|billing/i.test(m)) return `충전 잔액을 다 썼어요. ${topup} 에서 충전하면 바로 다시 됩니다.`;
+  if (status === 401 || /invalid.?(api.?key|authentication)|incorrect api key|unauthori[sz]ed|API key not valid/i.test(m)) return '키가 틀렸거나 만료됐어요. 설정 탭 → AI 선생님에서 키를 다시 넣어 주세요.';
+  if (status === 429 || /rate.?limit|too many requests|resource.?exhausted|quota/i.test(m)) return svc==='gemini' ? '무료 한도(분당·하루 요청 수)를 넘었어요. 잠시 후 다시 하거나, 내일 다시 써 보세요.' : '요청이 너무 잦아요. 잠시 후 다시 해 보세요.';
+  if (status === 404 || /model.*(not found|does not exist|not exist)|no such model|not supported/i.test(m)) return `모델 이름(${AI.model})을 찾을 수 없어요. 설정에서 다른 모델을 고르거나 이름을 확인해 주세요.`;
+  if (status === 400 && /max_tokens|max_completion_tokens/.test(m)) return '이 모델은 요청 형식이 조금 달라요 — 설정에서 서비스를 다시 골라 저장한 뒤 시도해 주세요.';
+  if (status >= 500) return '서비스 서버 쪽 문제예요 (일시적). 잠시 후 다시 해 보세요.';
+  return `오류 ${status ? status + ' ' : ''}${m}`.trim();
+}
+function aiCountUsage(inText, outText){ AI_USAGE.n++; AI_USAGE.inTok += Math.round(inText.length * 0.9); AI_USAGE.outTok += Math.round(outText.length * 1.1); store.set('zh.ai_usage', AI_USAGE); aiUsageLine(); }
+function aiUsageLine(){
+  const el = $('aiUsage'); if (!el) return;
+  if (!AI_USAGE.n){ el.textContent = ''; return; }
+  // 대략 비용: 서비스별 100만 토큰당 입력/출력 달러 (2026-09 공식 가격) × 환율 1,400원 가정
+  const price = { deepseek:[0.3,1.2], gemini:[0.3,2.5], claude:[1,5], openai:[0.2,1.25], custom:[0.5,2] }[AI.service] || [0.5,2];
+  const usd = AI_USAGE.inTok/1e6*price[0] + AI_USAGE.outTok/1e6*price[1];
+  el.textContent = `이 기기에서 질문 ${AI_USAGE.n}개 · 대략 ${Math.round(usd*1400).toLocaleString()}원 (추정치 · 실제 금액은 서비스 사용량 페이지에서)`;
 }
 async function aiCall(user, systemExtra){
   if (!AI.key) throw new Error('설정 탭에서 API 키를 먼저 넣어 주세요');
@@ -1814,15 +1842,15 @@ async function aiCall(user, systemExtra){
     res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI.model)}:generateContent?key=${encodeURIComponent(AI.key)}`, { method:'POST', headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[{ role:'user', parts:[{ text: user }] }], generationConfig:{ maxOutputTokens: maxTok * 2 } }) });
     j = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error((j.error && j.error.message) || `HTTP ${res.status}`);
-    return ((j.candidates||[])[0]?.content?.parts||[]).map(p => p.text||'').join('').trim() || '(빈 응답)';
+    if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && j.error.message));
+    { const out = ((j.candidates||[])[0]?.content?.parts||[]).map(p => p.text||'').join('').trim() || '(빈 응답)'; aiCountUsage(system + user, out); return out; }
   }
   if (AI.provider === 'claude'){
     res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key': AI.key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
       body: JSON.stringify({ model: AI.model, max_tokens: maxTok, system, messages:[{ role:'user', content: user }] }) });
     j = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error((j.error && j.error.message) || `HTTP ${res.status}`);
-    return (j.content||[]).filter(c => c.type==='text').map(c => c.text).join('').trim() || '(빈 응답)';
+    if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && j.error.message));
+    { const out = (j.content||[]).filter(c => c.type==='text').map(c => c.text).join('').trim() || '(빈 응답)'; aiCountUsage(system + user, out); return out; }
   }
   // OpenAI 호환 (DeepSeek, OpenAI, 기타)
   const base = AI.base || 'https://api.openai.com/v1';
@@ -1830,8 +1858,8 @@ async function aiCall(user, systemExtra){
   if (/openai\.com/.test(base)) body.max_completion_tokens = maxTok; else body.max_tokens = maxTok;
   res = await fetch(`${base}/chat/completions`, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + AI.key }, body: JSON.stringify(body) });
   j = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((j.error && (j.error.message || j.error)) || `HTTP ${res.status}`);
-  return ((j.choices||[])[0]?.message?.content || '').trim() || '(빈 응답)';
+  if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && (j.error.message || j.error)));
+  { const out = ((j.choices||[])[0]?.message?.content || '').trim() || '(빈 응답)'; aiCountUsage(system + user, out); return out; }
 }
 // 지금 보고 있는 것(단어·문장·문법)을 질문에 같이 보내기 위한 문맥
 let aiCtx = null;   // { key, label, text, quick:[{label, q}] }
@@ -1873,14 +1901,26 @@ async function aiAsk(q){
     const a = await aiCall(`${aiCtx.text}\n\n[질문] ${q}`);
     el.innerHTML = aiFmt(a);
     (AI_NOTES[aiCtx.key] = AI_NOTES[aiCtx.key] || []).push({ q, a, t: Date.now() }); if (AI_NOTES[aiCtx.key].length > 8) AI_NOTES[aiCtx.key].shift(); store.set('zh.ai_notes', AI_NOTES);
-  }catch(e){ el.className = 'a err'; el.textContent = '오류: ' + e.message + (/(Failed to fetch|NetworkError|CORS)/i.test(e.message) ? ' — 브라우저에서 직접 호출이 막힌 주소일 수 있어요(CORS). 다른 제공자를 써 보세요.' : ''); }
+  }catch(e){ el.className = 'a err'; el.textContent = /(Failed to fetch|NetworkError|Load failed)/i.test(e.message) ? '서버에 연결하지 못했어요. 인터넷을 확인하거나, 이 서비스가 브라우저 직접 호출을 막는 경우(CORS)일 수 있어요.' : e.message; }
   $('btnAiSend').disabled = false; $('aiLog').scrollTop = $('aiLog').scrollHeight;
 }
-$('aiQuick').addEventListener('click', e => { const b = e.target.closest('[data-aiq]'); if (b) aiAsk(aiCtx.quick[+b.dataset.aiq].q); });
+$('aiQuick').addEventListener('click', e => { const b = e.target.closest('[data-aiq]'); if (!b) return; const q = aiCtx.quick[+b.dataset.aiq].q; if (!q){ $('aiQ').value = '3번 문장 '; $('aiQ').focus(); $('aiQ').setSelectionRange(0, 2); return; } aiAsk(q); });
 $('aiForm').onsubmit = e => { e.preventDefault(); const q = $('aiQ').value; $('aiQ').value = ''; aiAsk(q); };
 $('btnAiClose').onclick = () => { $('aiSheet').hidden = true; };
 $('btnAsk').onclick = () => { if (!cur) return; aiOpen(aiWordCtx(cur)); };
 $('btnGramAsk').onclick = () => { if (curGram) aiOpen(aiGramCtx(curGram)); };
+function aiPassageCtx(pg){
+  const body = pg.sents.map((x,i) => `${i+1}. ${x.zh}`).join('\n');
+  const text = `[현재 읽기 글] HSK ${pg.lv===7?'7~9':pg.lv}급 · 제목: ${pg.title}\n${body}\n[한국어 번역]\n${pg.sents.map((x,i) => `${i+1}. ${x.ko}`).join('\n')}`;
+  return { key:'p'+pg.id, label:pg.title, text, quick:[
+    { label:'전체 해설', q:'이 글의 내용을 요약하고, 한국인 학습자가 어려워할 문장 2~3개를 골라 구조를 풀어 설명해 줘.' },
+    { label:'문법 포인트', q:'이 글에 쓰인 문법 포인트를 급수에 맞게 3~5개 골라 문장 번호와 함께 설명해 줘.' },
+    { label:'핵심 단어', q:'이 글에서 꼭 외울 만한 단어·표현 5개를 병음·뜻·이 글에서의 쓰임과 함께 정리해 줘.' },
+    { label:'문장 번호로 질문', q:'' },
+  ] };
+}
+$('btnReadAsk').onclick = () => { if (curPassage) aiOpen(aiPassageCtx(curPassage)); };
+
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('aiSheet').hidden) $('aiSheet').hidden = true; });
 
 /* ═══════════ 관련 단어 ═══════════
