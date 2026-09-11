@@ -352,8 +352,8 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 .loading-bar{width:160px;height:4px;background:var(--line);border-radius:2px;margin:12px auto 0;overflow:hidden}
 .loading-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
 /* ═══════════ 앱 껍데기: 화면·하단 탭·상단 줄 ═══════════ */
-:root{--tabbar-h:60px;--sp:12px}
-body{padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom,0px) + 16px)}
+:root{--tabbar-h:56px;--sp:12px}
+body{padding-bottom:calc(var(--tabbar-h) + max(0px, calc(env(safe-area-inset-bottom,0px) - 14px)) + 16px)}
 body.no-tabbar{padding-bottom:24px}
 .screen[hidden]{display:none}
 .screen{animation:fadein .15s ease}
@@ -362,9 +362,9 @@ body.no-tabbar{padding-bottom:24px}
 .apphead h1{font-family:var(--hanzi);font-weight:700;font-size:24px;margin:0;letter-spacing:.02em}
 .apphead small{font-size:12px;color:var(--ink-2)}
 /* 하단 탭 */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:25;display:flex;justify-content:center;gap:0;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:max(0px, calc(env(safe-area-inset-bottom,0px) - 14px))}   /* 아이폰 홈 표시줄 영역: 겹치지 않을 만큼만 띄움 (그대로 두면 아래에 빈 띠가 생김) */
 .tabbar[hidden]{display:none}
-.tabbar button{flex:1;max-width:180px;height:var(--tabbar-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:0;font:inherit;font-size:11px;font-weight:500;color:var(--ink-2);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tabbar button{flex:1;max-width:180px;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:0;font:inherit;font-size:11px;font-weight:500;color:var(--ink-2);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tabbar button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tabbar button[aria-selected="true"]{color:var(--accent)}
 .tabbar button[aria-selected="true"] svg{fill:color-mix(in srgb,var(--accent) 18%,transparent)}
@@ -563,7 +563,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉语 타자 단어장</h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1957</span></small></header>
+  <header class="apphead"><h1>汉语 타자 단어장</h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2001</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
