@@ -33,7 +33,9 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}   /* GitHub Pages 처럼 단독으로 열 때도 hidden 속성이 확실히 먹게 */
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 40px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 40px;
+  /* 홈 화면 앱(PWA)으로 열면 화면이 상태 표시줄·홈 바 아래까지 확장되므로 그만큼 안쪽 여백을 둠 (일반 브라우저에선 0) */
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
 .wrap{max-width:720px;margin:0 auto;zoom:var(--zoom,1)}   /* 글자 크기 설정: 페이지 전체를 배율로 키우고 줄임 */
 header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:18px 10px}
 header h1{font-family:var(--hanzi);font-weight:700;font-size:22px;margin:0;letter-spacing:.02em}
