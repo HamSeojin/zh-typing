@@ -34,9 +34,11 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}   /* GitHub Pages 처럼 단독으로 열 때도 hidden 속성이 확실히 먹게 */
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;padding:0;
-  /* 홈 화면 앱(PWA)으로 열면 화면이 상태 표시줄·홈 바 아래까지 확장되므로 그만큼 안쪽 여백을 둠 (일반 브라우저에선 0) */
-  padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
-.wrap{zoom:var(--zoom,1);padding-inline:16px;box-sizing:border-box}
+  /* 홈 화면 앱(PWA)에서 화면이 상태 표시줄 아래까지 확장되므로 위쪽만 그만큼 띄움. 아래쪽(홈 바)은 하단 탭이 알아서 처리 — 여기에 여백을 두면 탭 아래에 빈 띠가 생김 */
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:0;box-sizing:border-box}
+.wrap{padding-inline:16px;box-sizing:border-box}
+/* 글자 크기(배율)는 스크롤 통(.wrap)이 아니라 그 안의 화면에만 건다 — 통에 zoom 을 걸면 아이폰에서 통의 높이까지 줄어 아래에 빈 띠가 생김 */
+.screen,.sheet,.ai-sheet,.popup{zoom:var(--zoom,1)}
 .screen{max-width:720px;margin:0 auto}   /* 글자 크기 설정: 페이지 전체를 배율로 키우고 줄임 */
 /* 탭 줄: 좁으면 옆으로만 스크롤. 세로 스크롤은 막아야 손가락을 위아래로 밀 때 탭 글자가 잘리지 않음 */
 nav::-webkit-scrollbar{display:none}
@@ -423,17 +425,18 @@ body{display:flex;flex-direction:column;margin:0}
   .set label.row > select,.set label.row > input[type=range]{width:100%;box-sizing:border-box}
 }
 /* 약한 단어 목록 */
+#weakList{display:block}
 .sk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .sk-head .sk-h small{display:block;margin:2px 0 0}
 .wk{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 2px;border-top:1px solid var(--line);cursor:pointer}
 .wk:first-child{border-top:0}
-.wk-l{display:flex;align-items:baseline;gap:8px;min-width:0;flex-wrap:wrap}
+.wk-l{display:flex;align-items:baseline;gap:8px;min-width:0;flex:1 1 auto;overflow:hidden;white-space:nowrap}
 .wk-l b{font-family:var(--hanzi);font-size:20px;font-weight:500}
 .wk-l .py{font-family:var(--mono);font-size:13px;color:var(--accent)}
-.wk-l small{font-size:13px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:14em}
-.wk-r{text-align:right;flex:0 0 auto}
-.wk-r .dots{display:block;font-style:normal;font-size:9px;letter-spacing:2px;color:var(--bad);line-height:1.2}
-.wk-r small{font-size:11px;color:var(--ink-2)}
+.wk-l small{font-size:13px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.wk-r{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto;min-width:9.5em}
+.wk-r .dots{font-style:normal;font-size:9px;letter-spacing:2px;color:var(--bad);line-height:1;width:5.2em;text-align:left}
+.wk-r small{font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;width:6.2em;text-align:right}
 /* AI 노트 */
 .notes .nctx{margin:12px 0 4px;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
 .notes .nctx b{font-family:var(--hanzi);font-size:17px;color:var(--ink)}
@@ -1442,7 +1445,7 @@ function charDataLoader(ch, onLoad, onErr){
 }
 function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
 function writerSize(n){
-  const avail = Math.min(document.querySelector('.wrap').clientWidth - 40, 560);
+  const avail = Math.min($('quizCard').clientWidth - 40, 560);   // 배율(zoom) 안의 폭 기준
   const perRow = Math.min(Math.max(n,1), 2);
   return Math.max(120, Math.min(260, Math.floor((avail - 12*(perRow-1)) / perRow)));
 }
