@@ -372,6 +372,17 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 .script .ln.q b{background:var(--ink-2)}
 .script .ko{font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.5}
 /* 문법 탭 */
+#glist{display:grid;gap:8px}
+#glist .gsech{margin:14px 0 2px;padding:6px 10px;background:var(--paper);border-left:3px solid var(--accent);border-radius:6px;font-size:13px}
+#glist .gsech:first-child{margin-top:4px}
+#glist .gsech b{color:var(--ink)}
+#glist .gsech span{font-family:var(--hanzi);color:var(--ink-2);margin-left:6px}
+#glist button.gi{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;width:100%;text-align:left;font:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink);cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+#glist button.gi:hover{border-color:var(--accent)}
+#glist button.gi .no{font-family:var(--mono);font-size:12px;color:var(--accent);background:var(--good-bg);border-radius:6px;padding:3px 6px;min-width:2.2em;text-align:center}
+#glist button.gi .ti{font-weight:600;font-size:15px;line-height:1.35}
+#glist button.gi .pa{font-family:var(--hanzi);font-size:13px;color:var(--ink-2);margin-top:2px}
+#glist button.gi .lv{font-size:11px;color:var(--ink-2);margin-left:6px;font-weight:400}
 .gsec{font-size:12px;color:var(--ink-2);margin-bottom:2px}
 .gtitle{font-size:20px;font-weight:700;margin:0 0 2px}
 .gzh{font-family:var(--hanzi);font-size:15px;color:var(--ink-2);margin-bottom:10px}
@@ -394,7 +405,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 
 <div class="wrap">
 <header>
-  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1849</span></small></h1>
+  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1853</span></small></h1>
   <span id="ttsState" style="font-size:12px;color:var(--ink-2)"></span>
 </header>
 <nav role="tablist">
@@ -544,7 +555,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <label><input type="radio" name="gramLv" value="7">7~9급</label>
       <span id="gramCount" style="margin-left:auto"></span>
     </div>
-    <div class="card" style="padding:8px 12px">
+    <div class="card" style="padding:8px 12px;background:transparent;border:0;box-shadow:none">
       <input type="search" id="gramSearch" placeholder="문법 검색 (예: 把, 비교, 了)" style="width:100%;box-sizing:border-box;margin:4px 0 6px;padding:8px 10px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)">
       <div class="plist" id="glist"></div>
     </div>
@@ -1838,8 +1849,8 @@ function renderGramList(){
   $('gramCount').textContent = q ? `검색 ${gs.length}개` : `${gs.length}개 항목`;
   let lastSec = null;
   $('glist').innerHTML = gs.map((g,i) => {
-    const head = (g.sec !== lastSec && !q) ? `<div class="gsec" style="padding:10px 4px 2px;border-bottom:1px solid var(--line)"><b style="color:var(--ink)">${g.sec_ko||g.sec}</b> <span style="font-family:var(--hanzi)">${g.sec}</span></div>` : ''; lastSec = g.sec;
-    return head + `<button data-gid="${g.id}"><span><span style="font-weight:500">${g.title_ko}</span><br><small style="color:var(--ink-2);font-family:var(--hanzi)">${g.pattern}</small></span><span class="pm">${q ? (g.lv===7?'7~9':g.lv)+'급' : g.id.replace(/^[^0-9]+/,'')}</span></button>`;
+    const head = (g.sec !== lastSec && !q) ? `<div class="gsech"><b>${g.sec_ko||g.sec}</b><span>${g.sec}</span></div>` : ''; lastSec = g.sec;
+    return head + `<button class="gi" data-gid="${g.id}"><span class="no">${g.id.replace(/^[^0-9]+/,'')}</span><span><span class="ti">${g.title_ko}${q ? `<span class="lv">${g.lv===7?'7~9':g.lv}급</span>` : ''}</span><div class="pa">${g.pattern}</div></span></button>`;
   }).join('') || '<div style="padding:12px;color:var(--ink-2)">해당하는 항목이 없어요</div>';
 }
 document.querySelectorAll('#gramLv input').forEach(i => i.onchange = () => { $('gramSearch').value = ''; renderGramList(); });
