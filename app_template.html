@@ -555,6 +555,11 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">A·B 두 사람의 대화를 서로 다른 목소리로 듣고 질문에 답해요. 답을 고르면 대본·번역이 바로 보이고, 대본의 단어를 누르면 뜻이 떠요. (목소리가 하나뿐인 기기에서는 높낮이로 구분)</p>
       <div class="dataops"><button class="btn primary" id="btnLisStart">듣기 연습 시작</button><span class="hint" id="lisStat" style="font-size:13px;color:var(--ink-2);align-self:center"></span></div>
     </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3 class="sk-h">모의고사 오답 단어 <small>독해 빈칸·쓰기 어순에서 틀린 단어. 학습 탭의 복습과는 따로 관리되고, 여기서 맞히면 목록에서 빠져요</small></h3>
+      <div id="examWrongList" class="res-wrong" style="margin-bottom:10px"></div>
+      <div class="dataops"><button class="btn primary" id="btnExamWrongStudy">오답 단어 학습 (뜻→한자)</button><button class="btn" id="btnExamWrongSent">문장으로 (빈칸 채우기)</button><button class="btn" id="btnExamWrongClear">목록 비우기</button></div>
+    </div>
     <div class="card"><h3 class="sk-h">지난 시험</h3><div class="lvprog" id="examHistory"></div></div>
   </div>
   <div id="lisRun" hidden>
@@ -795,11 +800,13 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.exams']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.exams','zh.exam_wrong']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
 const EXAMS = store.get('zh.exams', []);        // 모의고사 결과 [{t, lv, score, total, sec:{...}}]
+const EXAM_WRONG = store.get('zh.exam_wrong', {});   // 모의고사 오답 단어 { 단어id: 틀린 시각 } (음수 = 나중에 맞혀서 지운 시각). 학습 기록(SRS)과는 별개
+function examWrongIds(){ return Object.keys(EXAM_WRONG).filter(k => EXAM_WRONG[k] > 0).map(Number).filter(id => BY_ID.has(id)); }
 function bump(obj, key, ok){ const o = obj[key] || (obj[key] = {n:0, ok:0}); o.n++; if (ok) o.ok++; }
 const KO       = store.get('zh.ko', {});        // { "你好": "안녕하세요" }
 // 내 단어장: 별표(FAV)로 담은 HSK 단어 + 직접 추가한 단어(CUSTOM). 직접 추가한 단어는 id 100000 부터
@@ -903,6 +910,7 @@ function advance(ok){                    // 답을 확인한 뒤 큐 정리
 function finishSession(){
   const s = session, acc = s.answered ? Math.round(s.ok / s.answered * 100) : 0;
   if (s.type === 'unit'){ UNITS_DONE[s.meta.key] = { acc, date: dayKey(), t: Date.now() }; store.set('zh.units', UNITS_DONE); histToday().u++; store.set('zh.history', HISTORY); }
+  if (s.type === 'examWrong'){ for (const id of s.ids) if (!s.wrong.has(id)) EXAM_WRONG[id] = -Date.now(); store.set('zh.exam_wrong', EXAM_WRONG); }   // 오답 복습에서 맞힌 단어는 목록에서 뺌
   $('resTitle').textContent = (s.type === 'review' ? '복습 완료' : (s.meta.label || '과') + ' 완료') + (acc === 100 ? ' 🎉' : '');
   $('btnResRetry').hidden = s.type === 'review';
   $('resAcc').textContent = acc + '%'; $('resN').textContent = s.answered; $('resWrong').textContent = s.wrong.size;
@@ -1951,7 +1959,8 @@ function finishExam(timeout){
   clearInterval(examTick);
   const secs = {}; let score = 0;
   exam.items.forEach((it, i) => { const ok = gradeItem(it, exam.ans[i]); it.ok = ok; if (ok) score++; const s = secs[it.sec] || (secs[it.sec] = {n:0, ok:0}); s.n++; if (ok) s.ok++;
-    if (it.wordId != null){ markResult(it.wordId, ok, false); } });   // 빈칸·어순에 나온 단어는 학습 기록에도 반영
+    if (it.wordId != null && !ok) EXAM_WRONG[it.wordId] = Date.now(); });   // 빈칸·어순에서 틀린 단어는 '모의고사 오답' 목록에 (학습 기록·복습 큐에는 넣지 않음)
+  store.set('zh.exam_wrong', EXAM_WRONG);
   const total = exam.items.length, pct = Math.round(score/total*100), used = Math.min(EXAM_TIME, Math.floor((Date.now()-exam.start)/1000));
   EXAMS.push({ t: Date.now(), lv: exam.lv, score, total, secs, used }); store.set('zh.exams', EXAMS);
   TODAY.n += total; TODAY.ok += score; store.set('zh.today', TODAY); { const h = histToday(); h.n += total; h.ok += score; store.set('zh.history', HISTORY); }
@@ -1964,7 +1973,8 @@ function finishExam(timeout){
     <div class="lvprog" style="margin-top:14px">${secHtml}</div>
     <h3 class="sk-h" style="margin-top:16px">틀린 문항 ${wrong.length}개 <small>단어를 누르면 뜻이 보여요</small></h3>
     <div class="exam-review">${wrong.map(({it,i}) => `<div class="ri bad"><small style="color:var(--ink-2)">${i+1}. ${it.sec}</small><br><b>${tapHtml(desc(it))}</b><br><small style="color:var(--ink-2)">${it.ko || (it.st&&it.st.ko) || (it.q&&it.q.qko) || ''}</small></div>`).join('') || '<div class="ri">모두 맞았어요 🎉</div>'}</div>
-    <div class="dataops" style="margin-top:16px"><button class="btn primary" id="btnExamAgain">다른 문제로 다시</button><button class="btn" id="btnExamHome">모의고사 홈</button></div>`;
+    <div class="dataops" style="margin-top:16px"><button class="btn primary" id="btnExamAgain">다른 문제로 다시</button><button class="btn" id="btnExamHome">모의고사 홈</button></div>
+    ${exam.items.some(it => it.wordId != null && !it.ok) ? `<p class="hint" style="font-size:13px;color:var(--ink-2);margin:10px 0 0">빈칸·어순에서 틀린 단어 ${exam.items.filter(it => it.wordId != null && !it.ok).length}개는 모의고사 홈의 "오답 단어" 목록에 담아 뒀어요 (학습 탭 복습과는 별개)</p>` : ''}`;
   $('examResult').hidden = false; exam = null;
   $('btnExamAgain').onclick = startExam; $('btnExamHome').onclick = renderExamHome;
   $('examResult').addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
@@ -1972,9 +1982,21 @@ function finishExam(timeout){
 }
 function renderExamHome(){
   $('examRun').hidden = true; $('examResult').hidden = true; $('examHome').hidden = false;
+  const wids = examWrongIds();
+  $('examWrongList').innerHTML = wids.length ? wids.slice().sort((a,b)=>EXAM_WRONG[b]-EXAM_WRONG[a]).map(id => { const w = BY_ID.get(id); return `<span class="w"><b>${w.s}</b>${w.py} <small>${KO[w.s]||w.ko}</small></span>`; }).join('') : '<span style="color:var(--ink-2);font-size:13px">아직 없어요</span>';
+  $('btnExamWrongStudy').disabled = $('btnExamWrongSent').disabled = $('btnExamWrongClear').disabled = !wids.length;
   $('examHistory').innerHTML = EXAMS.slice(-10).reverse().map(x => `<div class="row" style="grid-template-columns:auto 1fr auto"><span>${new Date(x.t).toLocaleDateString()} · ${x.lv===7?'7~9':x.lv}급</span><div class="track"><div class="fill" style="width:${x.score/x.total*100}%"></div></div><span class="num">${Math.round(x.score/x.total*100)}% (${x.score}/${x.total})</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 본 시험이 없어요</span>';
 }
 $('btnExamStart').onclick = startExam;
+function startExamWrong(study){
+  const ids = examWrongIds(); if (!ids.length){ showToast('오답 단어가 없어요'); return; }
+  SETTINGS.study = study; store.set('zh.settings', SETTINGS); renderModeBar();
+  document.querySelector('nav [data-tab=study]').click();
+  startSession('examWrong', ids.map(id => BY_ID.get(id)), { label: '모의고사 오답' });
+}
+$('btnExamWrongStudy').onclick = () => startExamWrong('test');
+$('btnExamWrongSent').onclick = () => startExamWrong('cloze');
+$('btnExamWrongClear').onclick = () => { if (!confirm('모의고사 오답 단어 목록을 비울까요?')) return; for (const k of Object.keys(EXAM_WRONG)) if (EXAM_WRONG[k] > 0) EXAM_WRONG[k] = -Date.now(); store.set('zh.exam_wrong', EXAM_WRONG); renderExamHome(); };
 
 /* ═══════════ 통계 ═══════════ */
 function isoDay(d){ return d.toISOString().slice(0,10); }
@@ -2135,7 +2157,7 @@ $('pgNext').onclick = () => { page++; renderList(); };
 const SYNC_DOC = 'zh-typing-sync.json';
 let backend = null, syncTimer = null, syncing = false, lastSyncAt = 0;
 function setSyncStatus(msg){ const el = $('syncStatus'); if (el) el.textContent = msg; }
-function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, exams: EXAMS, updatedAt: Date.now() }; }
+function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, exams: EXAMS, exam_wrong: EXAM_WRONG, updatedAt: Date.now() }; }
 // 통계 기록 병합: 횟수는 큰 쪽을 취함 (두 기기가 각자 센 값 중 더 많이 센 쪽)
 function mergeStats(a, b){
   a = a || {mode:{},tone:{},confuse:{}}; b = b || {mode:{},tone:{},confuse:{}};
@@ -2158,6 +2180,7 @@ function mergeState(a, b){
   for (const k of keys(a.fav, b.fav)){ const p=a.fav?.[k]||0, q=b.fav?.[k]||0; out.fav[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   { const m = new Map(); for (const x of [...(a.exams||[]), ...(b.exams||[])]) m.set(x.t, x); out.exams = [...m.values()].sort((x,y)=>x.t-y.t).slice(-50); }
   out.fav_s = {}; for (const k of keys(a.fav_s, b.fav_s)){ const p=a.fav_s?.[k]||0, q=b.fav_s?.[k]||0; out.fav_s[k] = Math.abs(q) > Math.abs(p) ? q : p; }
+  out.exam_wrong = {}; for (const k of keys(a.exam_wrong, b.exam_wrong)){ const p=a.exam_wrong?.[k]||0, q=b.exam_wrong?.[k]||0; out.exam_wrong[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   for (const k of keys(a.custom_del, b.custom_del)) out.custom_del[k] = Math.max(a.custom_del?.[k]||0, b.custom_del?.[k]||0);
   const byId = new Map(); for (const w of [...(a.custom||[]), ...(b.custom||[])]) if (!byId.has(w.id) || (w.added||0) > (byId.get(w.id).added||0)) byId.set(w.id, w);
   out.custom = [...byId.values()].filter(w => !(out.custom_del[w.id] > (w.added||0)));
@@ -2166,12 +2189,12 @@ function mergeState(a, b){
 }
 function applyState(s){   // 병합 결과를 앱의 메모리·localStorage 에 반영 (참조는 유지)
   const swap = (obj, src) => { for (const k in obj) delete obj[k]; Object.assign(obj, src||{}); };
-  swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(FAV_S, s.fav_s); swap(CUSTOM_DEL, s.custom_del);
+  swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(FAV_S, s.fav_s); swap(EXAM_WRONG, s.exam_wrong); swap(CUSTOM_DEL, s.custom_del);
   if (s.stats){ STATS.mode = s.stats.mode||{}; STATS.tone = s.stats.tone||{}; STATS.initial = s.stats.initial||{}; STATS.confuse = s.stats.confuse||{}; }
   swap(READ_DONE, s.read);
   EXAMS.length = 0; for (const x of (s.exams||[])) EXAMS.push(x);
   CUSTOM.length = 0; for (const w of s.custom||[]) { CUSTOM.push(w); BY_ID.set(w.id, w); }
-  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE,'zh.exams':EXAMS }[k])); }catch(e){} };
+  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE,'zh.exams':EXAMS,'zh.exam_wrong':EXAM_WRONG }[k])); }catch(e){} };
   for (const k of SYNC_KEYS) silent(k);
 }
 // ── 백엔드 1: claude.ai 계정 저장소 (db). 문서 하나가 256KB 제한이라 진도는 1,000단어씩 쪼갬
@@ -2181,16 +2204,16 @@ function claudeBackend(db){
     name: 'claude.ai 계정 저장소',
     async pull(){
       const snap = await db.collection('zhsync').get(); if (snap.empty) return null;
-      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats:null, read:{}, exams:[], updatedAt:0 };
-      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, fav_s:v.fav_s||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, exams:v.exams||[], updatedAt:v.updatedAt||0 }); } }
+      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats:null, read:{}, exams:[], exam_wrong:{}, updatedAt:0 };
+      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, fav_s:v.fav_s||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, exams:v.exams||[], exam_wrong:v.exam_wrong||{}, updatedAt:v.updatedAt||0 }); } }
       return s;
     },
     async push(s, prev){
       const shards = {}; for (const id in s.progress){ (shards[shard(id)] ||= {})[id] = s.progress[id]; }
       const prevShards = {}; for (const id in (prev?.progress||{})){ (prevShards[shard(id)] ||= {})[id] = prev.progress[id]; }
       for (const k in shards) if (JSON.stringify(shards[k]) !== JSON.stringify(prevShards[k]||{})) await db.doc('zhsync/'+k).set({ progress: shards[k] });
-      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, exams:s.exams, updatedAt:s.updatedAt };
-      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read, exams:prev.exams } : null;
+      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, exams:s.exams, exam_wrong:s.exam_wrong, updatedAt:s.updatedAt };
+      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read, exams:prev.exams, exam_wrong:prev.exam_wrong } : null;
       if (!prev || JSON.stringify({...misc, updatedAt:0}) !== JSON.stringify({...prevMisc, updatedAt:0})) await db.doc('zhsync/misc').set(misc);
     }
   };
