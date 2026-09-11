@@ -110,6 +110,38 @@ button.btn:focus-visible,nav button:focus-visible{outline:2px solid var(--accent
 .set input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
 .dataops{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);padding:8px;margin-top:8px}
+/* 읽기 */
+.plist{display:grid;gap:0}
+.plist button{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;background:none;border:0;border-bottom:1px solid var(--line);padding:11px 4px;color:var(--ink);cursor:pointer}
+.plist button:last-child{border-bottom:0}
+.plist .pt{font-family:var(--hanzi);font-size:18px}
+.plist .pm{font-size:12px;color:var(--ink-2);white-space:nowrap}
+.plist .pm.done{color:var(--good)}
+.tog{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);cursor:pointer}
+.tog input{accent-color:var(--accent)}
+.ptitle{font-family:var(--hanzi);font-size:24px;margin:0 0 12px;font-weight:500}
+.ptext{font-family:var(--hanzi);font-size:22px;line-height:2}
+.ptext .sent{display:block;margin-bottom:6px}
+.ptext .tok{cursor:pointer;border-radius:4px;padding:0 1px}
+.ptext .tok:hover,.ptext .tok.sel{background:var(--good-bg)}
+.ptext .tok.known{color:var(--ink)}
+.ptext .pyl{display:block;font-family:var(--mono);font-size:13px;color:var(--ink-2);line-height:1.4;margin-top:-6px}
+.ptext .kol{display:block;font-family:var(--body);font-size:14px;color:var(--ink-2);line-height:1.5;margin-bottom:8px}
+.pq{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);display:grid;gap:14px}
+.pq .q{font-family:var(--hanzi);font-size:18px;margin-bottom:6px}
+.pq .q small{font-family:var(--body);color:var(--ink-2);font-size:13px;margin-left:6px}
+.pq .opts{display:grid;gap:6px}
+.pq .opts button{font:inherit;font-family:var(--hanzi);font-size:17px;text-align:left;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer}
+.pq .opts button small{font-family:var(--body);font-size:12px;color:var(--ink-2);display:block}
+.pq .opts button.good{border-color:var(--good);background:var(--good-bg)}
+.pq .opts button.bad{border-color:var(--bad);background:var(--bad-bg)}
+.pq .pres{font-size:14px;padding:8px 0}
+.popup{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.18);max-width:min(92vw,420px);z-index:20;font-size:14px}
+.popup b{font-family:var(--hanzi);font-size:22px;margin-right:8px}
+.popup .py{font-family:var(--mono);color:var(--accent)}
+.popup .acts{display:flex;gap:6px;margin-top:6px}
+.popup .acts button{font:inherit;font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer}
+@media (max-width:480px){.ptext{font-size:20px}.ptitle{font-size:21px}}
 /* 통계 */
 .sk-h{margin:0 0 12px;font-size:14px;font-weight:700}
 .sk-h small{font-weight:400;color:var(--ink-2);margin-left:6px}
@@ -257,6 +289,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 </header>
 <nav role="tablist">
   <button role="tab" aria-selected="true" data-tab="study">학습</button>
+  <button role="tab" aria-selected="false" data-tab="read">읽기</button>
   <button role="tab" aria-selected="false" data-tab="stats">통계</button>
   <button role="tab" aria-selected="false" data-tab="mine">내 단어장</button>
   <button role="tab" aria-selected="false" data-tab="list">전체 단어</button>
@@ -266,7 +299,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <!-- ───────── 학습 탭 ───────── -->
 <section class="panel" id="tab-study">
   <div class="stats">
-    <div class="stat"><b id="stToday">0</b><span>오늘 푼 문제</span></div>
+    <div class="stat"><b id="stToday">0</b><span>오늘 푼 문제 / 목표</span></div>
     <div class="stat"><b id="stAcc">–</b><span>오늘 정답률</span></div>
     <div class="stat"><b id="stDue">0</b><span>복습 예정</span></div>
     <div class="stat"><b id="stLearned">0</b><span>학습한 단어</span></div>
@@ -350,6 +383,35 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
   </div>
 </section>
 
+<!-- ───────── 읽기 탭 ───────── -->
+<section class="panel" id="tab-read" hidden>
+  <div id="readList">
+    <div class="lvbar" id="readLv">급수
+      <label><input type="radio" name="readLv" value="1" checked>1급</label>
+      <label><input type="radio" name="readLv" value="2">2급</label>
+      <label><input type="radio" name="readLv" value="3">3급</label>
+      <label><input type="radio" name="readLv" value="4">4급</label>
+      <span id="readCount" style="margin-left:auto"></span>
+    </div>
+    <div class="card" style="padding:8px 12px"><div class="plist" id="plist"></div></div>
+  </div>
+  <div id="reader" hidden>
+    <div class="unitbar">
+      <button class="btn" id="btnReadBack">‹ 목록</button>
+      <label class="tog"><input type="checkbox" id="rdPy"> 병음</label>
+      <label class="tog"><input type="checkbox" id="rdKo"> 번역</label>
+      <button class="btn icon" id="btnReadSpeak" title="전체 읽어주기">🔊</button>
+      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
+    </div>
+    <div class="card" id="readCard">
+      <h2 class="ptitle" id="ptitle"></h2>
+      <div class="ptext" id="ptext"></div>
+      <div class="pq" id="pq"></div>
+    </div>
+    <div class="popup" id="popup" hidden></div>
+  </div>
+</section>
+
 <!-- ───────── 통계 탭 ───────── -->
 <section class="panel" id="tab-stats" hidden>
   <div class="stats">
@@ -370,6 +432,22 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
   <div class="card" style="margin-bottom:14px">
     <h3 class="sk-h">급수별 진도 <small>한 번 이상 맞힌 단어 / 전체</small></h3>
     <div class="lvprog" id="lvProg"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">약한 단어 <small>틀림·힌트가 많은 순 (최근 30일 가중)</small><button class="btn" id="btnWeakStudy" style="float:right;padding:5px 10px;font-size:12px">약한 단어 학습</button></h3>
+    <div class="res-wrong" id="weakList"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">헷갈리는 짝 <small>정답 대신 다른 단어를 적은 경우</small></h3>
+    <div class="lvprog" id="confuseList"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">모드별 정답률</h3>
+    <div class="lvprog" id="modeStat"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <h3 class="sk-h">성조별 정답률 <small>성조 맞히기 기준</small></h3>
+    <div class="lvprog" id="toneStat"></div>
   </div>
   <div class="card">
     <h3 class="sk-h">기억 단계 분포 <small>상자가 높을수록 오래 기억한 단어 · 다음 복습까지 0/1/3/7/14/30/60일</small></h3>
@@ -431,6 +509,8 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
     <label class="row"><span>음성<small>브라우저에 설치된 중국어 음성 목록</small></span><select id="optVoice"></select></label>
     <label class="row"><span>속도 <span id="rateVal">0.9</span></span><input type="range" id="optRate" min="0.5" max="1.3" step="0.1" value="0.9"></label>
     <h3>출제</h3>
+    <label class="row"><span>하루 목표 문제 수<small>학습 화면과 통계에 달성 여부 표시</small></span>
+      <select id="optGoal"><option value="20">20</option><option value="30">30</option><option value="50">50</option><option value="100">100</option></select></label>
     <label class="row"><span>한 과의 단어 수<small>급수를 이 크기로 잘라 과를 만듦. 바꾸면 과 번호가 다시 매겨짐</small></span>
       <select id="optUnitSize"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="50">50</option></select></label>
     <label class="row"><span>과 안에서 순서<small>빈도순: 자주 쓰는 단어부터 · 무작위: 섞어서 출제</small></span>
@@ -466,6 +546,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <script id="words" type="application/json">__WORDS_JSON__</script>
 <script id="sents" type="application/json">__SENTS_JSON__</script>
 <script id="strokes" type="application/json">__STROKES_JSON__</script>
+<script id="passages" type="application/json">__PASSAGES_JSON__</script>
 <script>/* hanzi-writer (MIT, https://github.com/chanind/hanzi-writer) — 획순 애니메이션·쓰기 퀴즈 라이브러리 */
 __HANZI_WRITER_JS__</script>
 <script>
@@ -479,6 +560,9 @@ const WORDS = DATA.words;
 // 예문: { 단어id: {zh:'我很忙。', seg:['我','很','忙','。'], py:'wǒ hěn máng 。', ko:'나는 바쁘다.'} } — 현재 HSK 1~3급만
 const SENTS = JSON.parse(document.getElementById('sents').textContent).sentences;
 function sentOf(w){ return SENTS[String(w.id)] || null; }
+const BY_S = new Map(WORDS.map(w => [w.s, w]));   // 간체 → 단어
+// 읽기 글: [{id, lv, title, sents:[{zh, seg, py, ko}], qs:[{q, qpy, qko, opts, optsko, ans}]}]
+const PASSAGES = (JSON.parse(document.getElementById('passages').textContent || '{}').passages) || [];
 const BY_ID = new Map(WORDS.map(w => [w.id, w]));
 
 /* ── localStorage: 브라우저가 제공하는 작은 저장 공간(키-값). 새로고침해도 남음.
@@ -487,7 +571,11 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read']);
+// 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
+const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
+const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
+function bump(obj, key, ok){ const o = obj[key] || (obj[key] = {n:0, ok:0}); o.n++; if (ok) o.ok++; }
 const KO       = store.get('zh.ko', {});        // { "你好": "안녕하세요" }
 // 내 단어장: 별표(FAV)로 담은 HSK 단어 + 직접 추가한 단어(CUSTOM). 직접 추가한 단어는 id 100000 부터
 const FAV    = store.get('zh.fav', {});           // { id: 담은 시각 }
@@ -501,7 +589,7 @@ function mineWords(){ return [...Object.keys(FAV).filter(k => FAV[k] > 0).map(k 
 const PROGRESS = store.get('zh.progress', {});  // { "12": {box:2, due:<ms>, c:3, w:1} }
 const SETTINGS = Object.assign({
   mode:'hanzi', showHanzi:false, showPinyin:false, showKo:true, showEn:true, showTrad:false,
-  autoSpeak:false, voice:'', rate:0.9, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true
+  autoSpeak:false, voice:'', rate:0.9, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
 }, store.get('zh.settings', {}));
 const TODAY = store.get('zh.today', {date:'', n:0, ok:0});
 const dayKey = () => new Date().toISOString().slice(0,10);
@@ -822,7 +910,6 @@ function startSay(){
   $('sayNote').textContent = SR ? '버튼(또는 스페이스)을 누른 뒤 단어를 읽으세요. 첫 사용 시 마이크 허용을 물어봐요.' : '이 브라우저는 음성 인식을 지원하지 않아요 (iPhone 사파리·크롬·엣지에서 가능)';
   $('btnMic').disabled = !SR;
 }
-const BY_S = new Map(WORDS.map(w => [w.s, w]));
 function judgeSpeech(alts){
   const clean = s => s.replace(/[\s。，！？、；：""''（）!?,.]/g, '');
   for (const a of alts){ const s = clean(a); if (s === cur.s || (cur.t && s === cur.t)) return { ok:true, heard:a, exact:true }; }
@@ -875,6 +962,7 @@ function finishTone(){
   const targets = toneTargets(); let ok = true;
   toneAns.forEach((a, i) => {
     let good = a === targets[i];
+    bump(STATS.tone, String(targets[i]), good || (targets[i] === 3 && a === 2 && targets[i+1] === 3));
     if (!good && targets[i] === 3 && a === 2 && targets[i+1] === 3) good = true;   // 3성+3성 → 2성+3성 변화 인정
     if (!good) ok = false;
     const row = document.querySelector(`#toneArea [data-i="${i}"].tone-syl`); row.classList.add(good ? 'good' : 'bad');
@@ -947,7 +1035,11 @@ function revealSent(res){
 // 정답 확인 후 외부 서비스 링크: YouGlish(유튜브 자막에서 단어 쓰인 장면 검색), Forvo(원어민 녹음), 네이버 중국어사전
 function showExt(w){
   const s = encodeURIComponent(w.s);
-  $('lnkYouglish').href = `https://youglish.com/pronounce/${s}/chinese`;
+  // 문장 모드에서는 문장 자체(구두점 제거)로 유튜브 자막을 검색. 안 나오면 YouGlish 화면에서 단어만으로 다시 검색 가능
+  const st = mode().kind === 'sent' ? sentOf(w) : null;
+  const q = st ? encodeURIComponent(stripSent(st.zh)) : s;
+  $('lnkYouglish').href = `https://youglish.com/pronounce/${q}/chinese`;
+  $('lnkYouglish').textContent = st ? '▶ 유튜브에서 이 문장 (YouGlish)' : '▶ 유튜브 예문 (YouGlish)';
   $('lnkForvo').href = `https://forvo.com/word/${s}/#zh`;
   $('lnkDict').href = `https://zh.dict.naver.com/#/search?query=${s}`;
   $('ext').hidden = false;
@@ -978,6 +1070,12 @@ function check(){
   // 힌트를 봤거나 '익히기' 모드(답이 다 보이는 상태)면 맞혀도 외운 걸로 치지 않고 복습 목록에 넣는다
   const hinted = hintUsed || SETTINGS.study === 'learn';
   markResult(cur.id, ok, hinted);
+  bump(STATS.mode, SETTINGS.study, ok);
+  if (!ok && !isSent && M.input === 'hanzi'){   // 다른 단어를 적었으면 "헷갈린 짝"으로 기록
+    const typed = raw.replace(/\s/g,''); const other = BY_S.get(typed);
+    if (other && other.id !== cur.id){ const c = STATS.confuse[cur.id] || (STATS.confuse[cur.id] = {}); c[other.id] = (c[other.id]||0) + 1; }
+  }
+  store.set('zh.stats', STATS);
   TODAY.n++; if (ok) TODAY.ok++; store.set('zh.today', TODAY);
   { const h = histToday(); h.n++; if (ok) h.ok++; if (firstSeen) h.nw++; store.set('zh.history', HISTORY); }
   advance(ok);
@@ -1021,7 +1119,7 @@ function hint(){
 function skip(){ if(!cur || !session) return; session.queue.push(session.queue.shift()); renderQuestion(); }   // 건너뛰면 이 과의 맨 뒤로
 
 function updateStats(){
-  $('stToday').textContent = TODAY.n;
+  $('stToday').textContent = TODAY.n + ' / ' + (+SETTINGS.goal || 30) + (TODAY.n >= (+SETTINGS.goal||30) ? ' ✓' : '');
   $('stAcc').textContent = TODAY.n ? Math.round(TODAY.ok/TODAY.n*100)+'%' : '–';
   const ws = pool(), now = Date.now();
   $('stDue').textContent = ws.filter(w=>PROGRESS[w.id]&&PROGRESS[w.id].due<=now).length;
@@ -1099,6 +1197,7 @@ document.querySelectorAll('nav [role=tab]').forEach(b => b.onclick = () => {
   if (b.dataset.tab==='list') renderList();
   if (b.dataset.tab==='mine') renderMine();
   if (b.dataset.tab==='stats') renderStats();
+  if (b.dataset.tab==='read') renderReadList();
   if (b.dataset.tab==='study') ans.focus();
 });
 
@@ -1117,7 +1216,7 @@ function bindOpt(id, key, evt='change'){
   });
 }
 ['optShowKo:showKo','optShowEn:showEn','optShowTrad:showTrad',
- 'optAutoSpeak:autoSpeak','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
+ 'optAutoSpeak:autoSpeak','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
 bindOpt('optRate','rate','input'); $('rateVal').textContent = SETTINGS.rate;
 function applyZoom(){ document.documentElement.style.setProperty('--zoom', SETTINGS.zoom || 1); }
 applyZoom();
@@ -1142,6 +1241,74 @@ $('btnImport').onclick = () => {
 };
 $('btnResetProg').onclick = () => { if (confirm('학습 기록과 과 완료 기록을 모두 지울까요? (한국어 뜻은 유지)')){ for(const k in PROGRESS) delete PROGRESS[k]; store.set('zh.progress',PROGRESS); for(const k in UNITS_DONE) delete UNITS_DONE[k]; store.set('zh.units',UNITS_DONE); for(const k in HISTORY) delete HISTORY[k]; store.set('zh.history',HISTORY); TODAY.n=0;TODAY.ok=0; store.set('zh.today',TODAY); startUnit(0); } };
 $('totalWords').textContent = WORDS.length;
+
+/* ═══════════ 읽기 ═══════════ */
+let curPassage = null, readAns = [];
+function readLv(){ return +(document.querySelector('#readLv input:checked')||{value:1}).value; }
+function renderReadList(){
+  $('reader').hidden = true; $('readList').hidden = false; $('popup').hidden = true;
+  const lv = readLv(), ps = PASSAGES.filter(p => p.lv === lv);
+  $('readCount').textContent = `${ps.length}편 중 ${ps.filter(p=>READ_DONE[p.id]).length}편 읽음`;
+  $('plist').innerHTML = ps.map((p,i) => `<button data-pid="${p.id}"><span><span class="pt">${p.title}</span> <small style="color:var(--ink-2)">${p.sents.length}문장</small></span><span class="pm ${READ_DONE[p.id]?'done':''}">${READ_DONE[p.id] ? `✓ ${READ_DONE[p.id].acc}%` : `${i+1}`}</span></button>`).join('');
+}
+document.querySelectorAll('#readLv input').forEach(i => i.onchange = renderReadList);
+$('plist').addEventListener('click', e => { const b = e.target.closest('[data-pid]'); if (b) openPassage(+b.dataset.pid); });
+function tokHtml(tok){
+  if (/^[。，！？、；：!?,.…—""''（）]+$/.test(tok)) return `<span class="punct">${tok}</span>`;
+  return `<span class="tok" data-tok="${tok}">${tok}</span>`;
+}
+function openPassage(id){
+  curPassage = PASSAGES.find(p => p.id === id); if (!curPassage) return;
+  readAns = curPassage.qs.map(()=>-1);
+  $('readList').hidden = true; $('reader').hidden = false;
+  $('ptitle').textContent = curPassage.title;
+  renderPassageText();
+  $('pq').innerHTML = curPassage.qs.map((q,qi) => `<div class="qblock" data-qi="${qi}"><div class="q">${qi+1}. ${q.q}<small class="qko" hidden>${q.qko}</small></div><div class="opts">${q.opts.map((o,oi)=>`<button data-qi="${qi}" data-oi="${oi}">${o}<small hidden>${q.optsko[oi]||''}</small></button>`).join('')}</div><div class="pres"></div></div>`).join('');
+  window.scrollTo({top:0});
+}
+function renderPassageText(){
+  const showPy = $('rdPy').checked, showKo = $('rdKo').checked;
+  $('ptext').innerHTML = curPassage.sents.map((s,i) => `<span class="sent" data-si="${i}">${s.seg.map(tokHtml).join('')}${showPy?`<span class="pyl">${s.py}</span>`:''}${showKo?`<span class="kol">${s.ko}</span>`:''}</span>`).join('');
+}
+$('rdPy').onchange = $('rdKo').onchange = renderPassageText;
+$('btnReadBack').onclick = renderReadList;
+$('btnReadSpeak').onclick = () => { if (curPassage) speak(curPassage.sents.map(s=>s.zh).join('')); };
+// 단어 탭 → 사전 풍선. 단어 전체가 사전에 없으면 글자 단위로 나눠 찾음
+function lookup(tok){
+  const w = BY_S.get(tok); if (w) return [w];
+  return [...tok].map(c => BY_S.get(c)).filter(Boolean);
+}
+$('ptext').addEventListener('click', e => {
+  const el = e.target.closest('.tok'); if (!el) return;
+  document.querySelectorAll('.ptext .tok.sel').forEach(x=>x.classList.remove('sel')); el.classList.add('sel');
+  const tok = el.dataset.tok, ws = lookup(tok);
+  const pop = $('popup'); pop.hidden = false;
+  if (!ws.length){ pop.innerHTML = `<b>${tok}</b> <span style="color:var(--ink-2)">사전에 없는 단어예요</span>`; return; }
+  pop.innerHTML = ws.map(w => `<div><b>${w.s}</b><span class="py">${w.py}</span> ${KO[w.s]||w.ko||''} <small style="color:var(--ink-2)">${w.lv?(w.lv===7?'7~9급':w.lv+'급'):''}</small></div>`).join('') +
+    `<div class="acts"><button data-say="${tok}">🔊 발음</button>${ws.length===1?`<button data-fav="${ws[0].id}">${isFav(ws[0].id)?'★ 내 단어장에서 빼기':'☆ 내 단어장에 담기'}</button>`:''}<button data-close="1">닫기</button></div>`;
+});
+$('popup').addEventListener('click', e => {
+  const s = e.target.closest('[data-say]'); if (s) speak(s.dataset.say);
+  const f = e.target.closest('[data-fav]'); if (f){ const on = toggleFav(+f.dataset.fav); f.textContent = on ? '★ 내 단어장에서 빼기' : '☆ 내 단어장에 담기'; showToast(on?'내 단어장에 담았어요':'뺐어요'); }
+  if (e.target.closest('[data-close]')){ $('popup').hidden = true; document.querySelectorAll('.ptext .tok.sel').forEach(x=>x.classList.remove('sel')); }
+});
+// 문제 풀기: 보기를 누르면 바로 채점. 2문제 다 풀면 결과 저장
+$('pq').addEventListener('click', e => {
+  const b = e.target.closest('[data-oi]'); if (!b) return;
+  const qi = +b.dataset.qi, oi = +b.dataset.oi; if (readAns[qi] >= 0) return;
+  readAns[qi] = oi; const q = curPassage.qs[qi], ok = oi === q.ans;
+  const block = $('pq').querySelector(`.qblock[data-qi="${qi}"]`);
+  block.querySelectorAll('[data-oi]').forEach(x => { x.classList.toggle('good', +x.dataset.oi === q.ans); x.classList.toggle('bad', +x.dataset.oi === oi && !ok); x.querySelector('small').hidden = false; });
+  block.querySelector('.qko').hidden = false;
+  block.querySelector('.pres').innerHTML = ok ? '<span style="color:var(--good)">정답 ✓</span>' : `<span style="color:var(--bad)">오답 ✕</span> 정답: ${q.opts[q.ans]}`;
+  TODAY.n++; if (ok) TODAY.ok++; store.set('zh.today', TODAY); { const h = histToday(); h.n++; if (ok) h.ok++; store.set('zh.history', HISTORY); }
+  if (readAns.every(a => a >= 0)){
+    const acc = Math.round(readAns.filter((a,i)=>a===curPassage.qs[i].ans).length / readAns.length * 100);
+    READ_DONE[curPassage.id] = { acc, date: dayKey(), t: Date.now() }; store.set('zh.read', READ_DONE);
+    showToast(`읽기 완료 · 정답률 ${acc}%`);
+  }
+  updateStats();
+});
 
 /* ═══════════ 통계 ═══════════ */
 function isoDay(d){ return d.toISOString().slice(0,10); }
@@ -1177,6 +1344,21 @@ function renderStats(){
   const lvName = l => l===7?'7~9급':l+'급';
   $('lvProg').innerHTML = [1,2,3,4,5,6,7].map(l => { const ws = WORDS.filter(w=>w.lv===l); const done = ws.filter(w=>PROGRESS[w.id]&&PROGRESS[w.id].box>=1).length;
     return `<div class="row"><span>${lvName(l)}</span><div class="track"><div class="fill" style="width:${done/ws.length*100}%"></div></div><span class="num">${done} / ${ws.length} (${Math.round(done/ws.length*100)}%)</span></div>`; }).join('');
+  // 약한 단어: 점수 = 틀림×2 + 힌트 − 맞힘×0.5, 최근에 틀린 것 가중
+  const now = Date.now();
+  const weak = Object.entries(PROGRESS).map(([id,p]) => { const recent = p.t && now - p.t < 30*DAY ? 1.5 : 1; return { id:+id, score: ((p.w||0)*2 + (p.h||0) - (p.c||0)*0.5) * recent, p }; })
+    .filter(x => x.score > 0 && BY_ID.has(x.id)).sort((a,b) => b.score - a.score).slice(0, 20);
+  window.weakIds = weak.map(x => x.id);
+  $('weakList').innerHTML = weak.map(x => { const w = BY_ID.get(x.id); return `<span class="w" title="틀림 ${x.p.w||0} · 힌트 ${x.p.h||0} · 맞힘 ${x.p.c||0}"><b>${w.s}</b>${w.py} <small>${KO[w.s]||w.ko||''} · ✕${x.p.w||0} 힌트${x.p.h||0}</small></span>`; }).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 틀린 단어가 없어요</span>';
+  // 헷갈리는 짝
+  const pairs = []; for (const a in STATS.confuse) for (const b in STATS.confuse[a]) if (BY_ID.has(+a) && BY_ID.has(+b)) pairs.push({ a:BY_ID.get(+a), b:BY_ID.get(+b), n:STATS.confuse[a][b] });
+  pairs.sort((x,y) => y.n - x.n);
+  $('confuseList').innerHTML = pairs.slice(0,15).map(p => `<div class="row" style="grid-template-columns:1fr auto"><span><b style="font-family:var(--hanzi);font-size:17px">${p.a.s}</b> <small style="color:var(--ink-2)">${p.a.py} ${KO[p.a.s]||p.a.ko||''}</small> &nbsp;→ 대신 <b style="font-family:var(--hanzi);font-size:17px">${p.b.s}</b> <small style="color:var(--ink-2)">${p.b.py} ${KO[p.b.s]||p.b.ko||''}</small></span><span class="num">${p.n}회</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 없어요 (뜻→한자 등에서 다른 단어를 적으면 기록됨)</span>';
+  // 모드별 · 성조별 정답률
+  const bar = (label, o, extra='') => { const pct = o.n ? Math.round(o.ok/o.n*100) : 0; return `<div class="row"><span>${label}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span class="num">${pct}% (${o.ok}/${o.n})${extra}</span></div>`; };
+  $('modeStat').innerHTML = Object.entries(STATS.mode).filter(([k])=>MODES[k]).sort((a,b)=>b[1].n-a[1].n).map(([k,o]) => bar(MODES[k].name, o)).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 기록이 없어요</span>';
+  const toneName = { '1':'1성 ˉ', '2':'2성 ˊ', '3':'3성 ˇ', '4':'4성 ˋ', '5':'경성' };
+  $('toneStat').innerHTML = ['1','2','3','4','5'].filter(k => STATS.tone[k]).map(k => bar(toneName[k], STATS.tone[k])).join('') || '<span style="color:var(--ink-2);font-size:13px">성조 맞히기를 해 보면 채워져요</span>';
   // 기억 단계 분포
   const boxes = INTERVAL_DAYS.map(()=>0); for (const id in PROGRESS) boxes[PROGRESS[id].box]++;
   const bmax = Math.max(1, ...boxes);
@@ -1227,6 +1409,8 @@ $('btnMineStudy').onclick = () => {
   startSession('mine', pick, { label: '내 단어장' });
 };
 
+$('btnWeakStudy').onclick = () => { const ids = window.weakIds || []; if (!ids.length){ showToast('약한 단어가 아직 없어요'); return; } document.querySelector('nav [data-tab=study]').click(); startSession('review', ids.map(id => BY_ID.get(id)), { label:'약한 단어' }); };
+
 /* ═══════════ 단어장 목록 ═══════════ */
 let page = 0; const PAGE = 50;
 function filtered(){
@@ -1262,11 +1446,20 @@ $('pgNext').onclick = () => { page++; renderList(); };
 const SYNC_DOC = 'zh-typing-sync.json';
 let backend = null, syncTimer = null, syncing = false, lastSyncAt = 0;
 function setSyncStatus(msg){ const el = $('syncStatus'); if (el) el.textContent = msg; }
-function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, custom: CUSTOM, custom_del: CUSTOM_DEL, updatedAt: Date.now() }; }
+function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, updatedAt: Date.now() }; }
+// 통계 기록 병합: 횟수는 큰 쪽을 취함 (두 기기가 각자 센 값 중 더 많이 센 쪽)
+function mergeStats(a, b){
+  a = a || {mode:{},tone:{},confuse:{}}; b = b || {mode:{},tone:{},confuse:{}};
+  const out = { mode:{}, tone:{}, confuse:{} };
+  for (const g of ['mode','tone']) for (const k of new Set([...Object.keys(a[g]||{}), ...Object.keys(b[g]||{})])){ const p=a[g]?.[k]||{n:0,ok:0}, q=b[g]?.[k]||{n:0,ok:0}; out[g][k] = q.n > p.n ? q : p; }
+  for (const x of new Set([...Object.keys(a.confuse||{}), ...Object.keys(b.confuse||{})])){ out.confuse[x] = {}; for (const y of new Set([...Object.keys(a.confuse?.[x]||{}), ...Object.keys(b.confuse?.[x]||{})])) out.confuse[x][y] = Math.max(a.confuse?.[x]?.[y]||0, b.confuse?.[x]?.[y]||0); }
+  return out;
+}
 // 두 상태를 병합해 하나로. 각 항목은 타임스탬프가 큰 쪽이 이김
 function mergeState(a, b){
   if (!a) return b; if (!b) return a;
-  const out = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{} };
+  const out = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats: mergeStats(a.stats, b.stats), read:{} };
+  for (const k of keys(a.read, b.read)){ const p=a.read?.[k], q=b.read?.[k]; out.read[k] = !p ? q : !q ? p : ((q.t||0) > (p.t||0) ? q : p); }
   const keys = (x,y) => new Set([...Object.keys(x||{}), ...Object.keys(y||{})]);
   for (const k of keys(a.progress, b.progress)){ const p=a.progress?.[k], q=b.progress?.[k]; out.progress[k] = !p ? q : !q ? p : ((q.t||0) > (p.t||0) ? q : p); }
   for (const k of keys(a.ko_t, b.ko_t)){ const ta=a.ko_t?.[k]||0, tb=b.ko_t?.[k]||0; const src = tb > ta ? b : a; out.ko_t[k] = Math.max(ta,tb); if (src.ko?.[k]) out.ko[k] = src.ko[k]; }
@@ -1283,8 +1476,10 @@ function mergeState(a, b){
 function applyState(s){   // 병합 결과를 앱의 메모리·localStorage 에 반영 (참조는 유지)
   const swap = (obj, src) => { for (const k in obj) delete obj[k]; Object.assign(obj, src||{}); };
   swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(CUSTOM_DEL, s.custom_del);
+  if (s.stats){ STATS.mode = s.stats.mode||{}; STATS.tone = s.stats.tone||{}; STATS.confuse = s.stats.confuse||{}; }
+  swap(READ_DONE, s.read);
   CUSTOM.length = 0; for (const w of s.custom||[]) { CUSTOM.push(w); BY_ID.set(w.id, w); }
-  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL }[k])); }catch(e){} };
+  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE }[k])); }catch(e){} };
   for (const k of SYNC_KEYS) silent(k);
 }
 // ── 백엔드 1: claude.ai 계정 저장소 (db). 문서 하나가 256KB 제한이라 진도는 1,000단어씩 쪼갬
@@ -1294,16 +1489,16 @@ function claudeBackend(db){
     name: 'claude.ai 계정 저장소',
     async pull(){
       const snap = await db.collection('zhsync').get(); if (snap.empty) return null;
-      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, updatedAt:0 };
-      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, custom:v.custom||[], custom_del:v.custom_del||{}, updatedAt:v.updatedAt||0 }); } }
+      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats:null, read:{}, updatedAt:0 };
+      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, updatedAt:v.updatedAt||0 }); } }
       return s;
     },
     async push(s, prev){
       const shards = {}; for (const id in s.progress){ (shards[shard(id)] ||= {})[id] = s.progress[id]; }
       const prevShards = {}; for (const id in (prev?.progress||{})){ (prevShards[shard(id)] ||= {})[id] = prev.progress[id]; }
       for (const k in shards) if (JSON.stringify(shards[k]) !== JSON.stringify(prevShards[k]||{})) await db.doc('zhsync/'+k).set({ progress: shards[k] });
-      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, custom:s.custom, custom_del:s.custom_del, updatedAt:s.updatedAt };
-      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, custom:prev.custom, custom_del:prev.custom_del } : null;
+      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, updatedAt:s.updatedAt };
+      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read } : null;
       if (!prev || JSON.stringify({...misc, updatedAt:0}) !== JSON.stringify({...prevMisc, updatedAt:0})) await db.doc('zhsync/misc').set(misc);
     }
   };

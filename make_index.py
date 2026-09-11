@@ -21,7 +21,10 @@ for ch in chars:
 kblob = json.dumps(strokes, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
 HW = os.path.join("vendor", "node_modules", "hanzi-writer", "dist", "hanzi-writer.min.js")
 hw = open(HW, encoding="utf-8").read() if os.path.exists(HW) else ""
-html = tpl.replace("__WORDS_JSON__", blob).replace("__SENTS_JSON__", sblob).replace("__STROKES_JSON__", kblob)
+passages = json.load(open("passages.json", encoding="utf-8")) if os.path.exists("passages.json") else {"passages": []}
+pblob = json.dumps(passages, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
+html = tpl.replace("__WORDS_JSON__", blob).replace("__SENTS_JSON__", sblob).replace("__STROKES_JSON__", kblob).replace("__PASSAGES_JSON__", pblob)
+print("읽기 글", len(passages["passages"]), "편 포함")
 import datetime
 html = html.replace("__APP_VERSION__", "v" + datetime.datetime.now().strftime("%m%d.%H%M"))
 html = html.replace("__HANZI_WRITER_JS__", hw.replace("</script>", "<\\/script>"))   # 라이브러리 안의 </script> 문자열이 태그를 닫지 않게
@@ -43,9 +46,16 @@ head = f"""<!doctype html>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="汉语 단어장">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B7F68'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='serif'%3E汉%3C/text%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%232B7F68'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='serif'%3E汉%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="manifest" href="manifest.json">
 {title}
 <style>img{{max-width:100%}}</style>
+<script>
+// PWA: 홈 화면 설치·오프라인용 서비스 워커 등록 (https 에서만 동작. claude.ai 게시본에는 없음)
+if ('serviceWorker' in navigator && location.protocol === 'https:') {{
+  window.addEventListener('load', () => {{ navigator.serviceWorker.register('sw.js').catch(() => {{}}); }});
+}}
+</script>
 </head>
 <body>
 """
