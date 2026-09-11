@@ -25,14 +25,30 @@ passages = json.load(open("passages.json", encoding="utf-8")) if os.path.exists(
 pblob = json.dumps(passages, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
 exam = json.load(open("exam.json", encoding="utf-8")) if os.path.exists("exam.json") else {"bank": {}}
 eblob = json.dumps(exam, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
-html = tpl.replace("__WORDS_JSON__", blob).replace("__SENTS_JSON__", sblob).replace("__STROKES_JSON__", kblob).replace("__PASSAGES_JSON__", pblob).replace("__EXAM_JSON__", eblob)
+import datetime, hashlib, glob
+gram = json.load(open("grammar.json", encoding="utf-8")) if os.path.exists("grammar.json") else {"points": []}
+gblob = json.dumps(gram, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
+blobs = {"words": blob, "sents": sblob, "strokes": kblob, "passages": pblob, "exam": eblob, "grammar": gblob}
 print("읽기 글", len(passages["passages"]), "편 포함")
-import datetime
-html = html.replace("__APP_VERSION__", "v" + datetime.datetime.now().strftime("%m%d.%H%M"))
-html = html.replace("__HANZI_WRITER_JS__", hw.replace("</script>", "<\\/script>"))   # 라이브러리 안의 </script> 문자열이 태그를 닫지 않게
-# artifact.html: claude.ai 게시용 (겉껍데기 없이 알맹이만 — claude.ai 가 <head> 등을 씌워 줌)
+version = "v" + datetime.datetime.now().strftime("%m%d.%H%M")
+common = tpl.replace("__APP_VERSION__", version).replace("__HANZI_WRITER_JS__", hw.replace("</script>", "<\\/script>"))   # 라이브러리 안의 </script> 문자열이 태그를 닫지 않게
+# ── artifact.html: claude.ai 게시용. 데이터를 페이지 안에 통째로 내장 (claude.ai 는 외부 파일 fetch 가 막혀 있어서) ──
+embedded = "\n".join(f'<script id="{k}" type="application/json">{v}</script>' for k, v in blobs.items())
 with open("artifact.html", "w", encoding="utf-8") as f:
-    f.write(html)
+    f.write(common.replace("__DATA_BLOCKS__", embedded))
+# ── index.html (GitHub Pages): 데이터를 data/*.json 으로 분리. 파일 이름에 내용 해시(지문) 8자리를 붙여
+#    내용이 바뀌면 이름도 바뀌게 함 → 브라우저·서비스 워커가 옛 파일을 오래 캐시해도 새 버전과 섞이지 않음 ──
+os.makedirs("data", exist_ok=True)
+for old in glob.glob(os.path.join("data", "*.json")): os.remove(old)   # 이전 해시 파일 정리
+linked = []
+for k, v in blobs.items():
+    raw = v.replace("\\u003c", "<")   # 별도 파일에서는 < 를 그대로 둬도 안전
+    h = hashlib.sha1(raw.encode("utf-8")).hexdigest()[:8]
+    name = f"data/{k}.{h}.json"
+    with open(name, "w", encoding="utf-8") as f: f.write(raw)
+    linked.append(f'<script id="{k}" type="application/json" data-src="{name}"></script>')
+    print(f"  {name}  {len(raw.encode('utf-8'))//1024} KB")
+html = common.replace("__DATA_BLOCKS__", "\n".join(linked))
 # index.html: GitHub Pages 등 단독 배포용 완전한 문서. 폰 브라우저가 화면 폭에 맞추도록 viewport 메타태그가 꼭 필요
 title_start = html.find("<title>"); title_end = html.find("</title>") + len("</title>")
 title = html[title_start:title_end]; body = html[:title_start] + html[title_end:]

@@ -130,6 +130,13 @@ words.sort(key=lambda w: (w["lv"], w["freq"] if w["freq"] is not None else 10**9
 for i, w in enumerate(words, start=1):
     w["id"] = i
 
+# 7~9급은 원본에 "new-7" 하나로 묶여 있음(5,907개). 공식 분할이 없으므로 빈도(freq) 순으로 셋으로 나눠 7·8·9급으로 표시한다.
+# (id 는 급수→빈도 순으로 이미 매겨져 있어, 이렇게 나눠도 id 와 학습 기록은 그대로 유지됨)
+l7 = [w for w in words if w["lv"] == 7]
+third = -(-len(l7) // 3)   # 올림 나눗셈
+for i, w in enumerate(l7):
+    w["lv"] = 7 + i // third
+
 with open(OUT, "w", encoding="utf-8") as f:
     json.dump({"version": 1, "source": "drkameleon/complete-hsk-vocabulary (MIT) + CC-CEDICT (CC BY-SA 4.0)",
                "words": words}, f, ensure_ascii=False, indent=0)

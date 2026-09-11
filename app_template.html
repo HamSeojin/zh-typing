@@ -323,6 +323,46 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
   .koedit{display:none}#quizCard.show-ko .koedit{display:flex;margin-top:8px;padding-top:8px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.loading{position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;z-index:999}
+.loading-box{text-align:center;color:var(--ink-2);font-size:14px}
+.loading-hz{font-family:'Noto Serif SC',serif;font-size:56px;color:var(--accent);margin-bottom:8px}
+.loading-bar{width:160px;height:4px;background:var(--line);border-radius:2px;margin:12px auto 0;overflow:hidden}
+.loading-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+/* 관련 단어 (정답 확인 후) */
+.rel{margin-top:10px;font-size:13px}
+.rel .rh{color:var(--ink-2);margin:6px 0 4px}
+.rel .chips{display:flex;flex-wrap:wrap;gap:6px}
+.rel .chips .tok{display:inline-flex;gap:5px;align-items:baseline;border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:var(--paper);cursor:pointer;font-family:var(--hanzi);font-size:16px;line-height:1.4}
+.rel .chips .tok small{font-family:inherit;font-size:11px;color:var(--ink-2);max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rel .chips .tok.sel{border-color:var(--accent)}
+/* 듣기 대화 연습 */
+.exam-body .eopts button.good{border-color:var(--good);background:var(--good-bg);box-shadow:inset 0 0 0 1px var(--good)}
+.exam-body .eopts button.bad{border-color:var(--bad);background:var(--bad-bg);box-shadow:inset 0 0 0 1px var(--bad)}
+.exam-body .eopts button:disabled{opacity:1;cursor:default}
+.script{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.script .ln{display:flex;gap:8px;align-items:baseline;font-family:var(--hanzi);font-size:19px;line-height:1.6;padding:3px 0}
+.script .ln b{font-family:inherit;font-size:12px;color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:1px 6px;flex:0 0 auto}
+.script .ln.q b{background:var(--ink-2)}
+.script .ko{font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.5}
+/* 문법 탭 */
+.gsec{font-size:12px;color:var(--ink-2);margin-bottom:2px}
+.gtitle{font-size:20px;font-weight:700;margin:0 0 2px}
+.gzh{font-family:var(--hanzi);font-size:15px;color:var(--ink-2);margin-bottom:10px}
+.gpat{display:inline-block;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-family:var(--hanzi);font-size:16px;margin-bottom:10px}
+.gdesc{line-height:1.7;margin-bottom:12px}
+.gsub{font-size:14px;color:var(--ink-2);margin:4px 0}
+.gphr{font-family:var(--hanzi);font-size:16px;color:var(--ink);margin:4px 0 10px;line-height:1.8}
+.gex{border-top:1px solid var(--line);padding:9px 0}
+.gex .z{font-family:var(--hanzi);font-size:20px;line-height:1.6}
+.gex .p{font-size:13px;color:var(--ink-2)}
+.gex .k{font-size:14px;margin-top:2px}
+.gex button.say{background:none;border:0;cursor:pointer;font-size:16px;padding:0 6px;vertical-align:middle}
+.gmatch h4{margin:14px 0 6px;font-size:14px}
+.gmatch .m{font-family:var(--hanzi);font-size:17px;padding:6px 0;border-top:1px solid var(--line);line-height:1.6}
+.gmatch .m small{font-family:inherit;font-size:12px;color:var(--ink-2);margin-left:6px}
+.gchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.gchips button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:4px 10px;cursor:pointer}
+.gchips button:hover{border-color:var(--accent)}
 </style>
 
 <div class="wrap">
@@ -333,6 +373,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <nav role="tablist">
   <button role="tab" aria-selected="true" data-tab="study">학습</button>
   <button role="tab" aria-selected="false" data-tab="read">읽기</button>
+  <button role="tab" aria-selected="false" data-tab="gram">문법</button>
   <button role="tab" aria-selected="false" data-tab="exam">모의고사</button>
   <button role="tab" aria-selected="false" data-tab="stats">통계</button>
   <button role="tab" aria-selected="false" data-tab="mine">내 단어장</button>
@@ -355,7 +396,9 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
     <label><input type="checkbox" value="4">4급</label>
     <label><input type="checkbox" value="5">5급</label>
     <label><input type="checkbox" value="6">6급</label>
-    <label><input type="checkbox" value="7">7~9급</label>
+    <label><input type="checkbox" value="7">7급</label>
+    <label><input type="checkbox" value="8">8급</label>
+    <label><input type="checkbox" value="9">9급</label>
     <span id="lvCount" style="margin-left:auto"></span>
   </div>
   <div class="modebar" id="modebar" role="radiogroup" aria-label="단어 학습 모드"></div>
@@ -406,6 +449,8 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <button class="btn primary" id="btnCheck">확인</button>
     </div>
     <div class="feedback" id="fb"></div>
+    <div id="wordRel"></div>
+    <div id="gramRel"></div>
     <div class="extlinks" id="ext" hidden>
       <a class="btn" id="lnkYouglish" target="_blank" rel="noopener">▶ 유튜브 예문 (YouGlish)</a>
       <a class="btn" id="lnkForvo" target="_blank" rel="noopener">🎙 원어민 발음 (Forvo)</a>
@@ -459,6 +504,35 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
   </div>
 </section>
 
+<!-- ───────── 문법 탭 ───────── -->
+<section class="panel" id="tab-gram" hidden>
+  <div id="gramList">
+    <div class="lvbar" id="gramLv">급수
+      <label><input type="radio" name="gramLv" value="1" checked>1급</label>
+      <label><input type="radio" name="gramLv" value="2">2급</label>
+      <label><input type="radio" name="gramLv" value="3">3급</label>
+      <label><input type="radio" name="gramLv" value="4">4급</label>
+      <label><input type="radio" name="gramLv" value="5">5급</label>
+      <label><input type="radio" name="gramLv" value="6">6급</label>
+      <label><input type="radio" name="gramLv" value="7">7~9급</label>
+      <span id="gramCount" style="margin-left:auto"></span>
+    </div>
+    <div class="card" style="padding:8px 12px">
+      <input type="search" id="gramSearch" placeholder="문법 검색 (예: 把, 비교, 了)" style="width:100%;box-sizing:border-box;margin:4px 0 6px;padding:8px 10px;font:inherit;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)">
+      <div class="plist" id="glist"></div>
+    </div>
+  </div>
+  <div id="gramView" hidden>
+    <div class="unitbar">
+      <button class="btn" id="btnGramBack">‹ 목록</button>
+      <button class="btn" id="btnGramPrev">‹ 이전</button>
+      <button class="btn" id="btnGramNext">다음 ›</button>
+      <span class="hint" style="margin-left:auto;font-size:12px;color:var(--ink-2)">단어를 누르면 뜻이 보여요</span>
+    </div>
+    <div class="card" id="gramCard"></div>
+  </div>
+</section>
+
 <!-- ───────── 모의고사 탭 ───────── -->
 <section class="panel" id="tab-exam" hidden>
   <div id="examHome">
@@ -476,7 +550,27 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">듣기 16(판단 8 · 대화 8) · 독해 16(빈칸 8 · 순서 4 · 글 4) · 쓰기 8(어순) — 제한 시간 30분. 듣기는 자동 재생되고 🔊로 두 번까지 다시 들을 수 있어요.</p>
       <div class="dataops"><button class="btn primary" id="btnExamStart">시험 시작</button><a class="btn" href="https://www.chinesetest.cn/HSK" target="_blank" rel="noopener" style="text-decoration:none">공식 샘플 시험지 (chinesetest.cn)</a></div>
     </div>
+    <div class="card" style="margin-bottom:14px">
+      <h3 class="sk-h">듣기 대화 연습 <small>위에서 고른 급수 · 10문항 · 시간 제한 없음 · 다시 듣기 무제한</small></h3>
+      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">A·B 두 사람의 대화를 서로 다른 목소리로 듣고 질문에 답해요. 답을 고르면 대본·번역이 바로 보이고, 대본의 단어를 누르면 뜻이 떠요. (목소리가 하나뿐인 기기에서는 높낮이로 구분)</p>
+      <div class="dataops"><button class="btn primary" id="btnLisStart">듣기 연습 시작</button><span class="hint" id="lisStat" style="font-size:13px;color:var(--ink-2);align-self:center"></span></div>
+    </div>
     <div class="card"><h3 class="sk-h">지난 시험</h3><div class="lvprog" id="examHistory"></div></div>
+  </div>
+  <div id="lisRun" hidden>
+    <div class="unitbar">
+      <span id="lisPos" class="hint" style="font-size:13px"></span>
+      <span id="lisScore" class="hint" style="font-size:13px;margin-left:auto"></span>
+      <button class="btn" id="btnLisQuit">끝내기</button>
+    </div>
+    <div class="uprog"><div class="uprog-bar" id="lisBar"></div></div>
+    <div class="card" id="lisCard" style="margin-top:12px">
+      <div id="lisBody" class="exam-body"></div>
+      <div class="dataops" style="margin-top:14px;justify-content:space-between">
+        <button class="btn icon" id="btnLisSpeak" title="다시 듣기">🔊 다시 듣기</button>
+        <button class="btn primary" id="btnLisNext" hidden>다음 →</button>
+      </div>
+    </div>
   </div>
   <div id="examRun" hidden>
     <div class="unitbar">
@@ -580,7 +674,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <section class="panel" id="tab-list" hidden>
   <div class="search">
     <input id="q" placeholder="한자 · 병음 · 뜻 검색 (예: 学, xue, study)">
-    <select id="listLv"><option value="">전체 급수</option><option value="1">1급</option><option value="2">2급</option><option value="3">3급</option><option value="4">4급</option><option value="5">5급</option><option value="6">6급</option><option value="7">7~9급</option></select>
+    <select id="listLv"><option value="">전체 급수</option><option value="1">1급</option><option value="2">2급</option><option value="3">3급</option><option value="4">4급</option><option value="5">5급</option><option value="6">6급</option><option value="7">7급</option><option value="8">8급</option><option value="9">9급</option></select>
   </div>
   <div class="card" style="padding:8px 12px">
     <div class="tblwrap"><table>
@@ -601,6 +695,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
     <label class="row"><span>번체 보이기</span><input type="checkbox" id="optShowTrad"></label>
     <h3>발음</h3>
     <label class="row"><span>문제 나올 때 자동 재생<small>정답 확인 후에는 항상 한 번 읽어줌</small></span><input type="checkbox" id="optAutoSpeak"></label>
+    <label class="row"><span>미리 만든 음성(mp3) 우선<small id="mp3State">자연스러운 신경망 음성으로 미리 만들어 둔 발음이 있으면 그걸 먼저 씀 (없는 단어·문장은 아래 브라우저 음성)</small></span><input type="checkbox" id="optMp3"></label>
     <label class="row"><span>음성<small>브라우저에 설치된 중국어 음성 목록</small></span><select id="optVoice"></select></label>
     <label class="row"><span>속도 <span id="rateVal">0.9</span></span><input type="range" id="optRate" min="0.5" max="1.3" step="0.1" value="0.9"></label>
     <h3>출제</h3>
@@ -639,28 +734,47 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <div class="toast" id="toast"></div>
 <div class="popup" id="popup" hidden></div>
 
-<script id="words" type="application/json">__WORDS_JSON__</script>
-<script id="sents" type="application/json">__SENTS_JSON__</script>
-<script id="strokes" type="application/json">__STROKES_JSON__</script>
-<script id="passages" type="application/json">__PASSAGES_JSON__</script>
-<script id="exam" type="application/json">__EXAM_JSON__</script>
+<div class="loading" id="loading"><div class="loading-box"><div class="loading-hz">汉</div><div id="loadingMsg">데이터 불러오는 중…</div><div class="loading-bar"><i id="loadingBar"></i></div></div></div>
+__DATA_BLOCKS__
 <script>/* hanzi-writer (MIT, https://github.com/chanind/hanzi-writer) — 획순 애니메이션·쓰기 퀴즈 라이브러리 */
 __HANZI_WRITER_JS__</script>
-<script>
+<script type="module">
 /* ═══════════════════════════════════════════════════════════
    데이터 로드
-   ─ words.json 내용이 위 <script type="application/json"> 안에 통째로 들어 있음.
-     (파일 하나로 어디서든 열리게 하려고 데이터를 페이지에 '내장'한 것)
+   ─ 두 가지 방식을 모두 지원한다.
+     1) 내장: <script id="words" type="application/json"> 안에 JSON 이 통째로 들어 있음 (claude.ai 게시용 artifact.html)
+     2) 분리: 같은 태그가 비어 있고 data-src="data/words.xxxx.json" 만 있음 → fetch 로 받아옴 (GitHub Pages 용 index.html)
+        파일 이름에 내용 해시가 붙어 있어 내용이 바뀌면 이름도 바뀜 → 서비스 워커가 마음 놓고 오래 캐시해도 됨
+   ─ 이 <script> 는 type="module" 이라 맨 위에서 await 를 쓸 수 있다 (top-level await).
    ═══════════════════════════════════════════════════════════ */
-const DATA = JSON.parse(document.getElementById('words').textContent);
+const __loadStatus = { done: 0, total: 0 };
+async function loadJson(id, fallback){
+  const el = document.getElementById(id);
+  if (!el) return fallback;
+  if (el.textContent.trim()) return JSON.parse(el.textContent);
+  const src = el.dataset.src; if (!src) return fallback;
+  try{
+    const res = await fetch(src); if (!res.ok) throw new Error(res.status);
+    const j = await res.json();
+    __loadStatus.done++; const bar = document.getElementById('loadingBar'); if (bar) bar.style.width = Math.round(__loadStatus.done / __loadStatus.total * 100) + '%';
+    return j;
+  }catch(e){ console.warn('데이터 로드 실패', src, e); return fallback; }
+}
+__loadStatus.total = 5;
+// 획순(strokes, 2MB)은 쓰기 모드에서 처음 필요할 때 따로 받음 (첫 화면을 빨리 띄우기 위해)
+const [DATA, __sentsJ, __passagesJ, __examJ, __gramJ] = await Promise.all([
+  loadJson('words', { words: [] }), loadJson('sents', { sentences: {} }), loadJson('passages', { passages: [] }), loadJson('exam', { bank: {} }), loadJson('grammar', { points: [] })
+]);
+if (!DATA.words.length){ document.getElementById('loadingMsg').textContent = '단어 데이터를 불러오지 못했어요. 인터넷 연결을 확인한 뒤 새로고침해 주세요.'; throw new Error('no data'); }
 const WORDS = DATA.words;
-// 예문: { 단어id: {zh:'我很忙。', seg:['我','很','忙','。'], py:'wǒ hěn máng 。', ko:'나는 바쁘다.'} } — 현재 HSK 1~3급만
-const SENTS = JSON.parse(document.getElementById('sents').textContent).sentences;
+// 예문: { 단어id: {zh:'我很忙。', seg:['我','很','忙','。'], py:'wǒ hěn máng 。', ko:'나는 바쁘다.'} }
+const SENTS = __sentsJ.sentences;
 function sentOf(w){ return SENTS[String(w.id)] || null; }
 const BY_S = new Map(WORDS.map(w => [w.s, w]));   // 간체 → 단어
 // 읽기 글: [{id, lv, title, sents:[{zh, seg, py, ko}], qs:[{q, qpy, qko, opts, optsko, ans}]}]
-const PASSAGES = (JSON.parse(document.getElementById('passages').textContent || '{}').passages) || [];
-const EXAM_BANK = (JSON.parse(document.getElementById('exam').textContent || '{}').bank) || {};   // 모의고사 문항 은행 {급수: {tf, dlg, order}}
+const PASSAGES = __passagesJ.passages || [];
+const EXAM_BANK = __examJ.bank || {};
+const GRAM = __gramJ.points || [];   // 문법 항목 [{id, lv, sec, title, title_ko, pattern, desc, sub, phrases, ex:[{zh,py,ko}], rx, n}]   // 모의고사 문항 은행 {급수: {tf, dlg, order}}
 // 띄어쓰기 정보가 없는 중국어 문자열을 단어로 쪼갬: 사전(BY_S)에서 가장 긴 것부터 맞춰 보는 방식(최장 일치). 제목·문제·보기용
 function segment(zh){
   const out = []; let i = 0; const chars = [...zh];
@@ -704,7 +818,7 @@ function mineWords(){ return [...Object.keys(FAV).filter(k => FAV[k] > 0).map(k 
 const PROGRESS = store.get('zh.progress', {});  // { "12": {box:2, due:<ms>, c:3, w:1} }
 const SETTINGS = Object.assign({
   mode:'hanzi', showHanzi:false, showPinyin:false, showKo:true, showEn:true, showTrad:false,
-  autoSpeak:false, voice:'', rate:0.9, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
+  autoSpeak:false, voice:'', rate:0.9, mp3:true, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
 }, store.get('zh.settings', {}));
 const TODAY = store.get('zh.today', {date:'', n:0, ok:0});
 const dayKey = () => new Date().toISOString().slice(0,10);
@@ -756,7 +870,7 @@ function pool(){ return WORDS.filter(w => SETTINGS.levels.includes(w.lv)); }
 function unitSize(){ return SETTINGS.unitSize || 20; }
 function units(){                       // 현재 급수의 과 목록 [{key, label, words}]
   const ws = pool(), n = unitSize(), out = [];
-  const lvName = l => l===7 ? '7~9급' : l+'급';
+  const lvName = l => l+'급';
   for (let i = 0; i < ws.length; i += n){
     const chunk = ws.slice(i, i+n);
     const lv = SETTINGS.levels.length===1 ? lvName(SETTINGS.levels[0]) : SETTINGS.levels.map(lvName).join('+');
@@ -817,7 +931,7 @@ function renderUnitBar(){
   const done = us.filter(u => UNITS_DONE[u.key]).length;
   $('lvCount').textContent = `${us.length}과 중 ${done}과 완료`;
   const inUnit = !session || session.type === 'unit';
-  $('btnReview').innerHTML = inUnit ? `복습 (<span id="reviewN">${dueWords().length}</span>)` : `↩ 과 학습으로 (${session.type==='review'?'복습':'내 단어장'} 중)`;
+  $('btnReview').innerHTML = inUnit ? `복습 (<span id="reviewN">${dueWords().length}</span>)` : `↩ 과 학습으로 (${session.meta&&session.meta.label ? session.meta.label : session.type==='review'?'복습':'내 단어장'} 중)`;
   $('btnReview').classList.toggle('primary', !inUnit);
   if (session){
     const p = session.type==='unit' ? Math.round((session.total - session.queue.length) / session.total * 100) : Math.round((session.total - session.queue.length) / session.total * 100);
@@ -868,8 +982,49 @@ function loadVoices(){
   if (SETTINGS.voice && voices.some(v=>v.name===SETTINGS.voice)) optVoice.value = SETTINGS.voice;
   ttsState.textContent = voices.length ? `🔊 ${voices.length}개 중국어 음성` : '⚠ 중국어 음성 없음 — OS 언어팩 설치 필요';
 }
+/* ── 미리 만든 발음 mp3 (make_audio.py 로 생성한 audio/ 폴더) ──
+   audio/index.json: { w: { 단어id: [파일번호, 시작초, 길이초] }, s: { 단어id(예문): [...] } }
+   한 파일에 150개가 이어 붙어 있어(스프라이트) 해당 구간만 재생한다. 파일이 없거나(claude.ai 게시본 등) 재생이 막히면 브라우저 TTS 로 넘어감 */
+let AUDIO = null, audioTried = false, clip = null; const audioEls = {}; let SENT_ID_BY_ZH = null;
+function loadAudioIndex(){
+  if (audioTried) return; audioTried = true;
+  if (!/^https?:/.test(location.protocol) || location.hostname.endsWith('claude.ai')) return;
+  fetch('audio/index.json').then(r => r.ok ? r.json() : null).then(j => { AUDIO = j; updateMp3State(); }).catch(() => {});
+}
+function updateMp3State(){ const n = AUDIO ? Object.keys(AUDIO.w||{}).length : 0, m = AUDIO ? Object.keys(AUDIO.s||{}).length : 0; if (n) $('mp3State').textContent = `🎵 단어 ${n.toLocaleString()}개${m?` · 문장 ${m.toLocaleString()}개`:''} 준비됨 (${AUDIO.voice||'edge-tts'})`; }
+function clipFor(text){
+  if (!AUDIO || SETTINGS.mp3 === false) return null;
+  const w = BY_S.get(text); if (w && AUDIO.w && AUDIO.w[w.id]) return ['w', w.id];
+  if (AUDIO.s){ if (!SENT_ID_BY_ZH){ SENT_ID_BY_ZH = new Map(); for (const [id, st] of Object.entries(SENTS)) SENT_ID_BY_ZH.set(st.zh, id); } const sid = SENT_ID_BY_ZH.get(text); if (sid && AUDIO.s[sid]) return ['s', sid]; }
+  return null;
+}
+function stopClip(){ if (clip){ clip.a.pause(); clearTimeout(clip.timer); clip.a.removeEventListener('timeupdate', clip.onT); clip = null; } }
+function playClip(kind, id, fallback){
+  const [no, start, len] = AUDIO[kind][id]; const src = `audio/${kind}-${String(no).padStart(3,'0')}.mp3`;
+  let a = audioEls[src]; if (!a){ a = new Audio(src); a.preload = 'auto'; audioEls[src] = a; }
+  stopClip(); if ('speechSynthesis' in window) speechSynthesis.cancel();
+  window.__lastClip = { src, start, len };   // 디버그용
+  const rate = Math.max(0.5, Math.min(2, SETTINGS.rate || 1));
+  const go = () => {
+    try{ a.currentTime = start; }catch(e){ fallback(); return; }
+    a.playbackRate = rate;
+    const stopAt = start + len - 0.03;
+    const onT = () => { if (a.currentTime >= stopAt) stopClip(); };
+    clip = { a, onT, timer: setTimeout(stopClip, len / rate * 1000 + 60) };
+    a.addEventListener('timeupdate', onT);
+    const p = a.play(); if (p && p.catch) p.catch(() => { stopClip(); fallback(); });
+  };
+  if (a.readyState >= 1) go(); else { a.addEventListener('loadedmetadata', go, { once: true }); a.addEventListener('error', () => { stopClip(); fallback(); }, { once: true }); a.load(); }
+}
 function speak(text){
+  if (!text) return;
+  const c = clipFor(text);
+  if (c){ playClip(c[0], c[1], () => ttsSpeak(text)); return; }
+  ttsSpeak(text);
+}
+function ttsSpeak(text){
   if (!('speechSynthesis' in window) || !text) return;
+  stopClip();
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'zh-CN'; u.rate = SETTINGS.rate;
@@ -893,7 +1048,7 @@ function renderQuestion(){
   cur = pickNext();
   answered = false; hintUsed = false; hintLevel = 0;
   const M = mode(); $('quizCard').classList.remove('answered'); $('popup').hidden = true;
-  ans.value = ''; ans.className = M.input==='pinyin' ? 'pymode' : ''; fb.textContent=''; fb.className='feedback'; $('ext').hidden = true;
+  ans.value = ''; ans.className = M.input==='pinyin' ? 'pymode' : ''; fb.textContent=''; fb.className='feedback'; $('ext').hidden = true; $('gramRel').innerHTML = ''; $('wordRel').innerHTML = '';
   if (!cur){ qHanzi.textContent='—'; qKo.textContent='과를 골라 시작하세요'; qEn.textContent=''; return; }
   const p = PROGRESS[cur.id];
   qBox.textContent = (session.wrong.has(cur.id) ? '다시 · ' : '') + (p ? `상자 ${p.box} · ${p.c}○ ${p.w}✕${p.h?` ${p.h}힌트`:''}` : '새 단어');
@@ -962,8 +1117,10 @@ function renderQuestion(){
 /* ═══════════ 획순 쓰기 (hanzi-writer) ═══════════
    획순 데이터는 HSK 1~3급 한자 900자를 앱 안에 내장. 그 밖의 글자는 인터넷(jsdelivr)에서 받아옴
    — GitHub Pages 에서는 되고, claude.ai 게시 페이지 안에서는 외부 접속이 막혀 안 됨. */
-const STROKES = JSON.parse(document.getElementById('strokes').textContent || '{}');
+let STROKES = null, strokesPromise = null;
+function loadStrokes(){ return strokesPromise || (strokesPromise = loadJson('strokes', {}).then(j => (STROKES = j || {}))); }
 function charDataLoader(ch, onLoad, onErr){
+  if (!STROKES){ loadStrokes().then(() => charDataLoader(ch, onLoad, onErr)); return; }
   if (STROKES[ch]) return onLoad(STROKES[ch]);
   fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/${encodeURIComponent(ch)}.json`).then(r => r.ok ? r.json() : Promise.reject(r.status)).then(onLoad).catch(onErr);
 }
@@ -1132,7 +1289,7 @@ function finishTone(){
 }
 
 /* ═══════════ 문장 연습 ═══════════ */
-const SENT_PUNCT = /[。，！？、；：""''（）!?,.\s]/g;
+const SENT_PUNCT = /[。，！？、；：""''（）!?,.…—\s]/g;
 function stripSent(s){ return s.replace(SENT_PUNCT, ''); }
 let orderBuilt = [], orderPool = [];
 // 문장에서 대상 단어를 빈칸으로 (첫 번째 등장만)
@@ -1187,9 +1344,15 @@ $('built').addEventListener('click', e => {
   renderOrder();
 });
 // 받아쓰기 채점: 구두점·공백 제거 후 비교. 틀린 글자 표시용 diff
-function diffHtml(answer, given){
-  const a = [...answer], g = [...given];
-  return a.map((c,i) => g[i]===c ? c : `<span class="wrongch">${c}</span>`).join('') + (g.length > a.length ? ` <small style="color:var(--bad)">(+${g.length-a.length}자 초과)</small>` : '');
+// 받아쓰기 오답 표시: 정답 문장을 어절(단어) 단위로 눌리게 두고, 그 안에서 틀린 글자만 빨갛게. (어절을 누르면 사전 풍선이 뜨게 하려고 글자 단위가 아니라 어절 단위로 감쌈)
+function diffHtml(st, given){
+  const g = [...given]; let i = 0;
+  const html = st.seg.map(tok => {
+    if (/^[。，！？、；：!?,.…—""''（）]+$/.test(tok)) return `<span class="punct">${tok}</span>`;
+    const inner = [...tok].map(c => { const ok = g[i] === c; i++; return ok ? c : `<span class="wrongch">${c}</span>`; }).join('');
+    return `<span class="tok" data-tok="${tok}">${inner}</span>`;
+  }).join('');
+  return html + (g.length > i ? ` <small style="color:var(--bad)">(+${g.length-i}자 초과)</small>` : '');
 }
 function checkSent(raw){
   const st = sentOf(cur);
@@ -1206,10 +1369,12 @@ function sentTokensHtml(st, target){
 function revealSent(res){
   const st = sentOf(cur);
   const highlighted = sentTokensHtml(st, cur.s);
-  qHanzi.innerHTML = (SETTINGS.study==='dict' && !res.ok && res.given) ? diffHtml(stripSent(st.zh), res.given) : highlighted;
+  qHanzi.innerHTML = (SETTINGS.study==='dict' && !res.ok && res.given) ? diffHtml(st, res.given) : highlighted;
   qPinyin.innerHTML = `<span style="font-size:.8em">${st.py}</span>`;
   const ko = KO[cur.s] || cur.ko;
   qKo.textContent = st.ko; qTrad.textContent = `${cur.s} ${cur.py} — ${ko}`;
+  $('gramRel').innerHTML = gramChips(st, cur.lv || 1);
+  $('wordRel').innerHTML = relatedHtml(cur);
   $('orderArea').hidden = true; document.querySelector('.answer').classList.remove('hiddenInput');
 }
 // 정답 확인 후 외부 서비스 링크: YouGlish(유튜브 자막에서 단어 쓰인 장면 검색), Forvo(원어민 녹음), 네이버 중국어사전
@@ -1229,6 +1394,7 @@ function reveal(){
   qHanzi.className='hanzi'; qHanzi.textContent = cur.s; qPinyin.innerHTML = renderPinyin(cur);
   if (!mode().showM){ const ko = KO[cur.s] || cur.ko; qKo.textContent = ko; qKo.className = 'ko'; qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0,2).join(' ; ') : ''; }
   const parts = [qTrad.textContent, altText(cur)].filter(Boolean); qTrad.textContent = parts.join('  ·  ');
+  $('wordRel').innerHTML = relatedHtml(cur);
 }
 
 function check(){
@@ -1390,6 +1556,7 @@ document.querySelectorAll('nav [role=tab]').forEach(b => b.onclick = () => {
   if (b.dataset.tab==='mine') renderMine();
   if (b.dataset.tab==='stats') renderStats();
   if (b.dataset.tab==='read') renderReadList();
+  if (b.dataset.tab==='gram') renderGramList();
   if (b.dataset.tab==='exam') renderExamHome();
   if (b.dataset.tab==='study') ans.focus();
 });
@@ -1409,7 +1576,7 @@ function bindOpt(id, key, evt='change'){
   });
 }
 ['optShowKo:showKo','optShowEn:showEn','optShowTrad:showTrad',
- 'optAutoSpeak:autoSpeak','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
+ 'optAutoSpeak:autoSpeak','optMp3:mp3','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
 bindOpt('optRate','rate','input'); $('rateVal').textContent = SETTINGS.rate;
 function applyZoom(){ document.documentElement.style.setProperty('--zoom', SETTINGS.zoom || 1); }
 applyZoom();
@@ -1476,11 +1643,11 @@ function showLookup(el){
   const tok = el.dataset.tok, ws = lookup(tok);
   const pop = $('popup'); pop.hidden = false;
   if (!ws.length){ pop.innerHTML = `<b>${tok}</b> <span style="color:var(--ink-2)">사전에 없는 단어예요</span>`; return; }
-  pop.innerHTML = ws.map(w => `<div><b>${w.s}</b><span class="py">${w.py}</span><span>${KO[w.s]||w.ko||''}</span><small style="color:var(--ink-2)">${w.lv?(w.lv===7?'7~9급':w.lv+'급'):''}</small></div>`).join('') +
+  pop.innerHTML = ws.map(w => `<div><b>${w.s}</b><span class="py">${w.py}</span><span>${KO[w.s]||w.ko||''}</span><small style="color:var(--ink-2)">${w.lv?w.lv+'급':''}</small></div>`).join('') +
     `<div class="acts"><button data-say="${tok}">🔊 발음</button>${ws.length===1?`<button data-fav="${ws[0].id}">${isFav(ws[0].id)?'★ 내 단어장에서 빼기':'☆ 내 단어장에 담기'}</button>`:''}<button data-close="1">닫기</button></div>`;
 }
 // 읽기 본문 · 학습 카드의 문장 · 내 문장 목록 어디서든 단어를 누르면 풍선
-for (const id of ['ptext','qHanzi','mineSents','ptitle','examBody']) $(id).addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
+for (const id of ['ptext','qHanzi','mineSents','ptitle','examBody','wordRel']) $(id).addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
 $('popup').addEventListener('click', e => {
   const s = e.target.closest('[data-say]'); if (s) speak(s.dataset.say);
   const f = e.target.closest('[data-fav]'); if (f){ const on = toggleFav(+f.dataset.fav); f.textContent = on ? '★ 내 단어장에서 빼기' : '☆ 내 단어장에 담기'; showToast(on?'내 단어장에 담았어요':'뺐어요'); }
@@ -1505,6 +1672,178 @@ $('pq').addEventListener('click', e => {
   updateStats();
 });
 
+/* ═══════════ 관련 단어 ═══════════
+   정답을 확인한 뒤 그 단어와 얽힌 단어들을 보여줌 (전부 앱 안에서 자동 계산 — 따로 만든 데이터 없음)
+   ① 같은 글자를 나눠 쓰는 단어 (出去·走出 처럼 한 글자가 겹치는 것)  ② 발음이 같거나 성조만 다른 단어  ③ 뜻이 겹치는 단어 */
+const CHAR_IDX = new Map();    // 글자 → 그 글자가 든 단어 id 목록
+const TONELESS_IDX = new Map(); // 성조 뺀 병음 → 단어 id 목록
+const KO_IDX = new Map();       // 한국어 뜻 토막 → 단어 id 목록
+function koTokens(w){ const ko = (KO[w.s] || w.ko || ''); return ko.split(/[;,、/·()\s]+/).map(t => t.replace(/(하다|되다|이다|스럽다|롭다|적)$/,'')).filter(t => t.length >= 2); }
+function toneless(w){ return (w.pyn || '').toLowerCase().replace(/[0-9\s]/g, '').replace(/u:/g,'v'); }
+for (const w of WORDS){
+  for (const ch of new Set([...w.s])) { if (!CHAR_IDX.has(ch)) CHAR_IDX.set(ch, []); CHAR_IDX.get(ch).push(w.id); }
+  const t = toneless(w); if (t){ if (!TONELESS_IDX.has(t)) TONELESS_IDX.set(t, []); TONELESS_IDX.get(t).push(w.id); }
+  for (const tk of new Set(koTokens(w))){ if (!KO_IDX.has(tk)) KO_IDX.set(tk, []); KO_IDX.get(tk).push(w.id); }
+}
+function relatedWords(w){
+  const seen = new Set([w.id]); const take = (ids, n, filter) => { const out = []; for (const id of ids){ if (seen.has(id)) continue; const x = BY_ID.get(id); if (!x || (filter && !filter(x))) continue; seen.add(id); out.push(x); if (out.length >= n) break; } return out; };
+  // 학습 중인 급수 근처 단어를 우선 (너무 어려운 단어가 잔뜩 나오지 않게): 같은 급수 이하 먼저, 모자라면 한 급수 위까지
+  const near = x => x.lv <= w.lv + 1, sortNear = ids => ids.slice().sort((a,b) => Math.abs(BY_ID.get(a).lv - w.lv) - Math.abs(BY_ID.get(b).lv - w.lv) || (BY_ID.get(a).freq||1e9) - (BY_ID.get(b).freq||1e9));
+  const chars = [...new Set([...w.s])].filter(ch => /[\u4e00-\u9fff]/.test(ch));
+  const same = take(sortNear(chars.flatMap(ch => CHAR_IDX.get(ch) || [])), 6, near);
+  const homo = take(sortNear(TONELESS_IDX.get(toneless(w)) || []), 4, null);
+  const toks = new Set(koTokens(w));
+  const cand = new Map(); for (const tk of toks) for (const id of (KO_IDX.get(tk) || [])) cand.set(id, (cand.get(id)||0) + 1);
+  const syn = take([...cand.entries()].sort((a,b) => b[1]-a[1] || Math.abs(BY_ID.get(a[0]).lv - w.lv) - Math.abs(BY_ID.get(b[0]).lv - w.lv)).map(e => e[0]), 5, near);
+  return { same, homo, syn };
+}
+function relChip(x){ return `<span class="tok" data-tok="${x.s}">${x.s}<small>${x.py} · ${(KO[x.s]||x.ko||'').split(/[;,]/)[0]}</small></span>`; }
+function relatedHtml(w){
+  const r = relatedWords(w); const sec = (title, arr) => arr.length ? `<div class="rh">${title}</div><div class="chips">${arr.map(relChip).join('')}</div>` : '';
+  const html = sec('같은 글자가 든 단어', r.same) + sec('발음이 같거나 성조만 다른 단어', r.homo) + sec('뜻이 비슷한 단어', r.syn);
+  return html ? `<div class="rel">${html}</div>` : '';
+}
+
+/* ═══════════ 듣기 대화 연습 ═══════════
+   모의고사의 대화 문항 은행을 그대로 써서, 시간 제한 없이 대화 듣기만 연습. A/B 를 다른 목소리로 읽어 실제 시험 느낌을 냄 */
+let lis = null;
+function dlgVoices(){   // [A 목소리, B 목소리, 질문 목소리]. 중국어 음성이 둘 이상이면 서로 다른 것을, 하나뿐이면 높낮이(pitch)로 구분
+  const main = voices.find(v=>v.name===optVoice.value) || voices[0];
+  const other = voices.find(v => v !== main && /female|male|xiao|yun|ting|mei|hui|kang|lili|han/i.test(v.name)) || voices.find(v => v !== main) || null;
+  return { a: main, b: other || main, samePitch: !other };
+}
+function speakDialogueAB(it, withQ){
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const vs = dlgVoices();
+  const say = (txt, v, pitch, delay) => { const u = new SpeechSynthesisUtterance(txt); u.lang = 'zh-CN'; u.rate = SETTINGS.rate; if (v) u.voice = v; u.pitch = pitch; speechSynthesis.speak(u); };
+  say(it.a, vs.a, vs.samePitch ? 1.15 : 1);
+  say(it.b, vs.b, vs.samePitch ? 0.85 : 1);
+  if (withQ) say(it.q, vs.a, 0.95);
+}
+$('btnLisStart').onclick = () => {
+  const lv = examLv(), bank = EXAM_BANK[String(lv)];
+  if (!bank || !bank.dlg.length){ showToast('이 급수의 대화 문항이 없어요'); return; }
+  lis = { lv, items: pick(bank.dlg, 10), i: 0, ok: 0, done: false };
+  $('examHome').hidden = true; $('lisRun').hidden = false; renderLis();
+};
+function renderLis(){
+  const it = lis.items[lis.i];
+  $('lisPos').textContent = `${lis.i+1} / ${lis.items.length} · ${lis.lv===7?'7~9':lis.lv}급`; $('lisScore').textContent = `맞힘 ${lis.ok}`;
+  $('lisBar').style.setProperty('--p', Math.round(lis.i/lis.items.length*100)+'%');
+  $('btnLisNext').hidden = true; lis.answered = false;
+  $('lisBody').innerHTML = `<div class="listen">🎧</div><div class="dlgnote">대화를 듣고 질문에 답하세요</div><div class="eq">${tapHtml(it.q)}</div>
+    <div class="eopts">${it.opts.map((o,i)=>`<button data-oi="${i}">${String.fromCharCode(65+i)}. ${tapHtml(o)}</button>`).join('')}</div><div id="lisScript"></div>`;
+  setTimeout(() => speakDialogueAB(it, true), 300);
+}
+$('lisBody').addEventListener('click', e => {
+  if (e.target.closest('.tok')) return;
+  const b = e.target.closest('[data-oi]'); if (!b || lis.answered) return;
+  lis.answered = true; const it = lis.items[lis.i], oi = +b.dataset.oi, ok = oi === it.ans; if (ok) lis.ok++;
+  $('lisBody').querySelectorAll('[data-oi]').forEach(x => { x.classList.toggle('good', +x.dataset.oi === it.ans); x.classList.toggle('bad', +x.dataset.oi === oi && !ok); x.disabled = true; });
+  $('lisScript').innerHTML = `<div class="script"><div class="ln"><b>A</b><span>${tapHtml(it.a)}</span></div><div class="ln"><b>B</b><span>${tapHtml(it.b)}</span></div><div class="ln q"><b>Q</b><span>${tapHtml(it.q)}</span></div><div class="ko">${it.ko}</div></div>`;
+  $('lisScore').textContent = `맞힘 ${lis.ok}`; $('btnLisNext').hidden = false;
+  $('btnLisNext').textContent = lis.i === lis.items.length-1 ? '결과 보기' : '다음 →';
+  TODAY.n++; if (ok) TODAY.ok++; store.set('zh.today', TODAY); { const h = histToday(); h.n++; if (ok) h.ok++; store.set('zh.history', HISTORY); }
+  bump(STATS.mode, 'listenDlg', ok); store.set('zh.stats', STATS); updateStats();
+});
+$('btnLisSpeak').onclick = () => { if (lis) speakDialogueAB(lis.items[lis.i], true); };
+$('btnLisNext').onclick = () => {
+  if (lis.i < lis.items.length-1){ lis.i++; renderLis(); return; }
+  speechSynthesis && speechSynthesis.cancel();
+  showToast(`듣기 연습 끝 · ${lis.ok}/${lis.items.length} 맞힘`);
+  $('lisRun').hidden = true; $('examHome').hidden = false; renderExamHome();
+};
+$('btnLisQuit').onclick = () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); $('lisRun').hidden = true; $('examHome').hidden = false; renderExamHome(); };
+
+/* ═══════════ 문법 ═══════════
+   HSK 3.0 语法等级大纲(문법 등급 요목)의 570개 항목. 급수별 목록 → 항목을 열면 설명·공식 예문·우리 예문에서 찾은 문장.
+   rx(정규식) 는 "이 문법이 쓰인 문장인지" 를 글자 패턴으로 대충 잡아내는 식 — 완벽하지 않지만 연습용 문장을 모으는 데는 충분 */
+let curGram = null;
+const GRAM_RX = new Map();   // id → RegExp (한 번 만들면 재사용)
+function gramRx(g){ if (!g.rx) return null; if (!GRAM_RX.has(g.id)){ try{ GRAM_RX.set(g.id, new RegExp(g.rx)); }catch(e){ GRAM_RX.set(g.id, null); } } return GRAM_RX.get(g.id); }
+function gramLv(){ return +(document.querySelector('#gramLv input:checked')||{value:1}).value; }
+// 문장에 문법 패턴이 쓰였는지 검사. 단순 포함이 아니라, 맞은 부분의 시작·끝이 어절 경계여야 인정
+// (예: 방위사 东 패턴이 东西(물건) 속의 东 에 걸리는 것을 막기 위해)
+function gramTest(g, st){
+  const re = gramRx(g); if (!re) return false;
+  const gre = new RegExp(re.source, 'g'); let m; const bounds = new Set([0]); let pos = 0;
+  for (const t of st.seg){ pos += [...t].length; bounds.add(pos); }
+  while ((m = gre.exec(st.zh)) !== null){
+    const a = [...st.zh.slice(0, m.index)].length, b = a + [...m[0]].length;
+    if (bounds.has(a) && bounds.has(b)) return true;
+    if (m[0].length === 0) gre.lastIndex++;
+  }
+  return false;
+}
+function gramMatches(g, limit){   // 우리 예문 중 이 문법이 쓰인 문장 (단어 id 목록)
+  if (!gramRx(g)) return [];
+  const out = [];
+  for (const [id, st] of Object.entries(SENTS)){ if (gramTest(g, st)){ out.push(+id); if (out.length >= limit) break; } }
+  return out;
+}
+function gramFor(st, lvMax){   // 문장 하나에 쓰인 문법 항목 (어순 연습 결과 화면에서 "관련 문법" 으로)
+  return GRAM.filter(g => g.lv <= lvMax && gramTest(g, st)).slice(0, 4);
+}
+function renderGramList(){
+  $('gramView').hidden = true; $('gramList').hidden = false; $('popup').hidden = true;
+  const lv = gramLv(), q = $('gramSearch').value.trim();
+  let gs = q ? GRAM.filter(g => (g.title + g.title_ko + g.pattern + g.desc).includes(q)) : GRAM.filter(g => g.lv === lv);
+  $('gramCount').textContent = q ? `검색 ${gs.length}개` : `${gs.length}개 항목`;
+  let lastSec = null;
+  $('glist').innerHTML = gs.map((g,i) => {
+    const head = (g.sec !== lastSec && !q) ? `<div class="gsec" style="padding:10px 4px 2px;border-bottom:1px solid var(--line)">${g.sec}</div>` : ''; lastSec = g.sec;
+    return head + `<button data-gid="${g.id}"><span><span style="font-weight:500">${g.title_ko}</span><br><small style="color:var(--ink-2);font-family:var(--hanzi)">${g.pattern}</small></span><span class="pm">${q ? (g.lv===7?'7~9':g.lv)+'급' : g.id.replace(/^[^0-9]+/,'')}</span></button>`;
+  }).join('') || '<div style="padding:12px;color:var(--ink-2)">해당하는 항목이 없어요</div>';
+}
+document.querySelectorAll('#gramLv input').forEach(i => i.onchange = () => { $('gramSearch').value = ''; renderGramList(); });
+$('gramSearch').oninput = renderGramList;
+$('glist').addEventListener('click', e => { const b = e.target.closest('[data-gid]'); if (b) openGram(b.dataset.gid); });
+function gramExHtml(e){ return `<div class="gex"><div class="z">${tapHtml(e.zh)}<button class="say" data-say="${e.zh}" title="발음">🔊</button></div><div class="p">${e.py.replace(/\s*[。，！？、；：!?,.…—""''（）]/g, m => m.trim().replace(/^[。！？!?.]$/, '') )}</div><div class="k">${e.ko}</div></div>`; }
+function openGram(id){
+  curGram = GRAM.find(g => g.id === id); if (!curGram) return;
+  const g = curGram;
+  $('gramList').hidden = true; $('gramView').hidden = false;
+  const ids = gramMatches(g, 8);
+  $('gramCard').innerHTML = `
+    <div class="gsec">${g.lv===7?'7~9':g.lv}급 · ${g.sec} · ${g.id}</div>
+    <h2 class="gtitle">${g.title_ko}</h2>
+    <div class="gzh">${tapHtml(g.title)}</div>
+    <div class="gpat">${g.pattern}</div>
+    <div class="gdesc">${g.desc}</div>
+    ${g.sub.length ? `<div class="gsub">${g.sub.map(x=>tapHtml(x)).join('<br>')}</div>` : ''}
+    ${g.phrases.length ? `<div class="gphr">${g.phrases.map(x=>tapHtml(x)).join('<br>')}</div>` : ''}
+    <div>${g.ex.map(gramExHtml).join('')}</div>
+    <div class="gmatch">
+      ${ids.length ? `<h4>우리 예문에서 찾은 문장 ${ids.length>=8?'(앞 8개)':''}</h4>` + ids.map(id => { const st = SENTS[id], w = BY_ID.get(id); return `<div class="m">${sentTokensHtml(st, w.s)}<small>${w.s} · ${w.lv}급</small><div style="font-family:inherit;font-size:13px;color:var(--ink-2)">${st.ko}</div></div>`; }).join('')
+        + `<div class="gchips"><button data-gpractice="order">이 문장들로 어순 배열 연습</button><button data-gpractice="cloze">빈칸 채우기</button><button data-gpractice="dict">받아쓰기</button></div>`
+        : `<h4 style="color:var(--ink-2)">우리 예문에서는 이 문법이 쓰인 문장을 자동으로 찾지 못했어요</h4>`}
+    </div>`;
+  $('gramCard').dataset.ids = ids.join(',');
+  const idx = GRAM.indexOf(g); $('btnGramPrev').disabled = idx <= 0; $('btnGramNext').disabled = idx >= GRAM.length - 1;
+  window.scrollTo({top:0});
+}
+$('gramCard').addEventListener('click', e => {
+  const tk = e.target.closest('.tok'); if (tk){ showLookup(tk); return; }
+  const sy = e.target.closest('[data-say]'); if (sy){ speak(sy.dataset.say); return; }
+  const pr = e.target.closest('[data-gpractice]');
+  if (pr){
+    const ids = ($('gramCard').dataset.ids || '').split(',').filter(Boolean).map(Number); if (!ids.length) return;
+    SETTINGS.study = pr.dataset.gpractice; store.set('zh.settings', SETTINGS); renderModeBar();
+    document.querySelector('nav [data-tab=study]').click();
+    startSession('gram', ids.map(id => BY_ID.get(id)), { label: '문법 · ' + curGram.title_ko });
+  }
+});
+$('btnGramBack').onclick = renderGramList;
+$('btnGramPrev').onclick = () => { const i = GRAM.indexOf(curGram); if (i > 0) openGram(GRAM[i-1].id); };
+$('btnGramNext').onclick = () => { const i = GRAM.indexOf(curGram); if (i < GRAM.length-1) openGram(GRAM[i+1].id); };
+// 문장 모드 정답 확인 후 "관련 문법" 칩 (문법 탭으로 이동)
+function gramChips(st, lv){
+  const gs = gramFor(st, Math.min(7, lv + 1)); if (!gs.length) return '';
+  return `<div class="gchips" style="margin-top:6px"><span style="font-size:12px;color:var(--ink-2);align-self:center">관련 문법</span>${gs.map(g => `<button data-gopen="${g.id}">${g.title_ko}</button>`).join('')}</div>`;
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-gopen]'); if (b){ document.querySelector('nav [data-tab=gram]').click(); openGram(b.dataset.gopen); } });
+
 /* ═══════════ 모의고사 ═══════════
    구성(40문항): 듣기 판단 8 · 대화 듣기 8 · 독해 빈칸 8 · 문장 순서 4 · 글 읽기 4(2편×2문) · 쓰기 어순 8. 30분.
    빈칸·어순은 예문에서, 글 읽기는 읽기 탭 글에서 자동 출제. 나머지는 문항 은행에서. */
@@ -1515,8 +1854,9 @@ const pick = (arr, n) => { const a = arr.slice(); for (let i = a.length-1; i > 0
 function examLv(){ return +(document.querySelector('#examLv input:checked')||{value:1}).value; }
 function buildExam(lv){
   const bank = EXAM_BANK[String(lv)] || {tf:[], dlg:[], order:[]};
-  // 빈칸·어순용 단어: 해당 급수와 바로 아래 두 급수에서 (7~9급은 예문이 5~6급까지만 있어 그걸 씀)
-  let lvWords = WORDS.filter(w => w.lv <= lv && w.lv >= Math.max(1, lv - 2) && sentOf(w));
+  // 빈칸·어순용 단어: 해당 급수와 바로 아래 두 급수에서. 7~9급 시험(lv 7)은 7·8·9급 단어 전체 (예문 있는 것만; 없으면 아래 급수로 채움)
+  const top = lv === 7 ? 9 : lv;
+  let lvWords = WORDS.filter(w => w.lv <= top && w.lv >= Math.max(1, lv - 2) && sentOf(w));
   if (lvWords.length < 40) lvWords = WORDS.filter(w => w.lv <= lv && sentOf(w));
   const items = [];
   pick(bank.tf, 8).forEach(it => items.push({ type:'tf', sec:'듣기 · 판단', ...it }));
@@ -1667,8 +2007,8 @@ function renderStats(){
   $('dayBars').innerHTML = days.map(([k,h,d]) => `<div class="b" title="${k}: ${h.n}문제 · 정답 ${h.n?Math.round(h.ok/h.n*100):0}% · 새 단어 ${h.nw}">${h.n?`<span>${h.n}</span>`:''}<i style="height:${Math.round(h.n/max*100)}%"></i></div>`).join('');
   $('dayBarsX').innerHTML = days.map(([k,h,d]) => `<span>${d.getMonth()+1}/${d.getDate()}</span>`).join('');
   // 급수별 진도
-  const lvName = l => l===7?'7~9급':l+'급';
-  $('lvProg').innerHTML = [1,2,3,4,5,6,7].map(l => { const ws = WORDS.filter(w=>w.lv===l); const done = ws.filter(w=>PROGRESS[w.id]&&PROGRESS[w.id].box>=1).length;
+  const lvName = l => l+'급';
+  $('lvProg').innerHTML = [1,2,3,4,5,6,7,8,9].map(l => { const ws = WORDS.filter(w=>w.lv===l); const done = ws.filter(w=>PROGRESS[w.id]&&PROGRESS[w.id].box>=1).length;
     return `<div class="row"><span>${lvName(l)}</span><div class="track"><div class="fill" style="width:${done/ws.length*100}%"></div></div><span class="num">${done} / ${ws.length} (${Math.round(done/ws.length*100)}%)</span></div>`; }).join('');
   // 약한 단어: 점수 = 틀림×2 + 힌트 − 맞힘×0.5, 최근에 틀린 것 가중
   const now = Date.now();
@@ -1682,7 +2022,8 @@ function renderStats(){
   $('confuseList').innerHTML = pairs.slice(0,15).map(p => `<div class="row" style="grid-template-columns:1fr auto"><span><b style="font-family:var(--hanzi);font-size:17px">${p.a.s}</b> <small style="color:var(--ink-2)">${p.a.py} ${KO[p.a.s]||p.a.ko||''}</small> &nbsp;→ 대신 <b style="font-family:var(--hanzi);font-size:17px">${p.b.s}</b> <small style="color:var(--ink-2)">${p.b.py} ${KO[p.b.s]||p.b.ko||''}</small></span><span class="num">${p.n}회</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 없어요 (뜻→한자 등에서 다른 단어를 적으면 기록됨)</span>';
   // 모드별 · 성조별 정답률
   const bar = (label, o, extra='') => { const pct = o.n ? Math.round(o.ok/o.n*100) : 0; return `<div class="row"><span>${label}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span class="num">${pct}% (${o.ok}/${o.n})${extra}</span></div>`; };
-  $('modeStat').innerHTML = Object.entries(STATS.mode).filter(([k])=>MODES[k]).sort((a,b)=>b[1].n-a[1].n).map(([k,o]) => bar(MODES[k].name, o)).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 기록이 없어요</span>';
+  const EXTRA_MODE_NAMES = { listenDlg:'듣기 대화 연습' };
+  $('modeStat').innerHTML = Object.entries(STATS.mode).filter(([k])=>MODES[k]||EXTRA_MODE_NAMES[k]).sort((a,b)=>b[1].n-a[1].n).map(([k,o]) => bar(MODES[k]?MODES[k].name:EXTRA_MODE_NAMES[k], o)).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 기록이 없어요</span>';
   const ini = STATS.initial || {};
   const iniHtml = Object.entries(ini).sort((a,b)=>b[1].n-a[1].n).map(([k,o]) => bar(k, o)).join('');
   let iniBox = document.getElementById('iniStat'); if (!iniBox){ const card = document.createElement('div'); card.className='card'; card.style.marginBottom='14px'; card.innerHTML = '<h3 class="sk-h">자음별 정답률 <small>자음 구별 기준</small></h3><div class="lvprog" id="iniStat"></div>'; $('toneStat').closest('.card').after(card); iniBox = document.getElementById('iniStat'); }
@@ -1723,7 +2064,7 @@ function renderMine(){
   $('mineChunk').innerHTML = chunks.length <= 1 ? `<option value="0">전체 (${ws.length}단어)</option>`
     : `<option value="all">전체 (${ws.length}단어)</option>` + chunks.map((c,i)=>`<option value="${i}">${i+1}묶음 (${i*unitSize()+1}~${i*unitSize()+c.length})</option>`).join('');
   $('mineBody').innerHTML = ws.map(w => { const p = PROGRESS[w.id];
-    return `<tr><td><button class="star on" data-fav="${w.id}" title="내 단어장에서 빼기">★</button></td><td class="b">${w.custom?'직접':(w.lv===7?'7-9':w.lv)}</td><td class="h">${w.s}</td>
+    return `<tr><td><button class="star on" data-fav="${w.id}" title="내 단어장에서 빼기">★</button></td><td class="b">${w.custom?'직접':w.lv}</td><td class="h">${w.s}</td>
       <td class="p">${renderPinyin(w)}</td><td class="k"><input data-s="${w.s}" value="${(KO[w.s]||w.ko||'').replace(/"/g,'&quot;')}" placeholder="뜻 입력"></td>
       <td class="e">${w.en||''}</td><td class="b">${p?`${p.box} (${p.c}○${p.w}✕)`:'–'}</td>
       <td style="white-space:nowrap"><button class="btn icon" data-say="${w.s}" title="발음">🔊</button>${w.custom?` <button class="del" data-del="${w.id}" title="삭제">삭제</button>`:''}</td></tr>`; }).join('');
@@ -1770,7 +2111,7 @@ function renderList(){
   $('pgInfo').textContent = `${rows.length}단어 · ${page+1} / ${pages}`;
   $('tbody').innerHTML = rows.slice(page*PAGE, page*PAGE+PAGE).map(w => {
     const p = PROGRESS[w.id];
-    return `<tr><td><button class="star ${isFav(w.id)?'on':''}" data-fav="${w.id}" title="내 단어장">${isFav(w.id)?'★':'☆'}</button></td><td class="b">${w.lv===7?'7-9':w.lv}</td><td class="h">${w.s}</td><td class="p">${renderPinyin(w)}${w.alt&&w.alt.length?`<br><small style="color:var(--ink-2)">${w.alt.map(a=>a.py).join(' / ')}</small>`:''}</td>
+    return `<tr><td><button class="star ${isFav(w.id)?'on':''}" data-fav="${w.id}" title="내 단어장">${isFav(w.id)?'★':'☆'}</button></td><td class="b">${w.lv}</td><td class="h">${w.s}</td><td class="p">${renderPinyin(w)}${w.alt&&w.alt.length?`<br><small style="color:var(--ink-2)">${w.alt.map(a=>a.py).join(' / ')}</small>`:''}</td>
       <td class="k"><input data-s="${w.s}" value="${(KO[w.s]||w.ko||'').replace(/"/g,'&quot;')}" placeholder="뜻 입력"></td>
       <td class="e">${w.en}</td><td class="b">${p?`${p.box} (${p.c}○${p.w}✕)`:'–'}</td>
       <td><button class="btn icon" data-say="${w.s}" title="발음">🔊</button></td></tr>`;
@@ -1920,7 +2261,10 @@ window.addEventListener('pagehide', () => { if (backend && syncTimer){ clearTime
 initSync();
 
 /* ═══════════ 시작 ═══════════ */
-loadVoices();
+loadVoices(); loadAudioIndex();
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
 startUnit(currentUnitIndex());
+const __ld = document.getElementById('loading'); if (__ld) __ld.remove();
+// 서비스 워커에 현재 데이터 파일 목록을 알려 옛 버전 캐시를 정리하게 함
+if (navigator.serviceWorker && navigator.serviceWorker.controller){ const urls = [...document.querySelectorAll('script[data-src]')].map(el => el.dataset.src); if (urls.length) navigator.serviceWorker.controller.postMessage({ type:'keep-data', urls }); }
 </script>
