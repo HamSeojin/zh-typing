@@ -166,11 +166,14 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .pq .opts button.good{border-color:var(--good);background:var(--good-bg)}
 .pq .opts button.bad{border-color:var(--bad);background:var(--bad-bg)}
 .pq .pres{font-size:14px;padding:8px 0}
-.popup{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.18);max-width:min(92vw,420px);z-index:20;font-size:14px}
-.popup b{font-family:var(--hanzi);font-size:22px;margin-right:8px}
+.popup{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:0 6px 24px rgba(0,0,0,.18);width:max-content;max-width:min(calc(100vw - 32px),440px);box-sizing:border-box;z-index:20;font-size:14px;line-height:1.5}
+.popup > div:not(.acts){display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.popup b{font-family:var(--hanzi);font-size:22px}
 .popup .py{font-family:var(--mono);color:var(--accent)}
-.popup .acts{display:flex;gap:6px;margin-top:6px}
-.popup .acts button{font:inherit;font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer}
+.popup small{white-space:nowrap}
+.popup .acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.popup .acts button{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer;white-space:nowrap;flex:1 1 auto}
+.popup .acts button[data-close]{flex:0 0 auto}
 @media (max-width:480px){.ptext{font-size:20px}.ptitle{font-size:21px}}
 /* 통계 */
 .sk-h{margin:0 0 12px;font-size:14px;font-weight:700}
@@ -327,7 +330,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 
 <div class="wrap">
 <header>
-  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1411</span></small></h1>
+  <h1>汉语 타자 단어장 <small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.1439</span></small></h1>
   <span id="ttsState" style="font-size:12px;color:var(--ink-2)"></span>
 </header>
 <nav role="tablist">
@@ -1424,7 +1427,7 @@ function showLookup(el){
   const tok = el.dataset.tok, ws = lookup(tok);
   const pop = $('popup'); pop.hidden = false;
   if (!ws.length){ pop.innerHTML = `<b>${tok}</b> <span style="color:var(--ink-2)">사전에 없는 단어예요</span>`; return; }
-  pop.innerHTML = ws.map(w => `<div><b>${w.s}</b><span class="py">${w.py}</span> ${KO[w.s]||w.ko||''} <small style="color:var(--ink-2)">${w.lv?(w.lv===7?'7~9급':w.lv+'급'):''}</small></div>`).join('') +
+  pop.innerHTML = ws.map(w => `<div><b>${w.s}</b><span class="py">${w.py}</span><span>${KO[w.s]||w.ko||''}</span><small style="color:var(--ink-2)">${w.lv?(w.lv===7?'7~9급':w.lv+'급'):''}</small></div>`).join('') +
     `<div class="acts"><button data-say="${tok}">🔊 발음</button>${ws.length===1?`<button data-fav="${ws[0].id}">${isFav(ws[0].id)?'★ 내 단어장에서 빼기':'☆ 내 단어장에 담기'}</button>`:''}<button data-close="1">닫기</button></div>`;
 }
 // 읽기 본문 · 학습 카드의 문장 · 내 문장 목록 어디서든 단어를 누르면 풍선
