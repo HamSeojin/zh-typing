@@ -328,6 +328,17 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 .loading-hz{font-family:'Noto Serif SC',serif;font-size:56px;color:var(--accent);margin-bottom:8px}
 .loading-bar{width:160px;height:4px;background:var(--line);border-radius:2px;margin:12px auto 0;overflow:hidden}
 .loading-bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+/* AI 선생님 설정: 설명이 길어 좌우 2단이 아니라 위아래로 쌓음 */
+#aiBox label.row{flex-direction:column;align-items:stretch;gap:6px}
+#aiBox label.row > span{max-width:none}
+#aiBox label.row select,#aiBox label.row input:not([type=checkbox]){width:100%;box-sizing:border-box;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+#aiBox .dataops .btn{flex:1 1 auto}
+@media (max-width:480px){
+  /* 체크박스 행은 한 줄 유지, 선택상자·슬라이더·글 입력 행은 설명 아래로 내려 전체 폭 사용 */
+  .set label.row:has(> select),.set label.row:has(> input:not([type=checkbox])){flex-wrap:wrap}
+  .set label.row:has(> select) > span,.set label.row:has(> input:not([type=checkbox])) > span{flex:1 1 100%}
+  .set label.row > select,.set label.row > input[type=range]{width:100%;box-sizing:border-box}
+}
 /* AI 선생님 시트 */
 .ai-sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100vw,640px);max-height:78vh;background:var(--card);color:var(--ink);border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.2);z-index:30;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
 .ai-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
@@ -759,14 +770,22 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
     <h3>AI 선생님 (선택)</h3>
     <div id="aiBox">
       <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">문법·뉘앙스 질문을 LLM(대형 언어 모델)에게 바로 물어보는 기능. 본인 API 키를 넣어 쓰며, 키는 <b>이 기기에만</b> 저장되고 동기화·내보내기에 포함되지 않아요. 질문 하나에 보통 1~10원 정도 들어요.</p>
-      <label class="row"><span>제공자<small>Gemini(무료 티어 있음) · Claude · OpenAI 호환(DeepSeek, OpenAI 등)</small></span>
-        <select id="aiProvider"><option value="gemini">Gemini (Google)</option><option value="claude">Claude (Anthropic)</option><option value="openai">OpenAI 호환 (DeepSeek · OpenAI …)</option></select></label>
-      <label class="row" id="aiBaseRow" hidden><span>API 주소<small>OpenAI 호환일 때만. DeepSeek: https://api.deepseek.com/v1 · OpenAI: https://api.openai.com/v1</small></span><input id="aiBase" placeholder="https://api.deepseek.com/v1" style="font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);min-width:0;width:100%;box-sizing:border-box"></label>
-      <label class="row"><span>모델 이름<small id="aiModelHint">예: gemini-3.5-flash-lite</small></span><input id="aiModel" placeholder="gemini-3.5-flash-lite" style="font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);min-width:0;width:100%;box-sizing:border-box"></label>
-      <label class="row"><span>API 키<small id="aiKeyHint">Google AI Studio → Get API key</small></span><input id="aiKey" type="password" placeholder="API 키" autocomplete="off" style="font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);min-width:0;width:100%;box-sizing:border-box"></label>
-      <label class="row"><span>답변 길이</span><select id="aiLen"><option value="short">짧게 (3~5문장)</option><option value="normal" selected>보통</option><option value="long">자세히</option></select></label>
-      <div class="dataops"><button class="btn" data-aipreset="gemini">Gemini 기본값</button><button class="btn" data-aipreset="claude">Claude 기본값</button><button class="btn" data-aipreset="deepseek">DeepSeek 기본값</button><button class="btn" data-aipreset="openai">OpenAI 기본값</button></div>
-      <div class="dataops" style="margin-top:8px"><button class="btn primary" id="btnAiSave">저장</button><button class="btn" id="btnAiTest">연결 테스트</button><button class="btn" id="btnAiOff">키 지우기</button><span id="aiStatus" style="font-size:13px;color:var(--ink-2);align-self:center"></span></div>
+      <label class="row"><span>서비스</span>
+        <select id="aiService">
+          <option value="deepseek">DeepSeek — 가장 저렴, 중국어 강함</option>
+          <option value="gemini">Gemini (Google) — 무료 티어 있음</option>
+          <option value="claude">Claude (Anthropic) — 한국어 설명 좋음</option>
+          <option value="openai">OpenAI (ChatGPT)</option>
+          <option value="custom">기타 OpenAI 호환 서버 (주소 직접 입력)</option>
+        </select></label>
+      <label class="row" id="aiBaseRow" hidden><span>API 주소<small>OpenAI 형식(/chat/completions)을 따르는 서버 주소</small></span><input id="aiBase" placeholder="https://…/v1"></label>
+      <label class="row"><span>모델<small id="aiModelHint"></small></span>
+        <select id="aiModelSel"></select></label>
+      <label class="row" id="aiModelCustomRow" hidden><span>모델 이름 직접 입력</span><input id="aiModel" placeholder="모델 id"></label>
+      <label class="row"><span>API 키<small id="aiKeyHint"></small></span><input id="aiKey" type="password" placeholder="API 키 붙여넣기" autocomplete="off"></label>
+      <label class="row"><span>답변 길이<small>길수록 토큰(비용)이 더 듦</small></span><select id="aiLen"><option value="short">짧게 (3~5문장)</option><option value="normal" selected>보통</option><option value="long">자세히</option></select></label>
+      <div class="dataops"><button class="btn primary" id="btnAiSave">저장</button><button class="btn" id="btnAiTest">연결 테스트</button><button class="btn" id="btnAiOff">키 지우기</button></div>
+      <p id="aiStatus" style="margin:6px 0 0;font-size:13px;color:var(--ink-2)"></p>
     </div>
     <h3>데이터</h3>
     <p style="margin:0;font-size:13px;color:var(--ink-2)">학습 기록과 직접 입력한 한국어 뜻은 이 브라우저에만 저장됩니다. 다른 기기로 옮기려면 내보내기 → 붙여넣기 → 가져오기.</p>
@@ -1737,21 +1756,49 @@ $('pq').addEventListener('click', e => {
    설정에 넣은 API 키로 LLM 에게 직접 질문. 서버 없이 브라우저가 각 회사 API 를 바로 부른다.
    - Gemini: generateContent   - Claude: /v1/messages (브라우저 직접 호출 허용 헤더 필요)   - OpenAI 호환: /chat/completions (DeepSeek·OpenAI 등)
    키는 localStorage 'zh.ai' 에만 저장 — 동기화(SYNC_KEYS)·내보내기에 절대 포함하지 않음 */
-const AI_PRESETS = {
-  gemini:   { provider:'gemini', model:'gemini-3.5-flash-lite', base:'', modelHint:'예: gemini-3.5-flash-lite · gemini-3.8-flash', keyHint:'Google AI Studio (aistudio.google.com) → Get API key. 무료 티어 있음' },
-  claude:   { provider:'claude', model:'claude-haiku-4-5', base:'', modelHint:'예: claude-haiku-4-5 · claude-sonnet-5', keyHint:'platform.claude.com → API keys' },
-  deepseek: { provider:'openai', model:'deepseek-flash', base:'https://api.deepseek.com/v1', modelHint:'예: deepseek-flash · deepseek-v4-pro', keyHint:'platform.deepseek.com → API keys' },
-  openai:   { provider:'openai', model:'gpt-5.4-nano', base:'https://api.openai.com/v1', modelHint:'예: gpt-5.4-nano · gpt-5.4-mini', keyHint:'platform.openai.com → API keys' },
+// 서비스별 기본 주소·모델 목록. 모델 이름은 각 회사 문서 기준 (2026-09). 목록에 없는 새 모델은 '직접 입력' 으로
+const AI_SERVICES = {
+  deepseek: { provider:'openai', base:'https://api.deepseek.com/v1', keyHint:'platform.deepseek.com → API keys (Top up 로 충전 후)',
+              models:[['deepseek-flash','deepseek-flash — 추천 (질문당 1~2원)'],['deepseek-v4-pro','deepseek-v4-pro — 더 똑똑, 3~5배 비쌈']] },
+  gemini:   { provider:'gemini', base:'', keyHint:'Google AI Studio (aistudio.google.com) → Get API key',
+              models:[['gemini-3.5-flash-lite','gemini-3.5-flash-lite — 추천 (무료 티어·저렴)'],['gemini-3.8-flash','gemini-3.8-flash — 더 똑똑'],['gemini-2.5-flash','gemini-2.5-flash'],['gemini-2.5-pro','gemini-2.5-pro — 비쌈']] },
+  claude:   { provider:'claude', base:'', keyHint:'platform.claude.com → API keys',
+              models:[['claude-haiku-4-5','claude-haiku-4-5 — 추천 (질문당 5~6원)'],['claude-sonnet-5','claude-sonnet-5 — 더 똑똑 (약 12원)'],['claude-opus-5','claude-opus-5 — 비쌈']] },
+  openai:   { provider:'openai', base:'https://api.openai.com/v1', keyHint:'platform.openai.com → API keys',
+              models:[['gpt-5.4-nano','gpt-5.4-nano — 추천 (저렴)'],['gpt-5.4-mini','gpt-5.4-mini — 더 똑똑'],['gpt-5.4','gpt-5.4 — 비쌈']] },
+  custom:   { provider:'openai', base:'', keyHint:'그 서버가 발급한 키', models:[] },
 };
-const AI = Object.assign({ provider:'gemini', model:'gemini-3.5-flash-lite', base:'', key:'', len:'normal' }, store.get('zh.ai', {}));
+const AI = Object.assign({ service:'deepseek', provider:'openai', model:'deepseek-flash', base:'https://api.deepseek.com/v1', key:'', len:'normal' }, store.get('zh.ai', {}));
+if (!AI.service) AI.service = AI.provider==='gemini' ? 'gemini' : AI.provider==='claude' ? 'claude' : /deepseek/.test(AI.base) ? 'deepseek' : /openai\.com/.test(AI.base) ? 'openai' : 'custom';
 const AI_NOTES = store.get('zh.ai_notes', {});   // { 문맥키: [{q, a, t}] } 답변 저장 (같은 질문에 또 토큰 안 쓰게). 이 기기에만
-function aiFormFill(){ $('aiProvider').value = AI.provider; $('aiBase').value = AI.base || ''; $('aiModel').value = AI.model || ''; $('aiKey').value = AI.key || ''; $('aiLen').value = AI.len || 'normal'; aiFormHints(); }
-function aiFormHints(){ const pv = $('aiProvider').value; $('aiBaseRow').hidden = pv !== 'openai'; const pr = pv==='gemini' ? AI_PRESETS.gemini : pv==='claude' ? AI_PRESETS.claude : AI_PRESETS.deepseek; $('aiModelHint').textContent = pr.modelHint; $('aiKeyHint').textContent = pv==='openai' ? 'DeepSeek: platform.deepseek.com · OpenAI: platform.openai.com' : pr.keyHint; $('aiStatus').textContent = AI.key ? `저장됨 · ${AI.provider} · ${AI.model}` : '키가 없어요'; }
-$('aiProvider').onchange = aiFormHints;
-document.querySelectorAll('[data-aipreset]').forEach(b => b.onclick = () => { const pr = AI_PRESETS[b.dataset.aipreset]; $('aiProvider').value = pr.provider; $('aiBase').value = pr.base; $('aiModel').value = pr.model; aiFormHints(); });
-$('btnAiSave').onclick = () => { Object.assign(AI, { provider: $('aiProvider').value, base: $('aiBase').value.trim().replace(/\/$/, ''), model: $('aiModel').value.trim(), key: $('aiKey').value.trim(), len: $('aiLen').value }); store.set('zh.ai', AI); aiFormHints(); showToast('저장했어요'); };
+function aiModelOptions(service, selected){
+  const sv = AI_SERVICES[service]; const known = sv.models.some(m => m[0] === selected);
+  $('aiModelSel').innerHTML = sv.models.map(([id, label]) => `<option value="${id}">${label}</option>`).join('') + `<option value="__custom__">직접 입력…</option>`;
+  $('aiModelSel').value = known ? selected : '__custom__';
+  $('aiModelCustomRow').hidden = known; if (!known) $('aiModel').value = selected || '';
+}
+function aiFormFill(){
+  $('aiService').value = AI.service; $('aiBase').value = AI.base || ''; $('aiKey').value = AI.key || ''; $('aiLen').value = AI.len || 'normal';
+  aiModelOptions(AI.service, AI.model); aiFormHints();
+}
+function aiFormHints(){
+  const sv = AI_SERVICES[$('aiService').value];
+  $('aiBaseRow').hidden = $('aiService').value !== 'custom';
+  $('aiKeyHint').textContent = sv.keyHint;
+  $('aiModelHint').textContent = sv.models.length ? '— 뒤는 참고 설명. 목록에 없는 모델은 직접 입력' : '이 서버가 제공하는 모델 id 를 직접 입력';
+  $('aiStatus').textContent = AI.key ? `저장됨 · ${AI.service} · ${AI.model}` : '아직 키가 없어요 — 키를 넣고 저장 → 연결 테스트';
+}
+$('aiService').onchange = () => { const sv = AI_SERVICES[$('aiService').value]; $('aiBase').value = sv.base; aiModelOptions($('aiService').value, sv.models[0] ? sv.models[0][0] : ''); aiFormHints(); };
+$('aiModelSel').onchange = () => { $('aiModelCustomRow').hidden = $('aiModelSel').value !== '__custom__'; if ($('aiModelSel').value === '__custom__') $('aiModel').focus(); };
+function aiReadForm(){
+  const service = $('aiService').value, sv = AI_SERVICES[service];
+  const model = $('aiModelSel').value === '__custom__' ? $('aiModel').value.trim() : $('aiModelSel').value;
+  Object.assign(AI, { service, provider: sv.provider, base: (service === 'custom' ? $('aiBase').value.trim() : sv.base).replace(/\/$/, ''), model, key: $('aiKey').value.trim(), len: $('aiLen').value });
+  store.set('zh.ai', AI);
+}
+$('btnAiSave').onclick = () => { aiReadForm(); aiFormHints(); showToast('저장했어요'); };
 $('btnAiOff').onclick = () => { AI.key = ''; store.set('zh.ai', AI); $('aiKey').value = ''; aiFormHints(); };
-$('btnAiTest').onclick = async () => { $('btnAiSave').click(); $('aiStatus').textContent = '연결 중…'; try{ const a = await aiCall('연결 테스트입니다. "你好" 의 병음과 뜻을 한 줄로 답하세요.', '짧게 답하세요.'); $('aiStatus').textContent = '✓ ' + a.slice(0, 60); }catch(e){ $('aiStatus').textContent = '✕ ' + e.message; } };
+$('btnAiTest').onclick = async () => { aiReadForm(); if (!AI.model){ $('aiStatus').textContent = '모델 이름을 고르거나 입력해 주세요'; return; } $('aiStatus').textContent = '연결 중…'; try{ const a = await aiCall('연결 테스트입니다. "你好" 의 병음과 뜻을 한 줄로 답하세요.', '짧게 답하세요.'); $('aiStatus').textContent = '✓ 연결 성공 · ' + a.slice(0, 60); }catch(e){ $('aiStatus').textContent = '✕ ' + e.message + (/(Failed to fetch|NetworkError)/i.test(e.message) ? ' — 브라우저에서 직접 호출이 막힌 서버(CORS)이거나 인터넷 문제예요' : ''); } };
 aiFormFill();
 function aiSystem(){
   const len = AI.len==='short' ? '3~5문장으로 짧게' : AI.len==='long' ? '필요하면 자세히(600자 이내)' : '핵심만 400자 이내로';
