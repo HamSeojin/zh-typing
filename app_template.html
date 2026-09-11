@@ -776,6 +776,7 @@ details.more summary::-webkit-details-marker{display:none}
       <textarea class="io" id="io" placeholder='여기에 백업 텍스트를 붙여넣고 "가져오기"'></textarea>
     </details>
     <div class="dataops" style="margin-top:14px"><button class="btn small danger" id="btnResetProg">학습 기록 초기화…</button></div>
+    <p id="diag" style="margin:6px 0 0;font-size:11px;color:var(--ink-2);font-family:var(--mono)"></p>
     <p style="margin:6px 0 0;font-size:12px;color:var(--ink-2)">단어 <b id="totalWords"></b>개 · 출처: HSK 3.0 목록 + CC-CEDICT (영어 뜻) · 한국어 뜻 입력됨: <b id="koCount">0</b>개</p>
   </div>
   </div>
@@ -1883,7 +1884,7 @@ function go(name){
   curScreen = name; $('app').scrollTo({ top: 0 });
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); }
-  if (name === 'more') renderStats();
+  if (name === 'more'){ renderStats(); renderDiag(); }
   if (name === 'read') renderReadList();
   if (name === 'gram') renderGramList();
   if (name === 'exam') renderExamHome();
@@ -1930,6 +1931,14 @@ function sessTitleText(){
   const m = MODES[SETTINGS.study] || MODES.test;
   if (session && session.type !== 'unit') return `${session.meta && session.meta.label ? session.meta.label : session.type==='review' ? '복습' : '내 단어장'} · ${m.name}`;
   const u = units()[currentUnitIndex()]; return `${u ? u.label.replace(/ \(.*\)$/, '') : ''} · ${m.name}`;
+}
+// 화면 배치 진단 (문제 생겼을 때 숫자를 보고 원인을 찾기 위한 것)
+function renderDiag(){
+  try{
+    const tb = $('tabbar').getBoundingClientRect(), sab = getComputedStyle(document.documentElement).getPropertyValue('--sab') || '';
+    const probe = document.createElement('div'); probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);width:1px;visibility:hidden'; document.body.appendChild(probe); const sa = probe.getBoundingClientRect().height; probe.remove();
+    $('diag').textContent = `진단 ${$('appVer').textContent} · 화면 ${innerWidth}×${innerHeight} · 문서 ${document.documentElement.clientHeight} · 탭바 ${Math.round(tb.top)}~${Math.round(tb.bottom)} · 안전영역(아래) ${Math.round(sa)} · standalone ${navigator.standalone===true ? 'Y' : 'N'} · 배율 ${SETTINGS.zoom||1}`;
+  }catch(e){}
 }
 function renderHome(){
   updateStats(); renderUnitBar();
