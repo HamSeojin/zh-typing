@@ -136,6 +136,10 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .pq .opts{display:grid;gap:6px}
 .pq .opts button{font:inherit;font-family:var(--hanzi);font-size:17px;text-align:left;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer}
 .pq .opts button small{font-family:var(--body);font-size:12px;color:var(--ink-2);display:block}
+.pq .opts button .otext{pointer-events:none}   /* 보기 글자 자체는 버튼 클릭으로 처리 (단어 풍선은 .tok 만) */
+.pq .opts button .otext .tok{pointer-events:auto;border-bottom:1px dotted var(--line)}
+.pq .q .tok,.ptitle .tok{cursor:pointer;border-bottom:1px dotted var(--line)}
+.pq .q .tok.sel,.ptitle .tok.sel,.pq .opts .tok.sel{background:var(--good-bg)}
 .pq .opts button.good{border-color:var(--good);background:var(--good-bg)}
 .pq .opts button.bad{border-color:var(--bad);background:var(--bad-bg)}
 .pq .pres{font-size:14px;padding:8px 0}
@@ -148,6 +152,26 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .popup .acts button{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer;white-space:nowrap;flex:1 1 auto}
 .popup .acts button[data-close]{flex:0 0 auto}
 @media (max-width:480px){.ptext{font-size:20px}.ptitle{font-size:21px}}
+/* 모의고사 */
+.exam-body{padding-block:10px}
+.exam-body .ezh{font-family:var(--hanzi);font-size:24px;line-height:1.7}
+.exam-body .ezh .tok{cursor:pointer}
+.exam-body .eq{font-family:var(--hanzi);font-size:20px;margin-top:8px}
+.exam-body .eopts{display:grid;gap:8px;margin-top:10px}
+.exam-body .eopts button,.exam-body .tfbtns button{font:inherit;font-family:var(--hanzi);font-size:19px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer}
+.exam-body .eopts button[aria-pressed="true"],.exam-body .tfbtns button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--good-bg)}
+.exam-body .tfbtns{display:flex;gap:10px;margin-top:12px}
+.exam-body .tfbtns button{flex:1;text-align:center;font-family:var(--body);font-weight:600}
+.exam-body .blank{display:inline-block;min-width:2.2em;border-bottom:2px solid var(--accent);text-align:center;color:var(--accent)}
+.exam-body .dlgnote{font-size:13px;color:var(--ink-2);margin-top:6px}
+.exam-body .listen{font-size:40px;text-align:center;padding:10px;color:var(--ink-2)}
+.exam-body .osents{display:grid;gap:8px;margin-top:8px}
+.exam-body .osents button{font:inherit;font-family:var(--hanzi);font-size:19px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer;display:flex;gap:10px;align-items:center}
+.exam-body .osents button .n{font-family:var(--mono);font-size:13px;color:var(--accent);min-width:1.4em}
+.exam-review{display:grid;gap:10px;margin-top:14px}
+.exam-review .ri{padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+.exam-review .ri.bad{border-color:var(--bad)}
+.exam-review .ri b{font-family:var(--hanzi);font-weight:500}
 /* 통계 */
 .sk-h{margin:0 0 12px;font-size:14px;font-weight:700}
 .sk-h small{font-weight:400;color:var(--ink-2);margin-left:6px}
@@ -309,6 +333,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <nav role="tablist">
   <button role="tab" aria-selected="true" data-tab="study">학습</button>
   <button role="tab" aria-selected="false" data-tab="read">읽기</button>
+  <button role="tab" aria-selected="false" data-tab="exam">모의고사</button>
   <button role="tab" aria-selected="false" data-tab="stats">통계</button>
   <button role="tab" aria-selected="false" data-tab="mine">내 단어장</button>
   <button role="tab" aria-selected="false" data-tab="list">전체 단어</button>
@@ -411,6 +436,9 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <label><input type="radio" name="readLv" value="2">2급</label>
       <label><input type="radio" name="readLv" value="3">3급</label>
       <label><input type="radio" name="readLv" value="4">4급</label>
+      <label><input type="radio" name="readLv" value="5">5급</label>
+      <label><input type="radio" name="readLv" value="6">6급</label>
+      <label><input type="radio" name="readLv" value="7">7~9급</label>
       <span id="readCount" style="margin-left:auto"></span>
     </div>
     <div class="card" style="padding:8px 12px"><div class="plist" id="plist"></div></div>
@@ -429,6 +457,40 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
       <div class="pq" id="pq"></div>
     </div>
   </div>
+</section>
+
+<!-- ───────── 모의고사 탭 ───────── -->
+<section class="panel" id="tab-exam" hidden>
+  <div id="examHome">
+    <div class="card" style="margin-bottom:14px">
+      <h3 class="sk-h">HSK 3.0 모의고사 <small>실제 시험 유형·비율을 본뜬 40문항 · 기출 아님</small></h3>
+      <div class="lvbar" id="examLv">급수
+        <label><input type="radio" name="examLv" value="1" checked>1급</label>
+        <label><input type="radio" name="examLv" value="2">2급</label>
+        <label><input type="radio" name="examLv" value="3">3급</label>
+      </div>
+      <p class="hint" style="font-size:13px;color:var(--ink-2);margin:0 0 10px">듣기 16(판단 8 · 대화 8) · 독해 16(빈칸 8 · 순서 4 · 글 4) · 쓰기 8(어순) — 제한 시간 30분. 듣기는 자동 재생되고 🔊로 두 번까지 다시 들을 수 있어요.</p>
+      <div class="dataops"><button class="btn primary" id="btnExamStart">시험 시작</button><a class="btn" href="https://www.chinesetest.cn/HSK" target="_blank" rel="noopener" style="text-decoration:none">공식 샘플 시험지 (chinesetest.cn)</a></div>
+    </div>
+    <div class="card"><h3 class="sk-h">지난 시험</h3><div class="lvprog" id="examHistory"></div></div>
+  </div>
+  <div id="examRun" hidden>
+    <div class="unitbar">
+      <span id="examPos" class="hint" style="font-size:13px"></span>
+      <span id="examTimer" style="font-family:var(--mono);margin-left:auto;font-size:15px"></span>
+      <button class="btn" id="btnExamQuit">중단</button>
+    </div>
+    <div class="uprog"><div class="uprog-bar" id="examBar"></div></div>
+    <div class="card" id="examCard" style="margin-top:12px">
+      <div class="q-meta"><span id="examType"></span><span class="box" id="examSec"></span></div>
+      <div id="examBody" class="exam-body"></div>
+      <div class="dataops" style="margin-top:14px;justify-content:space-between">
+        <button class="btn icon" id="btnExamSpeak" title="다시 듣기">🔊 <span id="examReplay"></span></button>
+        <button class="btn primary" id="btnExamNext">다음 →</button>
+      </div>
+    </div>
+  </div>
+  <div id="examResult" class="card result" hidden></div>
 </section>
 
 <!-- ───────── 통계 탭 ───────── -->
@@ -577,6 +639,7 @@ td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowra
 <script id="sents" type="application/json">__SENTS_JSON__</script>
 <script id="strokes" type="application/json">__STROKES_JSON__</script>
 <script id="passages" type="application/json">__PASSAGES_JSON__</script>
+<script id="exam" type="application/json">__EXAM_JSON__</script>
 <script>/* hanzi-writer (MIT, https://github.com/chanind/hanzi-writer) — 획순 애니메이션·쓰기 퀴즈 라이브러리 */
 __HANZI_WRITER_JS__</script>
 <script>
@@ -593,6 +656,19 @@ function sentOf(w){ return SENTS[String(w.id)] || null; }
 const BY_S = new Map(WORDS.map(w => [w.s, w]));   // 간체 → 단어
 // 읽기 글: [{id, lv, title, sents:[{zh, seg, py, ko}], qs:[{q, qpy, qko, opts, optsko, ans}]}]
 const PASSAGES = (JSON.parse(document.getElementById('passages').textContent || '{}').passages) || [];
+const EXAM_BANK = (JSON.parse(document.getElementById('exam').textContent || '{}').bank) || {};   // 모의고사 문항 은행 {급수: {tf, dlg, order}}
+// 띄어쓰기 정보가 없는 중국어 문자열을 단어로 쪼갬: 사전(BY_S)에서 가장 긴 것부터 맞춰 보는 방식(최장 일치). 제목·문제·보기용
+function segment(zh){
+  const out = []; let i = 0; const chars = [...zh];
+  while (i < chars.length){
+    let hit = null;
+    for (let L = Math.min(4, chars.length - i); L >= 1; L--){ const cand = chars.slice(i, i+L).join(''); if (BY_S.has(cand)){ hit = cand; break; } }
+    if (!hit) hit = chars[i];
+    out.push(hit); i += [...hit].length;
+  }
+  return out;
+}
+function tapHtml(zh){ return segment(zh).map(tok => /[\u4e00-\u9fff]/.test(tok) ? `<span class="tok" data-tok="${tok}">${tok}</span>` : `<span class="punct">${tok}</span>`).join(''); }
 const BY_ID = new Map(WORDS.map(w => [w.id, w]));
 
 /* ── localStorage: 브라우저가 제공하는 작은 저장 공간(키-값). 새로고침해도 남음.
@@ -601,10 +677,11 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.exams']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
+const EXAMS = store.get('zh.exams', []);        // 모의고사 결과 [{t, lv, score, total, sec:{...}}]
 function bump(obj, key, ok){ const o = obj[key] || (obj[key] = {n:0, ok:0}); o.n++; if (ok) o.ok++; }
 const KO       = store.get('zh.ko', {});        // { "你好": "안녕하세요" }
 // 내 단어장: 별표(FAV)로 담은 HSK 단어 + 직접 추가한 단어(CUSTOM). 직접 추가한 단어는 id 100000 부터
@@ -1309,6 +1386,7 @@ document.querySelectorAll('nav [role=tab]').forEach(b => b.onclick = () => {
   if (b.dataset.tab==='mine') renderMine();
   if (b.dataset.tab==='stats') renderStats();
   if (b.dataset.tab==='read') renderReadList();
+  if (b.dataset.tab==='exam') renderExamHome();
   if (b.dataset.tab==='study') ans.focus();
 });
 
@@ -1372,9 +1450,9 @@ function openPassage(id){
   curPassage = PASSAGES.find(p => p.id === id); if (!curPassage) return;
   readAns = curPassage.qs.map(()=>-1);
   $('readList').hidden = true; $('reader').hidden = false;
-  $('ptitle').textContent = curPassage.title;
+  $('ptitle').innerHTML = tapHtml(curPassage.title);
   renderPassageText();
-  $('pq').innerHTML = curPassage.qs.map((q,qi) => `<div class="qblock" data-qi="${qi}"><div class="q">${qi+1}. ${q.q}<small class="qko" hidden>${q.qko}</small></div><div class="opts">${q.opts.map((o,oi)=>`<button data-qi="${qi}" data-oi="${oi}">${o}<small hidden>${q.optsko[oi]||''}</small></button>`).join('')}</div><div class="pres"></div></div>`).join('');
+  $('pq').innerHTML = curPassage.qs.map((q,qi) => `<div class="qblock" data-qi="${qi}"><div class="q">${qi+1}. ${tapHtml(q.q)}<small class="qko" hidden>${q.qko}</small></div><div class="opts">${q.opts.map((o,oi)=>`<button data-qi="${qi}" data-oi="${oi}"><span class="otext">${tapHtml(o)}</span><small hidden>${q.optsko[oi]||''}</small></button>`).join('')}</div><div class="pres"></div></div>`).join('');
   window.scrollTo({top:0});
 }
 function renderPassageText(){
@@ -1398,7 +1476,7 @@ function showLookup(el){
     `<div class="acts"><button data-say="${tok}">🔊 발음</button>${ws.length===1?`<button data-fav="${ws[0].id}">${isFav(ws[0].id)?'★ 내 단어장에서 빼기':'☆ 내 단어장에 담기'}</button>`:''}<button data-close="1">닫기</button></div>`;
 }
 // 읽기 본문 · 학습 카드의 문장 · 내 문장 목록 어디서든 단어를 누르면 풍선
-for (const id of ['ptext','qHanzi','mineSents']) $(id).addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
+for (const id of ['ptext','qHanzi','mineSents','ptitle','examBody']) $(id).addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
 $('popup').addEventListener('click', e => {
   const s = e.target.closest('[data-say]'); if (s) speak(s.dataset.say);
   const f = e.target.closest('[data-fav]'); if (f){ const on = toggleFav(+f.dataset.fav); f.textContent = on ? '★ 내 단어장에서 빼기' : '☆ 내 단어장에 담기'; showToast(on?'내 단어장에 담았어요':'뺐어요'); }
@@ -1406,6 +1484,7 @@ $('popup').addEventListener('click', e => {
 });
 // 문제 풀기: 보기를 누르면 바로 채점. 2문제 다 풀면 결과 저장
 $('pq').addEventListener('click', e => {
+  const tk = e.target.closest('.tok'); if (tk){ showLookup(tk); return; }   // 문제·보기 속 단어 → 사전 풍선 (보기 선택은 단어 밖을 누르면)
   const b = e.target.closest('[data-oi]'); if (!b) return;
   const qi = +b.dataset.qi, oi = +b.dataset.oi; if (readAns[qi] >= 0) return;
   readAns[qi] = oi; const q = curPassage.qs[qi], ok = oi === q.ans;
@@ -1421,6 +1500,133 @@ $('pq').addEventListener('click', e => {
   }
   updateStats();
 });
+
+/* ═══════════ 모의고사 ═══════════
+   구성(40문항): 듣기 판단 8 · 대화 듣기 8 · 독해 빈칸 8 · 문장 순서 4 · 글 읽기 4(2편×2문) · 쓰기 어순 8. 30분.
+   빈칸·어순은 예문에서, 글 읽기는 읽기 탭 글에서 자동 출제. 나머지는 문항 은행에서. */
+const EXAM_TIME = 30 * 60;
+let exam = null, examTick = null;
+const pick = (arr, n) => { const a = arr.slice(); for (let i = a.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a.slice(0, n); };
+function examLv(){ return +(document.querySelector('#examLv input:checked')||{value:1}).value; }
+function buildExam(lv){
+  const bank = EXAM_BANK[String(lv)] || {tf:[], dlg:[], order:[]};
+  const lvWords = WORDS.filter(w => w.lv <= lv && sentOf(w));
+  const items = [];
+  pick(bank.tf, 8).forEach(it => items.push({ type:'tf', sec:'듣기 · 판단', ...it }));
+  pick(bank.dlg, 8).forEach(it => items.push({ type:'dlg', sec:'듣기 · 대화', ...it }));
+  // 독해 빈칸: 예문의 학습 단어를 빈칸으로, 오답 보기는 같은 급수·같은 품사 단어
+  for (const w of pick(lvWords, 8)){
+    const st = sentOf(w); const pos = (w.pos||[])[0];
+    const pool = lvWords.filter(x => x.id !== w.id && (!pos || (x.pos||[])[0] === pos) && [...x.s].length === [...w.s].length);
+    const distract = pick(pool.length >= 2 ? pool : lvWords.filter(x => x.id !== w.id), 2).map(x => x.s);
+    const opts = pick([w.s, ...distract], 3);
+    items.push({ type:'cloze', sec:'독해 · 빈칸', zh: st.zh, word: w, wordId: w.id, opts, ans: opts.indexOf(w.s), ko: st.ko });
+  }
+  pick(bank.order, 4).forEach(it => items.push({ type:'order', sec:'독해 · 순서', ...it }));
+  // 글 읽기: 해당 급수 글 2편 × 문제 2
+  for (const p of pick(PASSAGES.filter(p => p.lv === lv), 2)) p.qs.slice(0,2).forEach((q, qi) => items.push({ type:'read', sec:'독해 · 글', passage: p, q, first: qi === 0 }));
+  // 쓰기 어순
+  for (const w of pick(lvWords.filter(w => sentOf(w).seg.length >= 4 && sentOf(w).seg.length <= 8), 8)){ const st = sentOf(w); items.push({ type:'wo', sec:'쓰기 · 어순', st, wordId: w.id }); }
+  return items;
+}
+function startExam(){
+  const lv = examLv(); const items = buildExam(lv);
+  if (!items.length){ showToast('이 급수의 문항이 없어요'); return; }
+  exam = { lv, items, i: 0, ans: items.map(()=>null), start: Date.now(), left: EXAM_TIME, replay: 0 };
+  $('examHome').hidden = true; $('examResult').hidden = true; $('examRun').hidden = false;
+  clearInterval(examTick); examTick = setInterval(() => { exam.left = EXAM_TIME - Math.floor((Date.now()-exam.start)/1000); const m = Math.max(0, exam.left); $('examTimer').textContent = `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; if (exam.left <= 0) finishExam(true); }, 500);
+  renderExamItem();
+}
+function renderExamItem(){
+  const it = exam.items[exam.i]; exam.replay = 0;
+  $('examPos').textContent = `${exam.i+1} / ${exam.items.length}`; $('examBar').style.setProperty('--p', Math.round(exam.i/exam.items.length*100)+'%');
+  $('examType').textContent = it.sec; $('examSec').textContent = '';
+  const body = $('examBody'); const saved = exam.ans[exam.i];
+  const listen = it.type === 'tf' || it.type === 'dlg';
+  $('btnExamSpeak').hidden = !listen; $('examReplay').textContent = listen ? '(2회 남음)' : '';
+  $('btnExamNext').textContent = exam.i === exam.items.length-1 ? '제출' : '다음 →';
+  if (it.type === 'tf'){
+    body.innerHTML = `<div class="listen">🎧</div><div class="ezh">${tapHtml(it.shown)}</div><div class="dlgnote">들은 문장과 뜻이 같으면 ✓, 다르면 ✗</div>
+      <div class="tfbtns"><button data-tf="1" aria-pressed="${saved===true}">✓ 같다</button><button data-tf="0" aria-pressed="${saved===false}">✗ 다르다</button></div>`;
+    setTimeout(() => speak(it.audio), 300);
+  } else if (it.type === 'dlg'){
+    body.innerHTML = `<div class="listen">🎧</div><div class="dlgnote">대화를 듣고 질문에 답하세요</div><div class="eq">${tapHtml(it.q)}</div>
+      <div class="eopts">${it.opts.map((o,i)=>`<button data-oi="${i}" aria-pressed="${saved===i}">${String.fromCharCode(65+i)}. ${tapHtml(o)}</button>`).join('')}</div>`;
+    setTimeout(() => speakDialogue(it), 300);
+  } else if (it.type === 'cloze'){
+    const zh = it.zh.replace(it.word.s, `<span class="blank">${saved!=null ? it.opts[saved] : '　'}</span>`);
+    body.innerHTML = `<div class="ezh">${zh}</div><div class="eopts">${it.opts.map((o,i)=>`<button data-oi="${i}" aria-pressed="${saved===i}">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>`;
+  } else if (it.type === 'order'){
+    if (!it.shuf) it.shuf = pick([0,1,2], 3);
+    const cur = saved || [];
+    body.innerHTML = `<div class="dlgnote">문장을 올바른 순서대로 누르세요 (다시 누르면 취소)</div><div class="osents">${it.shuf.map((si,k)=>`<button data-si="${si}"><span class="n">${cur.indexOf(si)>=0 ? cur.indexOf(si)+1 : '·'}</span><span>${tapHtml(it.sents[si])}</span></button>`).join('')}</div>`;
+  } else if (it.type === 'read'){
+    const p = it.passage;
+    body.innerHTML = `<div class="ezh" style="font-size:20px">${p.sents.map(s=>tapHtml(s.zh)).join('')}</div><div class="eq" style="margin-top:12px">${tapHtml(it.q.q)}</div>
+      <div class="eopts">${it.q.opts.map((o,i)=>`<button data-oi="${i}" aria-pressed="${saved===i}">${String.fromCharCode(65+i)}. ${tapHtml(o)}</button>`).join('')}</div>`;
+  } else if (it.type === 'wo'){
+    if (!it.pool) it.pool = pick(it.st.seg.map((tok,i)=>({tok,i})), it.st.seg.length);
+    const built = saved || [];
+    body.innerHTML = `<div class="dlgnote">어절을 순서대로 눌러 문장을 완성하세요 (완성된 문장의 어절을 누르면 되돌아감)</div>
+      <div class="tokens built" id="ebuilt">${built.map((o,k)=>`<button type="button" data-b="${k}">${o.tok}</button>`).join('') || '<span style="color:var(--ink-2);font-size:13px">여기에 문장이 만들어져요</span>'}</div>
+      <div class="tokens pool" id="epool">${it.pool.filter(o => !built.some(b => b.i === o.i)).map(o=>`<button type="button" data-p="${o.i}">${o.tok}</button>`).join('')}</div>`;
+  }
+}
+function speakDialogue(it){
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const parts = [it.a, it.b, it.q];
+  parts.forEach((txt, k) => { const u = new SpeechSynthesisUtterance(txt); u.lang = 'zh-CN'; u.rate = SETTINGS.rate; const v = voices.find(v=>v.name===optVoice.value) || voices[0]; if (v) u.voice = v; if (k === 2) u.pitch = 0.9; speechSynthesis.speak(u); });
+}
+$('btnExamSpeak').onclick = () => { const it = exam.items[exam.i]; if (exam.replay >= 2){ showToast('다시 듣기는 2회까지'); return; } exam.replay++; $('examReplay').textContent = `(${2-exam.replay}회 남음)`; if (it.type==='tf') speak(it.audio); else speakDialogue(it); };
+$('examBody').addEventListener('click', e => {
+  if (e.target.closest('.tok')) return;   // 단어 풍선은 공용 핸들러가 처리
+  const it = exam.items[exam.i];
+  const tf = e.target.closest('[data-tf]'); if (tf){ exam.ans[exam.i] = tf.dataset.tf === '1'; renderExamItem(); return; }
+  const oi = e.target.closest('[data-oi]'); if (oi){ exam.ans[exam.i] = +oi.dataset.oi; renderExamItem(); return; }
+  const si = e.target.closest('[data-si]'); if (si){ const cur = exam.ans[exam.i] || []; const v = +si.dataset.si; const k = cur.indexOf(v); if (k >= 0) cur.splice(k,1); else cur.push(v); exam.ans[exam.i] = cur; renderExamItem(); return; }
+  const pb = e.target.closest('[data-p]'); if (pb){ const cur = exam.ans[exam.i] || []; const o = it.pool.find(x => x.i === +pb.dataset.p); cur.push(o); exam.ans[exam.i] = cur; renderExamItem(); return; }
+  const bb = e.target.closest('[data-b]'); if (bb){ const cur = exam.ans[exam.i] || []; cur.splice(+bb.dataset.b, 1); exam.ans[exam.i] = cur; renderExamItem(); return; }
+});
+$('btnExamNext').onclick = () => { if (exam.i < exam.items.length-1){ exam.i++; renderExamItem(); } else finishExam(false); };
+$('btnExamQuit').onclick = () => { if (confirm('시험을 중단할까요? 결과는 저장되지 않아요.')){ clearInterval(examTick); exam = null; renderExamHome(); } };
+function gradeItem(it, a){
+  if (a == null) return false;
+  if (it.type === 'tf') return a === it.ans;
+  if (it.type === 'dlg' || it.type === 'cloze') return a === it.ans;
+  if (it.type === 'read') return a === it.q.ans;
+  if (it.type === 'order') return a.length === 3 && a.every((v,k) => v === k);
+  if (it.type === 'wo') return stripSent(a.map(o=>o.tok).join('')) === stripSent(it.st.zh);
+  return false;
+}
+function finishExam(timeout){
+  clearInterval(examTick);
+  const secs = {}; let score = 0;
+  exam.items.forEach((it, i) => { const ok = gradeItem(it, exam.ans[i]); it.ok = ok; if (ok) score++; const s = secs[it.sec] || (secs[it.sec] = {n:0, ok:0}); s.n++; if (ok) s.ok++;
+    if (it.wordId != null){ markResult(it.wordId, ok, false); } });   // 빈칸·어순에 나온 단어는 학습 기록에도 반영
+  const total = exam.items.length, pct = Math.round(score/total*100), used = Math.min(EXAM_TIME, Math.floor((Date.now()-exam.start)/1000));
+  EXAMS.push({ t: Date.now(), lv: exam.lv, score, total, secs, used }); store.set('zh.exams', EXAMS);
+  TODAY.n += total; TODAY.ok += score; store.set('zh.today', TODAY); { const h = histToday(); h.n += total; h.ok += score; store.set('zh.history', HISTORY); }
+  $('examRun').hidden = true;
+  const secHtml = Object.entries(secs).map(([k,s]) => `<div class="row"><span>${k}</span><div class="track"><div class="fill" style="width:${s.ok/s.n*100}%"></div></div><span class="num">${s.ok} / ${s.n}</span></div>`).join('');
+  const wrong = exam.items.map((it,i) => ({it,i})).filter(x => !x.it.ok);
+  const desc = it => it.type==='tf' ? `들은 문장: ${it.audio} / 보인 문장: ${it.shown} → ${it.ans?'같다':'다르다'}` : it.type==='dlg' ? `${it.a} / ${it.b} / ${it.q} → ${it.opts[it.ans]}` : it.type==='cloze' ? `${it.zh} (${it.word.s})` : it.type==='order' ? it.sents.join(' ') : it.type==='read' ? `${it.q.q} → ${it.q.opts[it.q.ans]}` : it.st.zh;
+  $('examResult').innerHTML = `<h2>${exam.lv}급 모의고사 결과${timeout?' (시간 초과)':''}</h2>
+    <div class="res-stats"><div><b>${pct}%</b><span>정답률 (${score}/${total})</span></div><div><b>${pct>=60?'합격권':'미달'}</b><span>HSK 합격 기준 60%</span></div><div><b>${Math.floor(used/60)}분 ${used%60}초</b><span>소요 시간</span></div></div>
+    <div class="lvprog" style="margin-top:14px">${secHtml}</div>
+    <h3 class="sk-h" style="margin-top:16px">틀린 문항 ${wrong.length}개 <small>단어를 누르면 뜻이 보여요</small></h3>
+    <div class="exam-review">${wrong.map(({it,i}) => `<div class="ri bad"><small style="color:var(--ink-2)">${i+1}. ${it.sec}</small><br><b>${tapHtml(desc(it))}</b><br><small style="color:var(--ink-2)">${it.ko || (it.st&&it.st.ko) || (it.q&&it.q.qko) || ''}</small></div>`).join('') || '<div class="ri">모두 맞았어요 🎉</div>'}</div>
+    <div class="dataops" style="margin-top:16px"><button class="btn primary" id="btnExamAgain">다른 문제로 다시</button><button class="btn" id="btnExamHome">모의고사 홈</button></div>`;
+  $('examResult').hidden = false; exam = null;
+  $('btnExamAgain').onclick = startExam; $('btnExamHome').onclick = renderExamHome;
+  $('examResult').addEventListener('click', e => { const el = e.target.closest('.tok'); if (el) showLookup(el); });
+  updateStats(); window.scrollTo({top:0});
+}
+function renderExamHome(){
+  $('examRun').hidden = true; $('examResult').hidden = true; $('examHome').hidden = false;
+  $('examHistory').innerHTML = EXAMS.slice(-10).reverse().map(x => `<div class="row" style="grid-template-columns:auto 1fr auto"><span>${new Date(x.t).toLocaleDateString()} · ${x.lv}급</span><div class="track"><div class="fill" style="width:${x.score/x.total*100}%"></div></div><span class="num">${Math.round(x.score/x.total*100)}% (${x.score}/${x.total})</span></div>`).join('') || '<span style="color:var(--ink-2);font-size:13px">아직 본 시험이 없어요</span>';
+}
+$('btnExamStart').onclick = startExam;
 
 /* ═══════════ 통계 ═══════════ */
 function isoDay(d){ return d.toISOString().slice(0,10); }
@@ -1580,7 +1786,7 @@ $('pgNext').onclick = () => { page++; renderList(); };
 const SYNC_DOC = 'zh-typing-sync.json';
 let backend = null, syncTimer = null, syncing = false, lastSyncAt = 0;
 function setSyncStatus(msg){ const el = $('syncStatus'); if (el) el.textContent = msg; }
-function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, updatedAt: Date.now() }; }
+function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, exams: EXAMS, updatedAt: Date.now() }; }
 // 통계 기록 병합: 횟수는 큰 쪽을 취함 (두 기기가 각자 센 값 중 더 많이 센 쪽)
 function mergeStats(a, b){
   a = a || {mode:{},tone:{},confuse:{}}; b = b || {mode:{},tone:{},confuse:{}};
@@ -1601,6 +1807,7 @@ function mergeState(a, b){
   for (const k of keys(a.units, b.units)){ const p=a.units?.[k], q=b.units?.[k]; out.units[k] = !p ? q : !q ? p : ((q.t||0) > (p.t||0) ? q : p); }
   for (const k of keys(a.history, b.history)){ const p=a.history?.[k]||{}, q=b.history?.[k]||{}; out.history[k] = { n:Math.max(p.n||0,q.n||0), ok:Math.max(p.ok||0,q.ok||0), nw:Math.max(p.nw||0,q.nw||0), u:Math.max(p.u||0,q.u||0) }; }
   for (const k of keys(a.fav, b.fav)){ const p=a.fav?.[k]||0, q=b.fav?.[k]||0; out.fav[k] = Math.abs(q) > Math.abs(p) ? q : p; }
+  { const m = new Map(); for (const x of [...(a.exams||[]), ...(b.exams||[])]) m.set(x.t, x); out.exams = [...m.values()].sort((x,y)=>x.t-y.t).slice(-50); }
   out.fav_s = {}; for (const k of keys(a.fav_s, b.fav_s)){ const p=a.fav_s?.[k]||0, q=b.fav_s?.[k]||0; out.fav_s[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   for (const k of keys(a.custom_del, b.custom_del)) out.custom_del[k] = Math.max(a.custom_del?.[k]||0, b.custom_del?.[k]||0);
   const byId = new Map(); for (const w of [...(a.custom||[]), ...(b.custom||[])]) if (!byId.has(w.id) || (w.added||0) > (byId.get(w.id).added||0)) byId.set(w.id, w);
@@ -1613,8 +1820,9 @@ function applyState(s){   // 병합 결과를 앱의 메모리·localStorage 에
   swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(FAV_S, s.fav_s); swap(CUSTOM_DEL, s.custom_del);
   if (s.stats){ STATS.mode = s.stats.mode||{}; STATS.tone = s.stats.tone||{}; STATS.initial = s.stats.initial||{}; STATS.confuse = s.stats.confuse||{}; }
   swap(READ_DONE, s.read);
+  EXAMS.length = 0; for (const x of (s.exams||[])) EXAMS.push(x);
   CUSTOM.length = 0; for (const w of s.custom||[]) { CUSTOM.push(w); BY_ID.set(w.id, w); }
-  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE }[k])); }catch(e){} };
+  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE,'zh.exams':EXAMS }[k])); }catch(e){} };
   for (const k of SYNC_KEYS) silent(k);
 }
 // ── 백엔드 1: claude.ai 계정 저장소 (db). 문서 하나가 256KB 제한이라 진도는 1,000단어씩 쪼갬
@@ -1624,16 +1832,16 @@ function claudeBackend(db){
     name: 'claude.ai 계정 저장소',
     async pull(){
       const snap = await db.collection('zhsync').get(); if (snap.empty) return null;
-      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats:null, read:{}, updatedAt:0 };
-      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, fav_s:v.fav_s||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, updatedAt:v.updatedAt||0 }); } }
+      const s = { progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, custom:[], custom_del:{}, stats:null, read:{}, exams:[], updatedAt:0 };
+      for (const d of snap.docs){ const v = d.data(); if (d.id.startsWith('p')) Object.assign(s.progress, v.progress||{}); else if (d.id==='misc'){ Object.assign(s, { ko:v.ko||{}, ko_t:v.ko_t||{}, units:v.units||{}, history:v.history||{}, fav:v.fav||{}, fav_s:v.fav_s||{}, custom:v.custom||[], custom_del:v.custom_del||{}, stats:v.stats||null, read:v.read||{}, exams:v.exams||[], updatedAt:v.updatedAt||0 }); } }
       return s;
     },
     async push(s, prev){
       const shards = {}; for (const id in s.progress){ (shards[shard(id)] ||= {})[id] = s.progress[id]; }
       const prevShards = {}; for (const id in (prev?.progress||{})){ (prevShards[shard(id)] ||= {})[id] = prev.progress[id]; }
       for (const k in shards) if (JSON.stringify(shards[k]) !== JSON.stringify(prevShards[k]||{})) await db.doc('zhsync/'+k).set({ progress: shards[k] });
-      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, updatedAt:s.updatedAt };
-      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read } : null;
+      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, exams:s.exams, updatedAt:s.updatedAt };
+      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read, exams:prev.exams } : null;
       if (!prev || JSON.stringify({...misc, updatedAt:0}) !== JSON.stringify({...prevMisc, updatedAt:0})) await db.doc('zhsync/misc').set(misc);
     }
   };

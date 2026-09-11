@@ -23,7 +23,9 @@ HW = os.path.join("vendor", "node_modules", "hanzi-writer", "dist", "hanzi-write
 hw = open(HW, encoding="utf-8").read() if os.path.exists(HW) else ""
 passages = json.load(open("passages.json", encoding="utf-8")) if os.path.exists("passages.json") else {"passages": []}
 pblob = json.dumps(passages, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
-html = tpl.replace("__WORDS_JSON__", blob).replace("__SENTS_JSON__", sblob).replace("__STROKES_JSON__", kblob).replace("__PASSAGES_JSON__", pblob)
+exam = json.load(open("exam.json", encoding="utf-8")) if os.path.exists("exam.json") else {"bank": {}}
+eblob = json.dumps(exam, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
+html = tpl.replace("__WORDS_JSON__", blob).replace("__SENTS_JSON__", sblob).replace("__STROKES_JSON__", kblob).replace("__PASSAGES_JSON__", pblob).replace("__EXAM_JSON__", eblob)
 print("읽기 글", len(passages["passages"]), "편 포함")
 import datetime
 html = html.replace("__APP_VERSION__", "v" + datetime.datetime.now().strftime("%m%d.%H%M"))
