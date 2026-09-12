@@ -275,6 +275,7 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .toneArea{margin-top:10px;display:flex;flex-direction:column;gap:8px;align-items:center}
 .tone-syl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
 .tone-syl .syl{font-family:var(--mono);font-size:20px;min-width:64px;text-align:right}
+button,label,[role=button]{touch-action:manipulation}   /* 연타해도 iOS 가 '두 번 탭 확대'로 해석하지 않게 */
 .tone-syl button{font:inherit;font-family:var(--mono);font-size:16px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer;min-width:44px}
 .tone-syl button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--good-bg)}
 .tone-syl button.t1{color:var(--t1)}.tone-syl button.t2{color:var(--t2)}.tone-syl button.t3{color:var(--t3)}.tone-syl button.t4{color:var(--t4)}.tone-syl button.t5{color:var(--t5)}
@@ -612,7 +613,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0451</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.1611</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1236,8 +1237,8 @@ const MODES = {
   pinyin: { name:'한자→병음', desc:'한자 보고 병음 입력',            input:'pinyin', showH:true,  showP:false, showM:true,  speak:false },
   listen: { name:'듣고 쓰기', desc:'발음 듣고 (뜻 참고) 한자 입력', input:'hanzi',  showH:false, showP:false, showM:true,  speak:true  },
   write:  { name:'손으로 쓰기', desc:'뜻·병음 보고 획순대로 그리기',  input:'draw',   showH:false, showP:true,  showM:true,  speak:false },
-  tone:   { name:'성조 맞히기', desc:'발음 듣고 음절마다 성조 고르기',  input:'tone',   showH:false, showP:false, showM:true,  speak:true  },
-  initial:{ name:'자음 구별',   desc:'발음 듣고 ch/q, zh/j, sh/x 등 첫 자음 고르기', input:'initial', showH:false, showP:false, showM:true, speak:true },
+  tone:   { name:'성조 맞히기', desc:'발음 듣고 음절마다 성조 고르기',  input:'tone',   showH:false, showP:false, showM:false, speak:true  },   // 뜻을 보면 단어를 알아채 기억으로 맞히게 되므로 숨김 (힌트로 공개)
+  initial:{ name:'자음 구별',   desc:'발음 듣고 ch/q, zh/j, sh/x 등 첫 자음 고르기', input:'initial', showH:false, showP:false, showM:false, speak:true },
   say:    { name:'말하기',     desc:'단어를 소리 내어 읽으면 음성 인식으로 판정', input:'say', showH:true, showP:true, showM:true, speak:false },
   // 문장 연습 (예문이 있는 단어만 — 없으면 뜻→한자로 대체)
   cloze:  { name:'빈칸 채우기', desc:'예문의 빈칸에 들어갈 단어 입력', input:'hanzi', kind:'sent', showM:true, speak:false, group:'sent' },
@@ -1466,16 +1467,14 @@ function renderQuestion(){
     qKind.textContent = '발음을 듣고 음절의 첫 자음을 고르세요 (🔊 다시 듣기)';
     qHanzi.innerHTML = renderMask(cur.s, 0); qHanzi.className = 'hanzi';
     qPinyin.innerHTML = ''; qTrad.textContent = '';
-    qKo.textContent = SETTINGS.showKo ? (ko || '') : ''; qKo.className = 'ko';
-    qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0, 2).join(' ; ') : '';
+    qKo.textContent = ''; qKo.className = 'ko'; qEn.textContent = '';   // 뜻은 숨김 (힌트·답 확인 후 공개)
     document.querySelector('.answer').classList.add('hiddenInput');
     startInitialQuiz();
   } else if (M.input === 'tone'){
     qKind.textContent = '발음을 듣고 음절마다 성조를 고르세요 (키보드 1~5, 5=경성)';
     qHanzi.innerHTML = renderMask(cur.s, 0); qHanzi.className = 'hanzi';
     qPinyin.innerHTML = `<span style="color:var(--ink-2)">${tonelessPy(cur.py)}</span>`; qTrad.textContent = '';
-    qKo.textContent = SETTINGS.showKo ? (ko || '') : ''; qKo.className = 'ko';
-    qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0, 2).join(' ; ') : '';
+    qKo.textContent = ''; qKo.className = 'ko'; qEn.textContent = '';   // 뜻은 숨김 (힌트·답 확인 후 공개)
     document.querySelector('.answer').classList.add('hiddenInput');
     startToneQuiz();
   } else if (M.input === 'draw'){
@@ -1496,7 +1495,7 @@ function renderQuestion(){
   const showP = M.showP;
   qPinyin.innerHTML = showP ? renderPinyin(cur) : '';
   qTrad.textContent = [(SETTINGS.showTrad && cur.t && cur.t!==cur.s) ? `번체 ${cur.t}` : '', showP ? altText(cur) : ''].filter(Boolean).join('  ·  ');
-  qKo.textContent = (M.showM && SETTINGS.showKo) ? (ko || '(한국어 뜻 미입력)') : (M.showM ? '' : '🔊 발음을 듣고 입력하세요');
+  qKo.textContent = (M.showM && SETTINGS.showKo) ? (ko || '(한국어 뜻 미입력)') : (M.showM || ['tone','initial'].includes(SETTINGS.study) ? '' : '🔊 발음을 듣고 입력하세요');
   qKo.className = 'ko' + (ko && M.showM ? '' : ' empty');
   qEn.textContent = (M.showM && SETTINGS.showEn) ? cur.en.split(' ; ').slice(0, window.innerWidth < 480 ? 2 : 4).join(' ; ') : '';   // 영어 뜻은 앞 4개(폰은 2개)까지만
   }
@@ -1845,7 +1844,10 @@ function hint(){
   if (!cur || answered) return;
   hintUsed = true; hintLevel++;
   const chars = [...cur.s], pys = cur.py.split(' '), pyns = cur.pyn.split(' ');
-  if (mode().kind === 'sent'){
+  if (['tone','initial'].includes(SETTINGS.study)){
+    // 성조·자음 모드: 병음을 보여주면 답이 그대로 드러나므로 힌트 = 뜻 공개
+    const ko = KO[cur.s] || cur.ko; qKo.textContent = ko; qKo.className = 'ko'; qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0,2).join(' ; ') : ''; qBox.textContent = '힌트: 뜻 공개';
+  } else if (mode().kind === 'sent'){
     // 문장 모드: 힌트 = 문장 전체 병음 (빈칸 자리도 병음이 보이니 사실상 답에 가까움 → 복습 대상)
     qPinyin.innerHTML = `<span style="font-size:.8em">${sentOf(cur).py}</span>`; qBox.textContent = '힌트: 문장 병음 공개';
   } else if (mode().input==='pinyin'){
