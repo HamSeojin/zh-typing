@@ -603,7 +603,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0124</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0134</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1291,7 +1291,7 @@ function currentUnitIndex(){ const us = units(); const i = us.findIndex(u => u.k
 function startUnit(i){
   const us = units(); if (!us.length) return;
   i = Math.max(0, Math.min(i, us.length-1));
-  SETTINGS.unit = us[i].key; store.set('zh.settings', SETTINGS);
+  SETTINGS.unit = us[i].key; (SETTINGS.lastUnit = SETTINGS.lastUnit || {})[SETTINGS.levels.join('_')] = us[i].key; store.set('zh.settings', SETTINGS);   // 급수별로 마지막 과를 기억
   startSession('unit', us[i].words, { key: us[i].key, label: us[i].label, index: i });
 }
 function dueWords(){ const now = Date.now(); return WORDS.filter(w => PROGRESS[w.id] && PROGRESS[w.id].due <= now); }
@@ -1899,10 +1899,12 @@ const lvInputs = [...document.querySelectorAll('#lvbar input')];
 lvInputs.forEach(i => { i.checked = SETTINGS.levels.includes(+i.value); i.onclick = (e) => {
   if (!e.shiftKey) lvInputs.forEach(x => { if (x!==i) x.checked = false; });
   i.checked = true;
-  SETTINGS.levels = lvInputs.filter(x=>x.checked).map(x=>+x.value);
-  store.set('zh.settings', SETTINGS);
-  const us = units(); const firstUndone = us.findIndex(u => !UNITS_DONE[u.key]);
-  startUnit(firstUndone < 0 ? 0 : firstUndone);   // 그 급수에서 아직 안 끝낸 첫 과부터
+  const next = lvInputs.filter(x=>x.checked).map(x=>+x.value);
+  if (next.join(',') === SETTINGS.levels.join(',')) return;   // 이미 고른 급수를 다시 눌러도 지금 과를 유지 (전에는 1과로 되돌아갔음)
+  SETTINGS.levels = next; store.set('zh.settings', SETTINGS);
+  const us = units(); const lastKey = (SETTINGS.lastUnit || {})[SETTINGS.levels.join('_')]; const last = us.findIndex(u => u.key === lastKey);
+  const firstUndone = us.findIndex(u => !UNITS_DONE[u.key]);
+  startUnit(last >= 0 ? last : firstUndone < 0 ? 0 : firstUndone);   // 그 급수에서 마지막으로 공부하던 과, 없으면 아직 안 끝낸 첫 과부터
 }});
 // 학습 모드 버튼
 function renderModeBar(){
