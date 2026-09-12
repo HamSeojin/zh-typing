@@ -603,7 +603,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0018</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0124</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1416,6 +1416,7 @@ const ans=$('ans'), fb=$('fb'), koInput=$('koInput'), toast=$('toast');
 const ttsState=$('ttsState'), optVoice=$('optVoice');
 
 let cur = null, answered = false, hintUsed = false;
+let cardSpoken = false;   // 지금 카드의 발음을 이미 들려줬는지 (시작 시트가 열린 채 만들어진 카드는 아직 안 들려준 상태)
 
 function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'), 1600); }
 
@@ -1485,8 +1486,11 @@ function renderQuestion(){
   }
   koInput.value = ko || '';
   updateStar();
-  if (!['order','write','tone','say','initial'].includes(SETTINGS.study)) ans.focus();
-  if (M.speak || SETTINGS.autoSpeak) speak(M.kind==='sent' ? sentOf(cur).zh : cur.s);
+  // 시작 시트가 열려 있거나(급수·방식 고르는 중) 세션 화면이 아닐 때는 소리·키보드를 띄우지 않음 — '시작'을 누를 때 들려줌
+  const quiet = !$('startSheet').hidden || !onScreen('session');
+  if (!quiet && !['order','write','tone','say','initial'].includes(SETTINGS.study)) ans.focus();
+  cardSpoken = false;
+  if (!quiet && (M.speak || SETTINGS.autoSpeak)){ cardSpoken = true; speak(M.kind==='sent' ? sentOf(cur).zh : cur.s); }
   updateStats(); renderUnitBar();
   if (window.innerWidth < 480 && session && session.answered > 0){ const r = $('quizCard').getBoundingClientRect(); if (r.top < 0 || r.top > 120) $('quizCard').scrollIntoView({ block:'start', behavior:'smooth' }); }
 }
@@ -1937,6 +1941,7 @@ function go(name){
   $('popup').hidden = true; $('aiSheet').hidden = true; closeStartSheet();
   if (typ && name !== 'typing'){ clearInterval(typ.tick); typ = null; }
   curScreen = name; $('app').scrollTo({ top: 0 });
+  if (name === 'session') speakCardIfPending();   // 시트/홈에서 만들어져 아직 안 들려준 카드는 세션 화면에 들어올 때 들려줌
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); }
   if (name === 'more') renderStats();
@@ -1979,6 +1984,7 @@ $('backdrop').onclick = closeStartSheet;
 document.querySelectorAll('[data-start]').forEach(b => b.onclick = () => openStartSheet(b.dataset.start));
 $('btnStartClose').onclick = closeStartSheet;
 $('btnStartGo').onclick = () => { closeStartSheet(); if (!session || session.type !== 'unit') startUnit(currentUnitIndex()); go('session'); };
+function speakCardIfPending(){ if (!cur || cardSpoken || answered) return; const M = mode(); if (M.speak || SETTINGS.autoSpeak){ cardSpoken = true; speak(M.kind==='sent' ? sentOf(cur).zh : cur.s); } if (!['order','write','tone','say','initial'].includes(SETTINGS.study)) ans.focus(); }
 $('sessTitle').onclick = () => openStartSheet(MODES[SETTINGS.study].group ? 'sent' : 'word');
 $('heroContinue').onclick = () => { if (!session || session.type !== 'unit') startUnit(currentUnitIndex()); go('session'); };
 $('btnHomeReview').onclick = () => { if (!dueWords().length){ showToast('복습할 단어가 아직 없어요'); return; } startReview(); go('session'); };
