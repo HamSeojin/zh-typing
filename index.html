@@ -473,19 +473,22 @@ body{display:flex;flex-direction:column;margin:0}
 .notes .n .q::before{content:'Q ';font-weight:700;color:var(--accent)}
 .notes .n .a{font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:4.8em;overflow:hidden;position:relative}
 .notes .n.open .a{max-height:none}
-.notes .n .meta{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11px;color:var(--ink-2)}
-.notes .n .meta button{font:inherit;font-size:11px;background:none;border:0;color:var(--accent);cursor:pointer;padding:0}
+.notes .n .meta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:6px;font-size:12px;color:var(--ink-2)}
+.notes .n .meta button{font:inherit;font-size:12px;background:none;border:0;color:var(--accent);cursor:pointer;padding:2px 0;white-space:nowrap}
 .notes .n .meta button.del{color:var(--bad)}
 .notes .n.star{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
 .notes .n .meta button.on{color:#d9a400}
 .notes .a mark{background:color-mix(in srgb,#ffd54a 55%,transparent);color:inherit;border-radius:3px;padding:0 1px}
-.notes .hls{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
-.notes .hls mark{background:#ffe98a;color:var(--ink);border-radius:6px;padding:3px 8px;font-size:13px;line-height:1.5}
+.notes .n .a.only{max-height:none}   /* 형광펜·메모 탭: 칠한 문장만 보이므로 접지 않음 */
+.notes .n .a .ell{color:var(--ink-3);padding:0 2px}
 .notes .memo{margin-top:6px;font-size:13px;color:var(--ink);background:var(--good-bg);border-left:3px solid var(--accent);padding:6px 8px;border-radius:6px;white-space:pre-wrap}
 .seg.small{margin-bottom:8px}.seg.small button{font-size:12px;padding:5px 4px}
 .notes .n .a{-webkit-user-select:text;user-select:text}
-.notes .n.hlmode .a .s{cursor:pointer;border-radius:4px}
-.notes .n.hlmode .a .s:hover{background:color-mix(in srgb,#ffd54a 25%,transparent)}
+.notes .n .a .b{font-weight:700}
+.notes .n .a .hl{background:#ffe98a;color:var(--ink);border-radius:2px}
+.notes .n.hlmode .a{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.notes .n.hlmode .a .tk{cursor:pointer;border-radius:4px;padding:1px 0}
+.notes .n.hlmode .a .tk:hover{background:color-mix(in srgb,#ffd54a 25%,transparent)}
 .notes .n.hlmode{box-shadow:0 0 0 2px color-mix(in srgb,#ffd54a 60%,transparent)}
 .notes .n .meta button.on{color:#7a5a00;font-weight:700;background:#ffe98a;border-radius:6px;padding:0 6px}
 /* 타자 연습 */
@@ -600,7 +603,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2348</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2358</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -2389,32 +2392,60 @@ function aiNoteLabel(key){
 let aiNoteFilter = 'all';   // all | star | hl
 function aiTouch(n){ n.u = Date.now(); store.set('zh.ai_notes', AI_NOTES); }
 // 답변 본문에 형광펜(hl: 사용자가 고른 문구들)을 <mark> 로 입힘
-function aiFmtHl(text, hl){
-  // ① 형광펜 구절을 원문(서식 없는 글자) 위에서 찾아 표식 문자( 시작,  끝)로 감싼다 — 서식(굵게, 한자 span)을 입힌 뒤에 찾으면
-  //    한자 덩어리 일부('我去过' 중 '去过')나 굵게 경계에 걸친 구절을 못 찾기 때문. 긴 구절부터 칠해 짧은 구절이 안쪽에 겹치게 함
-  // ② 줄 단위로 나눠 단락·목록 줄바꿈은 그대로 두고, 줄 안에서만 문장(。.!?)으로 잘라 <span class="s"> 로 감싼다 (형광펜 모드에서 문장 탭용)
-  //    **굵게** 가 문장 경계에 걸리면 짝이 맞을 때까지 한 덩어리로 합침. 표식이 문장 경계를 넘으면 조각마다 <mark> 를 다시 열고 닫음
-  const list = [...new Set((hl || []).filter(Boolean))].sort((a, b) => b.length - a.length);
-  let src = text.replace(/\n{3,}/g, '\n\n');
-  for (const h of list){ const esc = h.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); src = src.replace(new RegExp(esc, 'g'), m => '' + m + ''); }
-  const set = new Set(list); let open = false;
-  const one = raw => { const pt = raw.replace(/[]/g, ''); const whole = set.has(pt);
-    let html = aiFmt(raw); const opens = (raw.match(//g) || []).length, closes = (raw.match(//g) || []).length;
-    html = (open ? '<mark>' : '') + html.replace(//g, '<mark>').replace(//g, '</mark>');
-    const endOpen = opens > closes || (open && opens === closes); if (endOpen) html += '</mark>'; open = endOpen;
-    return `<span class="s ${whole ? 'hl' : ''}" data-s="${pt.replace(/"/g,'&quot;')}">${html}</span>`; };
-  return src.split('\n').map(line => {
-    if (!line.trim()) return '';
-    const raw = line.split(/(?<=[^\d][.!?])\s+|(?<=[。！？])\s*/).map(x => x.trim()).filter(Boolean);
-    const parts = []; let buf = '';
-    for (const r of raw){ buf = buf ? buf + ' ' + r : r; if ((buf.match(/\*\*/g) || []).length % 2 === 0){ parts.push(buf); buf = ''; } }
-    if (buf) parts.push(buf);
-    return parts.map(one).join(' ');
-  }).join('\n');
+/* ── AI 노트 형광펜 ──
+   저장: it.hlr = [[시작, 끝], …] — 답변을 '보이는 글자'(aiPlain: ** 와 # 를 걷어낸 문자열) 기준 글자 번호로 기록.
+   글자 번호는 기기·브라우저와 무관하게 같으므로 동기화해도 어긋나지 않음. 형광펜 모드에서는 어절(토큰)을 탭할 때마다 그 어절 범위를 넣고 빼는 것뿐
+   그리기: 글자 경계(토큰·굵게·형광펜·한자·줄바꿈)를 모두 모아 균일한 조각(atom)으로 자르고, 조각마다 class 만 붙여 span 하나로 그림 — 태그가 겹칠 일이 없음 */
+function aiPlain(a){   // 마크다운 기호를 걷어낸 표시용 문자열 + 굵게 범위
+  const t = a.replace(/\n{3,}/g, '\n\n').replace(/^#+[ \t]*/gm, '').replace(/^[ \t]*[*\-•][ \t]+/gm, '• ');
+  let p = '', open = -1; const bold = [];
+  for (let i = 0; i < t.length; i++){ if (t[i] === '*' && t[i+1] === '*'){ if (open < 0) open = p.length; else { if (p.length > open) bold.push([open, p.length]); open = -1; } i++; continue; } p += t[i]; }
+  return { p, bold };
 }
+const aiSeg = (typeof Intl !== 'undefined' && Intl.Segmenter) ? new Intl.Segmenter('zh-Hans', { granularity: 'word' }) : null;
+function aiTokens(p){   // 탭 단위: 한자는 낱말(사전 기반 분절, 지원 안 되면 한 글자), 한글·영문은 띄어쓰기 단위
+  const out = [];
+  if (aiSeg){ for (const sg of aiSeg.segment(p)) if (sg.isWordLike) out.push([sg.index, sg.index + sg.segment.length]); return out; }
+  const re = /[一-鿿]|[A-Za-z0-9À-ɏḀ-ỿ']+|[가-힣]+/g; let m; while ((m = re.exec(p))) out.push([m.index, m.index + m[0].length]); return out;
+}
+function aiMigrateHl(it){   // 예전 방식(구절 문자열 it.hl)을 글자 번호 범위로 옮김
+  if (!it.hl || it.hlr) return; const { p } = aiPlain(it.a); it.hlr = [];
+  for (const h of it.hl){ const k = p.indexOf(h); if (k >= 0) it.hlr.push([k, k + h.length]); } delete it.hl;
+}
+function aiHlTexts(it){ aiMigrateHl(it); if (!it.hlr || !it.hlr.length) return []; const { p } = aiPlain(it.a);
+  const rs = it.hlr.slice().sort((a, b) => a[0] - b[0]); const out = []; let cur = null;   // 붙어 있는 범위는 한 구절로 합쳐 보여줌
+  for (const r of rs){ if (cur && r[0] <= cur[1] + 1 && !/\n/.test(p.slice(cur[1], r[0]))) cur[1] = Math.max(cur[1], r[1]); else { if (cur) out.push(cur); cur = r.slice(); } } if (cur) out.push(cur);
+  return out.map(r => p.slice(r[0], r[1]).trim()).filter(Boolean); }
+function aiFmtHl(it, onlyHl){
+  aiMigrateHl(it); const { p, bold } = aiPlain(it.a); const hl = it.hlr || []; const toks = aiTokens(p);
+  const esc = x => x.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  // 조각 경계 모으기
+  const cuts = new Set([0, p.length]);
+  for (const [a, b] of toks){ cuts.add(a); cuts.add(b); } for (const [a, b] of bold){ cuts.add(a); cuts.add(b); } for (const [a, b] of hl){ cuts.add(a); cuts.add(b); }
+  let m; const zhRe = /[一-鿿]+/g; while ((m = zhRe.exec(p))){ cuts.add(m.index); cuts.add(m.index + m[0].length); }
+  const nlRe = /\n/g; while ((m = nlRe.exec(p))){ cuts.add(m.index); cuts.add(m.index + 1); }
+  const sents = []; { let st = 0; const sre = /[。！？]|[^\d][.!?](?=\s|$)|\n/g; let m2; while ((m2 = sre.exec(p))){ const e = m2.index + m2[0].length; sents.push([st, e]); cuts.add(e); st = e; } if (st < p.length) sents.push([st, p.length]); }
+  const pts = [...cuts].sort((a, b) => a - b);
+  const inR = (rs, a, b) => rs.some(r => r[0] <= a && b <= r[1]);
+  const tokOf = a => toks.find(r => r[0] <= a && a < r[1]);
+  const atom = (a, b) => { const txt = p.slice(a, b); if (txt === '\n') return '\n'; const tk = tokOf(a);
+    const cls = [tk ? 'tk' : '', inR(bold, a, b) ? 'b' : '', inR(hl, a, b) ? 'hl' : '', /^[一-鿿]+$/.test(txt) ? 'zh' : ''].filter(Boolean).join(' ');
+    return `<span class="${cls}"${tk ? ` data-r="${tk[0]},${tk[1]}"` : ''}>${esc(txt)}</span>`; };
+  if (!onlyHl){ let h = ''; for (let k = 0; k + 1 < pts.length; k++) h += atom(pts[k], pts[k+1]); return h; }
+  // 형광펜·메모 탭: 형광펜이 든 문장만 남기고 나머지는 … 로
+  let h = '', gap = false, first = true;
+  for (const [a, b] of sents){ const keep = hl.some(r => r[0] < b && a < r[1]);
+    if (!keep){ gap = true; continue; }
+    if (gap && !first) h += ' <span class="ell">…</span> '; else if (gap) h += '<span class="ell">…</span> ';
+    gap = false; first = false;
+    for (let k = 0; k + 1 < pts.length; k++){ if (pts[k] >= a && pts[k+1] <= b) h += atom(pts[k], pts[k+1]); } }
+  if (gap && !first) h += ' <span class="ell">…</span>';
+  return h.replace(/\n(\s*<span class="ell">…<\/span>\s*)?$/,'').replace(/^\n+/, '');
+}
+
 function renderAiNotes(){
   const q = ($('aiNoteQ').value || '').trim().toLowerCase();
-  const keep = n => !n.del && (aiNoteFilter === 'all' || (aiNoteFilter === 'star' && n.star) || (aiNoteFilter === 'hl' && ((n.hl && n.hl.length) || n.memo))) && (!q || (n.q + n.a + (n.memo||'') + (n.hl||[]).join(' ')).toLowerCase().includes(q));
+  const keep = n => !n.del && (aiNoteFilter === 'all' || (aiNoteFilter === 'star' && n.star) || (aiNoteFilter === 'hl' && (aiHlTexts(n).length || n.memo))) && (!q || (n.q + n.a + (n.memo||'')).toLowerCase().includes(q));
   const groups = Object.entries(AI_NOTES).map(([k, arr]) => ({ k, arr: arr.filter(keep) })).filter(g => g.arr.length);
   groups.sort((a, b) => Math.max(...b.arr.map(n => n.t)) - Math.max(...a.arr.map(n => n.t)));
   const total = Object.values(AI_NOTES).flat().filter(n => !n.del).length, stars = Object.values(AI_NOTES).flat().filter(n => !n.del && n.star).length;
@@ -2422,49 +2453,40 @@ function renderAiNotes(){
   $('aiNoteList').innerHTML = groups.map(g => { const lb = aiNoteLabel(g.k); if (!lb) return ''; return `<div class="nctx"><b>${lb.label}</b><button class="btn small" data-nopen="${g.k}">🤖 이어서 묻기</button></div>` +
     g.arr.slice().reverse().map(n => `<div class="n ${n.star?'star':''}" data-nk="${g.k}" data-nt="${n.t}">
       <div class="q">${aiFmt(n.q)}</div>
-      ${aiNoteFilter === 'hl' && n.hl && n.hl.length ? `<div class="hls">${n.hl.map(h => `<mark>${aiFmt(h)}</mark>`).join('')}</div>` : ''}
-      <div class="a">${aiFmtHl(n.a, n.hl)}</div>
+      <div class="a ${aiNoteFilter === 'hl' && aiHlTexts(n).length ? 'only' : ''}">${aiFmtHl(n, aiNoteFilter === 'hl' && aiHlTexts(n).length > 0)}</div>
       ${n.memo ? `<div class="memo">✎ ${aiFmt(n.memo)}</div>` : ''}
       <div class="meta"><span>${new Date(n.t).toLocaleDateString()}</span>
         <button data-nstar="1" class="${n.star?'on':''}" title="중요 표시">${n.star?'★':'☆'}</button>
-        <button data-nhl="1" title="형광펜 모드 켜기/끄기(문장을 탭해서 칠하기). 글자를 골라 둔 뒤 누르면 그 부분만">🖍 형광펜</button>
+        <button data-nhl="1" title="형광펜 모드 켜기/끄기 — 켜진 동안 단어를 탭하면 칠해지고, 다시 탭하면 지워져요">🖍 형광펜</button>
         <button data-nmemo="1" title="내 메모">✎ 메모</button>
         <button data-ncopy="1">복사</button>
         <button data-ntoggle="1">${'펼치기'}</button>
-        <button class="del" data-ndel="1">삭제</button></div></div>`).join(''); }).join('')
+        <button class="del" data-ndel="1">${aiNoteFilter === 'hl' ? '표시 지우기' : '삭제'}</button></div></div>`).join(''); }).join('')
     || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q || aiNoteFilter!=='all' ? '해당하는 노트가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 🤖 묻기를 눌러 보세요.'}</p>`;
 }
 $('aiNoteQ').oninput = renderAiNotes;
 $('aiNoteFilters').addEventListener('click', e => { const b = e.target.closest('[data-nf]'); if (b){ aiNoteFilter = b.dataset.nf; renderAiNotes(); } });
-let hlDownAt = 0;
 function noteOf(el){ const arr = AI_NOTES[el.dataset.nk] || []; return arr.find(x => String(x.t) === el.dataset.nt); }
-// 형광펜: 버튼을 '누르는 순간'(pointerdown) 선택된 글자를 읽는다 — 클릭이 끝나면 선택이 풀려 버리므로
-$('aiNoteList').addEventListener('pointerdown', e => {
-  const b = e.target.closest('[data-nhl]'); if (!b) return; e.preventDefault();
-  const n = b.closest('.n'), it = noteOf(n); if (!it) return;
-  const sel = (window.getSelection() ? window.getSelection().toString() : '').trim();
-  if (!sel){   // 고른 글자가 없으면 '형광펜 모드' 켜기/끄기: 모드에서는 문장을 탭할 때마다 그 문장이 칠해짐
-    const on = n.classList.toggle('hlmode'); n.classList.add('open'); b.classList.toggle('on', on); hlDownAt = Date.now();   // 글자를 바꾸지 않음 — 버튼 폭이 변하면 손가락 밑에 옆 버튼(메모)이 들어와 같이 눌림
-    showToast(on ? '문장을 탭하면 형광펜이 칠해져요' : '형광펜 모드를 껐어요'); return; }
-  hlDownAt = Date.now(); it.hl = it.hl || []; const i = it.hl.indexOf(sel);
-  if (i >= 0){ it.hl.splice(i, 1); showToast('형광펜을 지웠어요'); } else if (!it.a.includes(sel)){ showToast('답변 안의 글자만 칠할 수 있어요 (한 문장 안에서 골라 주세요)'); return; } else { it.hl.push(sel.slice(0, 200)); showToast('형광펜을 칠했어요'); }
-  aiTouch(it); window.getSelection().removeAllRanges(); const open = n.classList.contains('open'); renderAiNotes(); if (open){ const el = [...document.querySelectorAll('.n')].find(x => x.dataset.nt === n.dataset.nt); if (el) el.classList.add('open'); }
-});
+function aiRedraw(n, it){ const a = n.querySelector('.a'); a.innerHTML = aiFmtHl(it, a.classList.contains('only')); }
 $('aiNoteList').addEventListener('click', e => {
   const o = e.target.closest('[data-nopen]'); if (o){ const lb = aiNoteLabel(o.dataset.nopen); if (lb) aiOpen(lb.ctx()); return; }
   const n = e.target.closest('.n'); if (!n) return; const it = noteOf(n);
-  if (e.target.closest('[data-nhl]') || Date.now() - hlDownAt < 500) return;   // 형광펜은 pointerdown 에서 처리. 직후 0.5초는 다른 버튼 클릭도 무시(형광펜 버튼을 뗄 때 옆 버튼에 걸리는 것 방지)
-  if (e.target.closest('[data-ntoggle]')){ n.classList.toggle('open'); e.target.closest('[data-ntoggle]').textContent = n.classList.contains('open') ? '접기' : '펼치기'; return; }
+  if (e.target.closest('[data-nhl]')){ if (!it) return; const on = n.classList.toggle('hlmode'); n.classList.add('open'); e.target.closest('[data-nhl]').classList.toggle('on', on);   // 버튼 글자는 안 바꿈(폭이 변하면 옆 버튼이 손가락 밑에 들어옴)
+    if (on){ const a = n.querySelector('.a'); if (a.classList.contains('only')){ a.classList.remove('only'); aiRedraw(n, it); } showToast('단어를 탭하면 칠해지고, 다시 탭하면 지워져요'); } return; }
+  if (e.target.closest('[data-ntoggle]')){ const a = n.querySelector('.a'); if (a.classList.contains('only') && it){ a.classList.remove('only'); aiRedraw(n, it); }   // 형광펜·메모 탭에서 '펼치기' → 답변 전체
+    n.classList.toggle('open'); e.target.closest('[data-ntoggle]').textContent = n.classList.contains('open') ? '접기' : '펼치기'; return; }
   if (e.target.closest('[data-nstar]')){ if (it){ it.star = it.star ? 0 : 1; aiTouch(it); } renderAiNotes(); return; }
   if (e.target.closest('[data-nmemo]')){ if (!it) return; const m = prompt('이 답변에 붙일 메모 (비우면 삭제)', it.memo || ''); if (m === null) return; it.memo = m.trim(); aiTouch(it); renderAiNotes(); return; }
   if (e.target.closest('[data-ncopy]')){ if (!it) return; const text = `Q: ${it.q}\nA: ${it.a}${it.memo ? '\n메모: ' + it.memo : ''}`; navigator.clipboard.writeText(text).then(() => showToast('복사했어요')).catch(() => showToast('복사 실패')); return; }
-  if (e.target.closest('[data-ndel]')){ if (it){ it.del = 1; aiTouch(it); } renderAiNotes(); return; }
-  // 형광펜 모드에서 문장을 탭하면 그 문장 전체를 칠하거나 지움
-  const sp = e.target.closest('.a .s'); if (sp && n.classList.contains('hlmode') && it){ const t = sp.dataset.s; it.hl = it.hl || []; const i = it.hl.indexOf(t); if (i >= 0) it.hl.splice(i, 1); else it.hl.push(t); aiTouch(it); sp.outerHTML = ''; n.querySelector('.a').innerHTML = aiFmtHl(it.a, it.hl); return; }
+  if (e.target.closest('[data-ndel]')){ if (it){ if (aiNoteFilter === 'hl'){ it.hlr = []; delete it.hl; it.memo = ''; showToast('형광펜과 메모를 지웠어요'); } else it.del = 1; aiTouch(it); } renderAiNotes(); return; }
+  // 형광펜 모드: 어절을 탭하면 그 범위를 넣고, 이미 칠해진 곳을 탭하면 겹치는 범위를 뺌 (겹쳐 칠하기 없음)
+  const tk = e.target.closest('.a .tk'); if (tk && n.classList.contains('hlmode') && it){ const [a, b] = tk.dataset.r.split(',').map(Number); aiMigrateHl(it); it.hlr = it.hlr || [];
+    const hit = it.hlr.filter(r => r[0] < b && a < r[1]); if (hit.length) it.hlr = it.hlr.filter(r => !hit.includes(r)); else it.hlr.push([a, b]);
+    aiTouch(it); aiRedraw(n, it); return; }
 });
 function aiNotesText(){
   const lines = [`# AI 선생님 문답 노트 (${new Date().toLocaleDateString()})`, ''];
-  for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label.replace(/<[^>]+>/g,'')}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${n.hl && n.hl.length ? '\n  형광펜: ' + n.hl.join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
+  for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label.replace(/<[^>]+>/g,'')}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${aiHlTexts(n).length ? '\n  형광펜: ' + aiHlTexts(n).join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
   return lines.join('\n');
 }
 $('btnAiNoteCopy').onclick = async () => { const text = aiNotesText(); try{ await navigator.clipboard.writeText(text); showToast('복사했어요 — 메모 앱 등에 붙여넣기'); }catch(e){ $('io').value = text; showToast('더보기 → 설정 → 데이터 칸에 넣어 뒀어요'); } };
