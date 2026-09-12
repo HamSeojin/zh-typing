@@ -93,6 +93,15 @@ nav::-webkit-scrollbar{display:none}
 .res-wrong .w{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-size:14px}
 .res-wrong .w b{font-family:var(--hanzi);font-size:18px;font-weight:500;margin-right:6px}
 .res-wrong .w small{color:var(--ink-2)}
+/* 과 완료 화면: 같은 과를 다른 방식으로 이어서 하기 */
+.res-modes{margin-top:16px}
+.res-modes h4{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.res-modes .grid{display:flex;flex-wrap:wrap;gap:8px}
+.res-modes button{font:inherit;font-size:14px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:6px}
+.res-modes button.done{border-color:var(--accent);background:var(--good-bg)}
+.res-modes button.done small{color:var(--accent);font-weight:700}
+.res-modes button small{font-size:11px;color:var(--ink-2)}
+.res-modes .lab{flex:0 0 100%;font-size:12px;color:var(--ink-2);margin-top:2px}
 .q-meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-2);letter-spacing:.04em}
 .q-meta .box{font-family:var(--mono)}
 .prompt{text-align:center;padding-block:18px 8px;min-height:120px}
@@ -603,7 +612,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0134</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0451</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -836,10 +845,11 @@ details.more summary::-webkit-details-marker{display:none}
     <h2 id="resTitle">과 완료</h2>
     <div class="res-stats"><div><b id="resAcc">–</b><span>정답률</span></div><div><b id="resN">0</b><span>문제 수</span></div><div><b id="resWrong">0</b><span>틀린 단어</span></div></div>
     <div id="resWrongList" class="res-wrong"></div>
+    <div class="res-modes" id="resModes"></div>
     <div class="dataops" style="margin-top:16px">
-      <button class="btn primary" id="btnResNext">다음 과 →</button>
-      <button class="btn" id="btnResRetry">이 과 다시</button>
       <button class="btn" id="btnResWrong">틀린 것만 다시</button>
+      <button class="btn" id="btnResRetry">이 과 다시</button>
+      <button class="btn primary" id="btnResNext">다음 과 →</button>
     </div>
   </div>
 
@@ -1276,7 +1286,7 @@ function advance(ok){                    // 답을 확인한 뒤 큐 정리
 }
 function finishSession(){
   const s = session, acc = s.answered ? Math.round(s.ok / s.answered * 100) : 0;
-  if (s.type === 'unit'){ UNITS_DONE[s.meta.key] = { acc, date: dayKey(), t: Date.now() }; store.set('zh.units', UNITS_DONE); histToday().u++; store.set('zh.history', HISTORY); }
+  if (s.type === 'unit'){ const prev = UNITS_DONE[s.meta.key] || {}; UNITS_DONE[s.meta.key] = { acc, date: dayKey(), t: Date.now(), modes: Object.assign({}, prev.modes || {}, { [SETTINGS.study]: acc }) }; store.set('zh.units', UNITS_DONE); histToday().u++; store.set('zh.history', HISTORY); }
   if (s.type === 'examWrong'){ for (const id of s.ids) if (!s.wrong.has(id)) EXAM_WRONG[id] = -Date.now(); store.set('zh.exam_wrong', EXAM_WRONG); }   // 오답 복습에서 맞힌 단어는 목록에서 뺌
   $('resTitle').textContent = (s.type === 'review' ? '복습 완료' : (s.meta.label || '과') + ' 완료') + (acc === 100 ? ' 🎉' : '');
   $('btnResRetry').hidden = s.type === 'review';
@@ -1284,6 +1294,12 @@ function finishSession(){
   $('resWrongList').innerHTML = [...s.wrong].map(id => { const w = BY_ID.get(id); return `<span class="w"><b>${w.s}</b>${w.py} <small>${KO[w.s]||w.ko}</small></span>`; }).join('') || '<span style="color:var(--ink-2);font-size:13px">틀린 단어 없음</span>';
   $('btnResWrong').hidden = !s.wrong.size;
   $('btnResNext').textContent = s.type === 'unit' ? '다음 과 →' : '↩ 과 학습으로';
+  // 이 과를 다른 방식으로: 단어 방식 전부 + (예문이 있으면) 문장 방식. 이미 끝낸 방식은 ✓ 와 정답률 표시, 지금 방식은 뺌
+  if (s.type === 'unit'){ const done = (UNITS_DONE[s.meta.key] || {}).modes || {}; const hasSent = s.ids.some(id => sentOf(BY_ID.get(id)));
+    const chip = ([k, m]) => `<button data-resmode="${k}" class="${done[k] != null ? 'done' : ''}">${m.name}${done[k] != null ? `<small>✓ ${done[k]}%</small>` : ''}</button>`;
+    const es = Object.entries(MODES).filter(([k]) => k !== SETTINGS.study);
+    $('resModes').innerHTML = `<h4>이 과를 다른 방식으로</h4><div class="grid">${es.filter(([k,m]) => !m.group).map(chip).join('')}${hasSent ? `<span class="lab">문장</span>${es.filter(([k,m]) => m.group === 'sent').map(chip).join('')}` : ''}</div>`;
+    $('resModes').hidden = false; } else $('resModes').hidden = true;
   $('quizCard').hidden = true; $('resultCard').hidden = false;
   renderUnitBar();
 }
@@ -1630,19 +1646,20 @@ let initAns = [], initTargets = [], initOpts = [];
 function startInitialQuiz(){
   const syls = cur.pyn.split(/\s+/), marks = cur.py.split(/\s+/);
   initTargets = syls.map(s => splitInitial(s).ini); initOpts = initTargets.map(initialOptions);
-  initAns = initTargets.map((ini, i) => initOpts[i].length > 1 ? '' : ini);   // 보기가 하나뿐이면 자동으로 채움
+  initAns = initTargets.map((ini, i) => initOpts[i].length > 1 ? null : ini);   // 보기가 하나뿐이면 자동으로 채움 (첫 자음이 없는 음절은 '' 가 정답이므로 '아직 안 고름'은 null 로 구분)
   const area = $('toneArea'); area.hidden = false;
   area.innerHTML = syls.map((s, i) => { const { fin } = splitInitial(s); const tone = (s.match(/[1-5]$/)||['5'])[0];
     const finMark = marks[i] ? marks[i].slice(initTargets[i].length) : fin;   // 성조 부호 붙은 운모
     return `<div class="tone-syl" data-i="${i}"><span class="syl">${initOpts[i].length > 1 ? '<b style="color:var(--bad)">?</b>' : initTargets[i]}${finMark}</span>` +
       (initOpts[i].length > 1 ? initOpts[i].map(o => `<button type="button" data-i="${i}" data-ini="${o}" aria-pressed="false">${o}</button>`).join('') : '<small style="color:var(--ink-2)">자동</small>') + `</div>`; }).join('');
+  if (initAns.every(a => a !== null)){ finishInitial(); fb.innerHTML += ' <small style="color:var(--ink-2)">(헷갈리는 자음이 없는 단어라 자동 정답)</small>'; }   // 月(yuè)처럼 고를 게 없는 단어
   if (initAns.every(a => a)) { $('toneArea').innerHTML += '<div class="note" style="font-size:12px;color:var(--ink-2)">이 단어엔 헷갈리는 자음이 없어요 — 확인을 누르면 넘어가요</div>'; }
 }
 $('toneArea').addEventListener('click', e => { const b = e.target.closest('[data-ini]'); if (!b || answered) return; pickInitial(+b.dataset.i, b.dataset.ini); });
 function pickInitial(i, ini){
   if (answered) return; initAns[i] = ini;
   document.querySelectorAll(`#toneArea [data-i="${i}"][data-ini]`).forEach(b => b.setAttribute('aria-pressed', b.dataset.ini === ini));
-  if (initAns.every(a => a)) finishInitial();
+  if (initAns.every(a => a !== null)) finishInitial();
 }
 function finishInitial(){
   let ok = true;
@@ -1780,6 +1797,7 @@ function reveal(){
 function check(){
   if (!cur) return;
   if (answered){ renderQuestion(); return; }   // 두 번째 Enter = 다음 문제
+  if (SETTINGS.study === 'initial' && !initAns.every(a => a !== null)){ showToast('각 음절의 첫 자음을 골라 주세요'); return; }   // 자음 구별은 보기 버튼으로만 답함
   let raw = ans.value.trim();
   const M = mode(), isSent = M.kind === 'sent';
   if (M.input==='draw' && !raw){ if (!writers.length) return; hintUsed = true; ans.value = '(포기)'; writers.forEach(x => { try{ x.w.cancelQuiz(); x.w.showCharacter(); }catch(e){} }); raw = ans.value; }   // 안 그리고 확인 = 정답 보기(오답 처리)
@@ -1927,6 +1945,7 @@ $('btnUnitNext').onclick = () => startUnit(currentUnitIndex() + 1);
 $('btnReview').onclick = () => { if (session && session.type !== 'unit') startUnit(currentUnitIndex()); else startReview(); };
 $('btnResNext').onclick = () => { const i = currentUnitIndex(); if (session && session.type !== 'unit') startUnit(i); else if (i + 1 < units().length) startUnit(i + 1); else showToast('이 급수의 마지막 과예요'); };
 $('btnResRetry').onclick = () => { if (session.type==='mine') $('btnMineStudy').click(); else startUnit(currentUnitIndex()); };
+$('resModes').addEventListener('click', e => { const b = e.target.closest('[data-resmode]'); if (!b) return; SETTINGS.study = b.dataset.resmode; store.set('zh.settings', SETTINGS); renderModeBar(); startUnit(currentUnitIndex()); });
 $('btnResWrong').onclick = () => { const ws = [...session.wrong].map(id => BY_ID.get(id)); startSession('review', ws, {}); };
 // 탭
 /* ═══════════ 화면 전환 (라우터) ═══════════
@@ -2466,8 +2485,9 @@ function aiFmtHl(it, onlyHl, preview){   // preview: 드래그 중 미리 보여
 
 function renderAiNotes(){
   const q = ($('aiNoteQ').value || '').trim().toLowerCase();
-  const keep = n => !n.del && (aiNoteFilter === 'all' || (aiNoteFilter === 'star' && n.star) || (aiNoteFilter === 'hl' && (aiHlTexts(n).length || n.memo))) && (!q || (n.q + n.a + (n.memo||'')).toLowerCase().includes(q));
-  const groups = Object.entries(AI_NOTES).map(([k, arr]) => ({ k, arr: arr.filter(keep) })).filter(g => g.arr.length);
+  // 검색 대상: 질문 대상(제목 줄 — 한자·병음·한국어 뜻·문장·문법 이름) + 질문 글 + 답변 본문 + 내 메모
+  const keep = (n, head) => !n.del && (aiNoteFilter === 'all' || (aiNoteFilter === 'star' && n.star) || (aiNoteFilter === 'hl' && (aiHlTexts(n).length || n.memo))) && (!q || (head + ' ' + n.q + n.a + (n.memo||'')).toLowerCase().includes(q));
+  const groups = Object.entries(AI_NOTES).map(([k, arr]) => { const lb = aiNoteLabel(k); const head = lb ? lb.label.replace(/<[^>]+>/g, ' ') : ''; return { k, arr: arr.filter(n => keep(n, head)) }; }).filter(g => g.arr.length);
   groups.sort((a, b) => Math.max(...b.arr.map(n => n.t)) - Math.max(...a.arr.map(n => n.t)));
   const total = Object.values(AI_NOTES).flat().filter(n => !n.del).length, stars = Object.values(AI_NOTES).flat().filter(n => !n.del && n.star).length;
   $('aiNoteFilters').innerHTML = [['all',`전체 ${total}`],['star',`★ 중요 ${stars}`],['hl','형광펜·메모']].map(([k,l]) => `<button data-nf="${k}" aria-selected="${aiNoteFilter===k}">${l}</button>`).join('');
