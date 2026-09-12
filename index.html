@@ -603,7 +603,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0911.2358</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0004</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1191,12 +1191,15 @@ const SETTINGS = Object.assign({
   mode:'hanzi', showHanzi:false, showPinyin:false, showKo:true, showEn:true, showTrad:false,
   autoSpeak:false, voice:'', rate:0.9, mp3:true, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
 }, store.get('zh.settings', {}));
-const TODAY = store.get('zh.today', {date:'', n:0, ok:0});
-const dayKey = () => new Date().toISOString().slice(0,10);
-if (TODAY.date !== dayKey()) { TODAY.date = dayKey(); TODAY.n = 0; TODAY.ok = 0; }
+// 날짜 열쇠는 '기기의 현지 날짜'. (전에는 toISOString → 세계 표준시(UTC) 날짜라 한국에서는 아침 9시에 하루가 바뀌어 오늘 숫자가 0으로 돌아갔음)
+function localDay(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+const dayKey = () => localDay(new Date());
 // 일별 학습 기록: { "2026-09-10": {n:푼 문제, ok:정답, nw:처음 본 단어 수, u:끝낸 과 수} } — 통계 탭에서 사용
 const HISTORY = store.get('zh.history', {});
 function histToday(){ const k = dayKey(); return HISTORY[k] || (HISTORY[k] = {n:0, ok:0, nw:0, u:0}); }
+// 오늘 목표 숫자는 따로 저장하지 않고 일별 기록(HISTORY, 동기화·백업 대상)의 오늘 칸을 그대로 읽음 → 앱을 새로 깔거나 다른 기기에서 이어 가도 유지됨
+const TODAY = { get n(){ return histToday().n; }, get ok(){ return histToday().ok; } };
+try{ localStorage.removeItem('zh.today'); }catch(e){}
 
 /* ═══════════ 간격 반복 (SRS: Spaced Repetition System) ═══════════
    맞힐수록 '상자(box)' 번호가 올라가고, 상자가 높을수록 다음 복습까지 간격이 길어짐.
@@ -1796,7 +1799,6 @@ function check(){
     if (other && other.id !== cur.id){ const c = STATS.confuse[cur.id] || (STATS.confuse[cur.id] = {}); c[other.id] = (c[other.id]||0) + 1; }
   }
   store.set('zh.stats', STATS);
-  TODAY.n++; if (ok) TODAY.ok++; store.set('zh.today', TODAY);
   { const h = histToday(); h.n++; if (ok) h.ok++; if (firstSeen) h.nw++; store.set('zh.history', HISTORY); }
   advance(ok);
   ans.classList.add(ok ? 'good' : 'bad');
@@ -2034,7 +2036,7 @@ $('btnImport').onclick = () => {
     showToast(`가져와서 합쳤어요: 뜻 ${Object.keys(d.ko||{}).length}개, 기록 ${Object.keys(d.progress||{}).length}개, AI 노트 ${Object.keys(d.ai_notes||{}).length}개`); updateStats(); renderHome();
   }catch(e){ showToast('JSON 형식이 아니거나 이 앱의 백업이 아니에요'); }
 };
-$('btnResetProg').onclick = () => { if (confirm('학습 기록과 과 완료 기록을 모두 지울까요? (한국어 뜻은 유지)')){ for(const k in PROGRESS) delete PROGRESS[k]; store.set('zh.progress',PROGRESS); for(const k in UNITS_DONE) delete UNITS_DONE[k]; store.set('zh.units',UNITS_DONE); for(const k in HISTORY) delete HISTORY[k]; store.set('zh.history',HISTORY); TODAY.n=0;TODAY.ok=0; store.set('zh.today',TODAY); startUnit(0); } };
+$('btnResetProg').onclick = () => { if (confirm('학습 기록과 과 완료 기록을 모두 지울까요? (한국어 뜻은 유지)')){ for(const k in PROGRESS) delete PROGRESS[k]; store.set('zh.progress',PROGRESS); for(const k in UNITS_DONE) delete UNITS_DONE[k]; store.set('zh.units',UNITS_DONE); for(const k in HISTORY) delete HISTORY[k]; store.set('zh.history',HISTORY); startUnit(0); } };
 $('totalWords').textContent = WORDS.length;
 
 /* ═══════════ 읽기 ═══════════ */
@@ -2099,7 +2101,7 @@ $('pq').addEventListener('click', e => {
   block.querySelectorAll('[data-oi]').forEach(x => { x.classList.toggle('good', +x.dataset.oi === q.ans); x.classList.toggle('bad', +x.dataset.oi === oi && !ok); x.querySelector('small').hidden = false; });
   block.querySelector('.qko').hidden = false;
   block.querySelector('.pres').innerHTML = ok ? '<span style="color:var(--good)">정답 ✓</span>' : `<span style="color:var(--bad)">오답 ✕</span> 정답: ${q.opts[q.ans]}`;
-  TODAY.n++; if (ok) TODAY.ok++; store.set('zh.today', TODAY); { const h = histToday(); h.n++; if (ok) h.ok++; store.set('zh.history', HISTORY); }
+  { const h = histToday(); h.n++; if (ok) h.ok++; store.set('zh.history', HISTORY); }
   if (readAns.every(a => a >= 0)){
     const acc = Math.round(readAns.filter((a,i)=>a===curPassage.qs[i].ans).length / readAns.length * 100);
     READ_DONE[curPassage.id] = { acc, date: dayKey(), t: Date.now() }; store.set('zh.read', READ_DONE);
@@ -2375,7 +2377,7 @@ function typFinish(){
     <p class="hint" style="font-size:13px;color:var(--ink-2)">오타 ${typ.wrong}개 / 친 글자 ${typ.typed}개 · 힌트 ${typ.hints||0}번 · ${typ.mode==='hz'?'한자':'병음'} · ${typ.secs}초</p>
     <div class="dataops" style="margin-top:14px"><button class="btn primary" id="btnTypAgain">다시</button><button class="btn" id="btnTypHome">설정으로</button></div>`;
   $('btnTypAgain').onclick = () => $('btnTypStart').click(); $('btnTypHome').onclick = renderTypHome;
-  TODAY.n += typ.n; TODAY.ok += typ.n; store.set('zh.today', TODAY); { const h = histToday(); h.n += typ.n; h.ok += typ.n; store.set('zh.history', HISTORY); }
+  { const h = histToday(); h.n += typ.n; h.ok += typ.n; store.set('zh.history', HISTORY); }
   typ = null; $('typClock').textContent = '';
 }
 $('btnTypHint').onclick = () => { if (!typ) return; const it = typCur(); typ.hinted = true; typ.hints = (typ.hints||0) + 1; $('typHintLine').textContent = `${it.py} · ${it.ko}`; $('typInput').focus(); };
@@ -2564,7 +2566,7 @@ $('lisBody').addEventListener('click', e => {
   $('lisScript').innerHTML = `<div class="script"><div class="ln"><b>A</b><span>${tapHtml(it.a)}</span></div><div class="ln"><b>B</b><span>${tapHtml(it.b)}</span></div><div class="ln q"><b>Q</b><span>${tapHtml(it.q)}</span></div><div class="ko">${it.ko}</div></div>`;
   $('lisScore').textContent = `맞힘 ${lis.ok}`; $('btnLisNext').hidden = false;
   $('btnLisNext').textContent = lis.i === lis.items.length-1 ? '결과 보기' : '다음 →';
-  TODAY.n++; if (ok) TODAY.ok++; store.set('zh.today', TODAY); { const h = histToday(); h.n++; if (ok) h.ok++; store.set('zh.history', HISTORY); }
+  { const h = histToday(); h.n++; if (ok) h.ok++; store.set('zh.history', HISTORY); }
   bump(STATS.mode, 'listenDlg', ok); store.set('zh.stats', STATS); updateStats();
 });
 $('btnLisSpeak').onclick = () => { if (lis) speakDialogueAB(lis.items[lis.i], true); };
@@ -2775,7 +2777,7 @@ function finishExam(timeout){
   store.set('zh.exam_wrong', EXAM_WRONG);
   const total = exam.items.length, pct = Math.round(score/total*100), used = Math.min(EXAM_TIME, Math.floor((Date.now()-exam.start)/1000));
   EXAMS.push({ t: Date.now(), lv: exam.lv, score, total, secs, used }); store.set('zh.exams', EXAMS);
-  TODAY.n += total; TODAY.ok += score; store.set('zh.today', TODAY); { const h = histToday(); h.n += total; h.ok += score; store.set('zh.history', HISTORY); }
+  { const h = histToday(); h.n += total; h.ok += score; store.set('zh.history', HISTORY); }
   $('examRun').hidden = true;
   const secHtml = Object.entries(secs).map(([k,s]) => `<div class="row"><span>${k}</span><div class="track"><div class="fill" style="width:${s.ok/s.n*100}%"></div></div><span class="num">${s.ok} / ${s.n}</span></div>`).join('');
   const wrong = exam.items.map((it,i) => ({it,i})).filter(x => !x.it.ok);
@@ -2813,7 +2815,7 @@ $('btnExamWrongSent').onclick = () => startExamWrong('cloze');
 $('btnExamWrongClear').onclick = () => { if (!confirm('모의고사 오답 단어 목록을 비울까요?')) return; for (const k of Object.keys(EXAM_WRONG)) if (EXAM_WRONG[k] > 0) EXAM_WRONG[k] = -Date.now(); store.set('zh.exam_wrong', EXAM_WRONG); renderExamWrong(); };
 
 /* ═══════════ 통계 ═══════════ */
-function isoDay(d){ return d.toISOString().slice(0,10); }
+function isoDay(d){ return localDay(d); }
 function streakInfo(){
   const today = new Date(); today.setHours(12,0,0,0);
   let streak = 0; { const d = new Date(today); if (!HISTORY[isoDay(d)]) d.setDate(d.getDate()-1); while (HISTORY[isoDay(d)] && HISTORY[isoDay(d)].n > 0){ streak++; d.setDate(d.getDate()-1); } }
@@ -3113,6 +3115,7 @@ initSync();
 loadVoices(); loadAudioIndex();
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
 startUnit(currentUnitIndex());
+if (onScreen('home')) renderHome();   // 첫 화면(홈)의 오늘 목표·복습 수 등을 채움 — 전에는 다른 탭에 갔다 와야 채워졌음
 const __ld = document.getElementById('loading'); if (__ld) __ld.remove();
 // 서비스 워커에 현재 데이터 파일 목록을 알려 옛 버전 캐시를 정리하게 함
 if (navigator.serviceWorker && navigator.serviceWorker.controller){ const urls = [...document.querySelectorAll('script[data-src]')].map(el => el.dataset.src); if (urls.length) navigator.serviceWorker.controller.postMessage({ type:'keep-data', urls }); }
