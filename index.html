@@ -486,7 +486,7 @@ body{display:flex;flex-direction:column;margin:0}
 .notes .n .a{-webkit-user-select:text;user-select:text}
 .notes .n .a .b{font-weight:700}
 .notes .n .a .hl{background:#ffe98a;color:var(--ink);border-radius:2px}
-.notes .n.hlmode .a{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.notes .n.hlmode .a{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}   /* touch-action:none — 형광펜 모드에서는 답변 위 드래그가 스크롤이 아니라 칠하기 */
 .notes .n.hlmode .a .tk{cursor:pointer;border-radius:4px;padding:1px 0}
 .notes .n.hlmode .a .tk:hover{background:color-mix(in srgb,#ffd54a 25%,transparent)}
 .notes .n.hlmode{box-shadow:0 0 0 2px color-mix(in srgb,#ffd54a 60%,transparent)}
@@ -603,7 +603,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0004</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.0018</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -2244,6 +2244,16 @@ function aiWordCtx(w){
     { label:'외우는 요령', q:`${w.s} 를 외우기 쉬운 방법(글자 뜻, 연상, 자주 쓰는 조합)을 알려 줘.` },
   ] };
 }
+function aiSentCtx(w){   // 문장 연습(빈칸·받아쓰기·어순)에서 묻기 → 단어가 아니라 문장 자체가 문맥이 되고, 노트도 문장 아래에 쌓임
+  const st = sentOf(w), ko = KO[w.s] || w.ko;
+  const text = `[현재 문장] ${st.zh} (${st.py || ''}) — ${st.ko}\n[이 문장의 핵심 단어] ${w.s} (${w.py}) — ${ko} / HSK ${w.lv}급`;
+  return { key:'s'+w.id, label:st.zh, text, quick:[
+    { label:'문장 구조 분석', q:`이 문장의 어순과 문법 포인트를 성분별로 설명해 줘.` },
+    { label:'단어별 뜻', q:`이 문장을 단어 단위로 끊어서 각 단어의 뜻과 역할을 알려 줘.` },
+    { label:'비슷한 문장 3개', q:`같은 구조로 된 짧은 문장 3개를 병음·번역과 함께 만들어 줘.` },
+    { label:'자연스러운 표현?', q:`이 문장이 실제 회화에서 자연스러운지, 더 흔한 표현이 있으면 알려 줘.` },
+  ] };
+}
 function aiGramCtx(g){
   const text = `[현재 문법 항목] HSK ${g.lv===7?'7~9':g.lv}급 · ${g.title_ko} (${g.title})\n[공식] ${g.pattern}\n[설명] ${g.desc}` + (g.ex.length ? `\n[예문] ${g.ex.slice(0,3).map(e=>e.zh+' — '+e.ko).join(' / ')}` : '');
   return { key:'g'+g.id, label:g.title_ko, text, quick:[
@@ -2280,7 +2290,7 @@ $('aiQuick').addEventListener('click', e => { const b = e.target.closest('[data-
 $('aiForm').onsubmit = e => { e.preventDefault(); const q = $('aiQ').value; $('aiQ').value = ''; aiAsk(q); };
 $('btnAiClose').onclick = () => { $('aiSheet').hidden = true; };
 $('btnAiNew').onclick = () => { if (!aiCtx) return; (AI_NOTES[aiCtx.key] || []).forEach(n => n.del = 1); store.set('zh.ai_notes', AI_NOTES); aiOpen(aiCtx); };   // 지우기 대신 삭제 표시 (동기화 때 되살아나지 않게)
-$('btnAsk').onclick = () => { if (!cur) return; aiOpen(aiWordCtx(cur)); };
+$('btnAsk').onclick = () => { if (!cur) return; aiOpen(mode().kind === 'sent' ? aiSentCtx(cur) : aiWordCtx(cur)); };
 $('btnGramAsk').onclick = () => { if (curGram) aiOpen(aiGramCtx(curGram)); };
 function aiPassageCtx(pg){
   const body = pg.sents.map((x,i) => `${i+1}. ${x.zh}`).join('\n');
@@ -2387,6 +2397,7 @@ $('btnTypStop').onclick = () => { if (typ) typFinish(); };
 /* ═══════════ AI 문답 노트 보기 ═══════════ */
 function aiNoteLabel(key){
   if (key[0] === 'w'){ const w = BY_ID.get(+key.slice(1)); return w ? { label: `${w.s} <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">${w.py} · ${KO[w.s]||w.ko||''}</small>`, ctx: () => aiWordCtx(w) } : null; }
+  if (key[0] === 's'){ const w = BY_ID.get(+key.slice(1)), st = w && sentOf(w); return st ? { label: `<span style="font-size:15px">${st.zh}</span> <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">${st.ko}</small>`, ctx: () => aiSentCtx(w) } : null; }
   if (key[0] === 'g'){ const g = GRAM.find(x => x.id === key.slice(1)); return g ? { label: `${g.title_ko}`, ctx: () => aiGramCtx(g) } : null; }
   if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: `${pg.title} <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">읽기</small>`, ctx: () => aiPassageCtx(pg) } : null; }
   return null;
@@ -2418,8 +2429,8 @@ function aiHlTexts(it){ aiMigrateHl(it); if (!it.hlr || !it.hlr.length) return [
   const rs = it.hlr.slice().sort((a, b) => a[0] - b[0]); const out = []; let cur = null;   // 붙어 있는 범위는 한 구절로 합쳐 보여줌
   for (const r of rs){ if (cur && r[0] <= cur[1] + 1 && !/\n/.test(p.slice(cur[1], r[0]))) cur[1] = Math.max(cur[1], r[1]); else { if (cur) out.push(cur); cur = r.slice(); } } if (cur) out.push(cur);
   return out.map(r => p.slice(r[0], r[1]).trim()).filter(Boolean); }
-function aiFmtHl(it, onlyHl){
-  aiMigrateHl(it); const { p, bold } = aiPlain(it.a); const hl = it.hlr || []; const toks = aiTokens(p);
+function aiFmtHl(it, onlyHl, preview){   // preview: 드래그 중 미리 보여줄 범위 [a,b] (저장 전)
+  aiMigrateHl(it); const { p, bold } = aiPlain(it.a); const hl = preview ? [...(it.hlr || []), preview] : (it.hlr || []); const toks = aiTokens(p);
   const esc = x => x.replace(/&/g,'&amp;').replace(/</g,'&lt;');
   // 조각 경계 모으기
   const cuts = new Set([0, p.length]);
@@ -2432,7 +2443,7 @@ function aiFmtHl(it, onlyHl){
   const tokOf = a => toks.find(r => r[0] <= a && a < r[1]);
   const atom = (a, b) => { const txt = p.slice(a, b); if (txt === '\n') return '\n'; const tk = tokOf(a);
     const cls = [tk ? 'tk' : '', inR(bold, a, b) ? 'b' : '', inR(hl, a, b) ? 'hl' : '', /^[一-鿿]+$/.test(txt) ? 'zh' : ''].filter(Boolean).join(' ');
-    return `<span class="${cls}"${tk ? ` data-r="${tk[0]},${tk[1]}"` : ''}>${esc(txt)}</span>`; };
+    return `<span class="${cls}" data-o="${a},${b}"${tk ? ` data-r="${tk[0]},${tk[1]}"` : ''}>${esc(txt)}</span>`; };
   if (!onlyHl){ let h = ''; for (let k = 0; k + 1 < pts.length; k++) h += atom(pts[k], pts[k+1]); return h; }
   // 형광펜·메모 탭: 형광펜이 든 문장만 남기고 나머지는 … 로
   let h = '', gap = false, first = true;
@@ -2474,18 +2485,50 @@ $('aiNoteList').addEventListener('click', e => {
   const o = e.target.closest('[data-nopen]'); if (o){ const lb = aiNoteLabel(o.dataset.nopen); if (lb) aiOpen(lb.ctx()); return; }
   const n = e.target.closest('.n'); if (!n) return; const it = noteOf(n);
   if (e.target.closest('[data-nhl]')){ if (!it) return; const on = n.classList.toggle('hlmode'); n.classList.add('open'); e.target.closest('[data-nhl]').classList.toggle('on', on);   // 버튼 글자는 안 바꿈(폭이 변하면 옆 버튼이 손가락 밑에 들어옴)
-    if (on){ const a = n.querySelector('.a'); if (a.classList.contains('only')){ a.classList.remove('only'); aiRedraw(n, it); } showToast('단어를 탭하면 칠해지고, 다시 탭하면 지워져요'); } return; }
+    if (on){ const a = n.querySelector('.a'); if (a.classList.contains('only')){ a.classList.remove('only'); aiRedraw(n, it); } showToast('탭하거나 드래그해서 칠하고, 칠한 곳을 탭하면 지워져요'); } return; }
   if (e.target.closest('[data-ntoggle]')){ const a = n.querySelector('.a'); if (a.classList.contains('only') && it){ a.classList.remove('only'); aiRedraw(n, it); }   // 형광펜·메모 탭에서 '펼치기' → 답변 전체
     n.classList.toggle('open'); e.target.closest('[data-ntoggle]').textContent = n.classList.contains('open') ? '접기' : '펼치기'; return; }
   if (e.target.closest('[data-nstar]')){ if (it){ it.star = it.star ? 0 : 1; aiTouch(it); } renderAiNotes(); return; }
   if (e.target.closest('[data-nmemo]')){ if (!it) return; const m = prompt('이 답변에 붙일 메모 (비우면 삭제)', it.memo || ''); if (m === null) return; it.memo = m.trim(); aiTouch(it); renderAiNotes(); return; }
   if (e.target.closest('[data-ncopy]')){ if (!it) return; const text = `Q: ${it.q}\nA: ${it.a}${it.memo ? '\n메모: ' + it.memo : ''}`; navigator.clipboard.writeText(text).then(() => showToast('복사했어요')).catch(() => showToast('복사 실패')); return; }
   if (e.target.closest('[data-ndel]')){ if (it){ if (aiNoteFilter === 'hl'){ it.hlr = []; delete it.hl; it.memo = ''; showToast('형광펜과 메모를 지웠어요'); } else it.del = 1; aiTouch(it); } renderAiNotes(); return; }
-  // 형광펜 모드: 어절을 탭하면 그 범위를 넣고, 이미 칠해진 곳을 탭하면 겹치는 범위를 뺌 (겹쳐 칠하기 없음)
-  const tk = e.target.closest('.a .tk'); if (tk && n.classList.contains('hlmode') && it){ const [a, b] = tk.dataset.r.split(',').map(Number); aiMigrateHl(it); it.hlr = it.hlr || [];
-    const hit = it.hlr.filter(r => r[0] < b && a < r[1]); if (hit.length) it.hlr = it.hlr.filter(r => !hit.includes(r)); else it.hlr.push([a, b]);
-    aiTouch(it); aiRedraw(n, it); return; }
 });
+// 형광펜 모드의 손가락 동작 (pointer 이벤트 = 터치·마우스 공통)
+//  · 탭: 그 어절을 칠함. 이미 칠해진 곳을 탭하면 겹치는 범위를 지움 (겹쳐 칠하기 없음)
+//  · 드래그: 누른 조각부터 손가락 아래 조각까지 이어서 칠함 (사이 공백 포함). 지나가는 동안 미리 보여주고 떼면 저장
+let hlDrag = null;
+const hlAtomAt = (a, x, y) => { const el = document.elementFromPoint(x, y); const sp = el && el.closest('.a [data-o]'); return sp && a.contains(sp) ? sp.dataset.o.split(',').map(Number) : null; };
+$('aiNoteList').addEventListener('pointerdown', e => {
+  const n = e.target.closest('.n.hlmode'); const a = n && n.querySelector('.a'); if (!a || !a.contains(e.target)) return;
+  const it = noteOf(n); const at = hlAtomAt(a, e.clientX, e.clientY); if (!it || !at) return;
+  e.preventDefault(); aiMigrateHl(it); it.hlr = it.hlr || [];
+  hlDrag = { n, a, it, start: at, cur: at, moved: false, id: e.pointerId, x: e.clientX, y: e.clientY };
+  try{ a.setPointerCapture(e.pointerId); }catch(err){}
+});
+$('aiNoteList').addEventListener('pointermove', e => {
+  if (!hlDrag || e.pointerId !== hlDrag.id) return;
+  if (!hlDrag.moved && Math.hypot(e.clientX - hlDrag.x, e.clientY - hlDrag.y) < 6) return;   // 살짝 흔들린 건 탭으로 봄
+  const at = hlAtomAt(hlDrag.a, e.clientX, e.clientY); if (!at) return;
+  if (!hlDrag.moved || at[0] !== hlDrag.cur[0]){ hlDrag.moved = true; hlDrag.cur = at; hlDrag.a.innerHTML = aiFmtHl(hlDrag.it, false, hlDragRange(hlDrag)); }
+});
+function hlDragRange(d){ return [Math.min(d.start[0], d.cur[0]), Math.max(d.start[1], d.cur[1])]; }
+function hlDragEnd(e){
+  if (!hlDrag || e.pointerId !== hlDrag.id) return; const d = hlDrag; hlDrag = null;
+  const { it, n } = d;
+  if (e.type === 'pointercancel'){ aiRedraw(n, it); return; }
+  let [a, b] = d.moved ? hlDragRange(d) : d.start;
+  if (!d.moved){   // 탭
+    const sp = document.elementFromPoint(e.clientX, e.clientY); const tk = sp && sp.closest('.a .tk'); if (tk && d.a.contains(tk)) [a, b] = tk.dataset.r.split(',').map(Number);
+    const hit = it.hlr.filter(r => r[0] < b && a < r[1]);
+    if (hit.length) it.hlr = it.hlr.filter(r => !hit.includes(r)); else if (tk) it.hlr.push([a, b]); else { aiRedraw(n, it); return; }   // 빈 공백만 탭한 건 무시
+  } else {   // 드래그: 겹치는 기존 범위와 합쳐 한 덩어리로
+    const hit = it.hlr.filter(r => r[0] <= b && a <= r[1]); for (const r of hit){ a = Math.min(a, r[0]); b = Math.max(b, r[1]); }
+    it.hlr = it.hlr.filter(r => !hit.includes(r)); it.hlr.push([a, b]);
+  }
+  aiTouch(it); aiRedraw(n, it);
+}
+$('aiNoteList').addEventListener('pointerup', hlDragEnd);
+$('aiNoteList').addEventListener('pointercancel', hlDragEnd);
 function aiNotesText(){
   const lines = [`# AI 선생님 문답 노트 (${new Date().toLocaleDateString()})`, ''];
   for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label.replace(/<[^>]+>/g,'')}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${aiHlTexts(n).length ? '\n  형광펜: ' + aiHlTexts(n).join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
