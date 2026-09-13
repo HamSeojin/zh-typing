@@ -712,7 +712,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.0856</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.0905</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -2860,8 +2860,8 @@ function renderDaily(){
   Promise.all([loadExt('phrases'), loadExt('idioms')]).then(() => {
     const P = (EXT.phrases && EXT.phrases.phrases) || [], I = (EXT.idioms && EXT.idioms.idioms) || [];
     const miss = '<span style="color:var(--bad)">데이터를 못 받았어요 — GitHub 의 data/ 폴더에 phrases·idioms 파일이 있는지 확인</span>';
-    if (P.length){ const x = P[seed % Math.min(P.length, 400)]; $('dailyPhrase').innerHTML = `<div class="daily-item" data-open-phrase="${x.zh}" role="button"><div class="dtext"><span style="font-family:var(--hanzi);font-size:20px;color:var(--ink)">${x.zh}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${x.py}</div><div style="color:var(--ink)">${x.ko}${x.note ? ` <small style="color:var(--ink-2)">(${x.note})</small>` : ''}</div></div><div class="dacts"><button class="btn small" data-say="${x.zh}">🔊</button><span class="chev" style="color:var(--ink-3);font-size:18px">›</span></div></div>`; } else $('dailyPhrase').innerHTML = miss;
-    if (I.length){ const y = I[(seedI * 7) % Math.min(I.length, 300)]; $('dailyIdiom').innerHTML = `<div class="daily-item" data-open-idiom="${y.w}" role="button"><div class="dtext"><span class="pstat" style="font-family:var(--mono)">#${I.indexOf(y) + 1}</span> <span style="font-family:var(--hanzi);font-size:20px;letter-spacing:.06em;color:var(--ink)">${y.w}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${y.py}</div><div style="color:var(--ink)">${y.ko}</div></div><div class="dacts"><button class="btn small" data-say="${y.w}">🔊</button><span class="chev" style="color:var(--ink-3);font-size:18px">›</span></div></div>`; } else $('dailyIdiom').innerHTML = miss;
+    if (P.length){ const x = P[seed % Math.min(P.length, 400)]; $('dailyPhrase').innerHTML = `<div class="daily-item" data-open-phrase="${x.zh}" role="button"><div class="dtext"><span style="font-family:var(--hanzi);font-size:20px;color:var(--ink)">${x.zh}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${x.py}</div><div style="color:var(--ink)">${x.ko}${x.note ? ` <small style="color:var(--ink-2)">(${x.note})</small>` : ''}</div></div><div class="dacts"><button class="btn small" data-say="${x.zh}">🔊</button></div></div>`; } else $('dailyPhrase').innerHTML = miss;
+    if (I.length){ const y = I[(seedI * 7) % Math.min(I.length, 300)]; $('dailyIdiom').innerHTML = `<div class="daily-item" data-open-idiom="${y.w}" role="button"><div class="dtext"><span class="pstat" style="font-family:var(--mono)">#${I.indexOf(y) + 1}</span> <span style="font-family:var(--hanzi);font-size:20px;letter-spacing:.06em;color:var(--ink)">${y.w}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${y.py}</div><div style="color:var(--ink)">${idiomKoHtml(y.ko)}</div></div><div class="dacts"><button class="btn small" data-say="${y.w}">🔊</button></div></div>`; } else $('dailyIdiom').innerHTML = miss;
   }).catch(() => { $('dailyPhrase').innerHTML = $('dailyIdiom').innerHTML = '<span style="color:var(--bad)">데이터를 못 받았어요</span>'; });
 }
 let phrOpenQ = '', idiOpenQ = '';   // 홈에서 누른 항목 → 해당 화면에서 그 항목을 검색해 보여줌
@@ -2961,11 +2961,12 @@ $('phrSeg').addEventListener('click', e => { const b = e.target.closest('[data-s
 
 /* ═══════════ 성어 (idioms.json) ═══════════ */
 let idiQ = null, idiPage = 0, idiFilter = 'all';
+function idiomKoHtml(ko){ const i = ko.indexOf(' — '); return i < 0 ? ko : `<b>${ko.slice(0, i)}</b><div style="font-size:13px;color:var(--ink-2);margin-top:1px">${ko.slice(i + 3)}</div>`; }
 function idiomCard(x, n){
   const st = IDI_STAT[n];
   return `<div class="idcard ${isIdiDone(n) ? 'done' : ''}" data-n="${n}"><span class="pstat" style="font-family:var(--mono);margin-right:6px">#${n}</span><span class="w">${x.w}</span><span class="py">${x.py}</span><span style="float:right;display:flex;gap:4px"><button class="btn small" data-done-i="${n}" title="학습 완료 표시" aria-pressed="${isIdiDone(n)}">학습</button><button class="btn small" data-fav-i="${n}" title="성어 단어장">${isFavI(n) ? '★' : '☆'}</button><button class="btn small" data-say="${x.w}">🔊</button><button class="btn small" data-ask-idiom="${x.w}" title="AI 선생님에게 묻기">🤖</button></span>
     ${st ? `<div class="pstat" style="margin-top:2px">퀴즈 <span style="color:var(--good)">✓${st.c || 0}</span> <span style="color:var(--bad)">✕${st.w || 0}</span></div>` : ''}
-    <div class="ko">${x.ko}</div><div class="desc">${x.desc}</div>
+    <div class="ko">${idiomKoHtml(x.ko)}</div><div class="desc">${x.desc}</div>
     <div class="ex"><div class="z">${tapHtml(x.ex)} <button class="btn small" data-say="${x.ex}" style="padding:1px 6px">🔊</button></div><div class="k">${x.expy}<br>${x.ex_ko}</div></div></div>`;
 }
 function renderIdiMine(){
