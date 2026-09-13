@@ -303,6 +303,12 @@ button,label,[role=button]{touch-action:manipulation}   /* 연타해도 iOS 가 
 .addform input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);min-width:0}
 .addform input:focus{outline:2px solid var(--accent);outline-offset:1px}
 @media (max-width:560px){.addform{grid-template-columns:1fr 1fr}}
+.pykb{grid-column:1/-1;display:none;flex-direction:column;gap:6px}
+.pykb.on{display:flex}
+.pykb .row{display:flex;gap:6px;align-items:center}
+.pykb .row button{flex:1;font:inherit;font-size:16px;padding:8px 4px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer;line-height:1.2}
+.pykb .row button.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pykb .lab{flex:0 0 auto;font-size:12px;color:var(--ink-2);width:34px}
 button.star{background:none;border:0;font-size:18px;cursor:pointer;color:var(--ink-2);padding:2px 4px;line-height:1}
 button.star.on{color:var(--accent)}
 button.del{background:none;border:0;cursor:pointer;color:var(--ink-2);font-size:14px;padding:4px}
@@ -384,6 +390,8 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .apphead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:18px 0 12px}
 .apphead h1{font-family:var(--hanzi);font-weight:700;font-size:24px;margin:0;letter-spacing:.02em}
 .apphead small{font-size:12px;color:var(--ink-2)}
+.apphead .askbtn{margin-left:auto;align-self:center;font-size:16px;line-height:1;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer}
+.apphead .askbtn:active{background:var(--line)}
 .apphead .hx{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--accent);margin-left:4px;letter-spacing:.04em}
 /* 하단 탭 */
 .tabbar{flex:0 0 auto;z-index:25;display:flex;justify-content:center;gap:0;background:var(--paper);border-top:1px solid var(--line);padding-bottom:max(0px, calc(env(safe-area-inset-bottom,0px) - 14px))}   /* 아이폰 홈 표시줄 영역 */
@@ -498,8 +506,16 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .wk-r small{font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;width:6.2em;text-align:right}
 /* AI 노트 */
 .notes .nctx{margin:12px 0 4px;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
-.notes .nctx b{font-family:var(--hanzi);font-size:17px;color:var(--ink)}
-.notes .nctx button{margin-left:auto}
+.notes .nctx-t{flex:1;min-width:0}
+.notes .nctx-sub{font-size:12px;color:var(--ink-2);overflow:hidden;white-space:nowrap;margin-top:1px}
+.notes .nctx-sub .mq{display:inline-block;white-space:nowrap}
+.notes .nctx-sub.scroll .mq{animation:mqslide var(--mqd,8s) linear infinite alternate}
+.notes .nctx b{font-family:var(--hanzi);font-size:17px;color:var(--ink);display:block;overflow:hidden;white-space:nowrap}
+.notes .nctx b .mq{display:inline-block;white-space:nowrap;will-change:transform}
+.notes .nctx b.scroll .mq{animation:mqslide var(--mqd,8s) linear infinite alternate}
+@keyframes mqslide{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(var(--mqx,0))}}
+@media (prefers-reduced-motion:reduce){.notes .nctx b.scroll .mq,.notes .nctx-sub.scroll .mq{animation:none}.notes .nctx b,.notes .nctx-sub{text-overflow:ellipsis}}
+.notes .nctx button{margin-left:auto;flex:0 0 auto}
 .notes .n{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--card)}
 .notes .n .q{font-size:13px;color:var(--ink-2);margin-bottom:4px}
 .notes .n .q::before{content:'Q ';font-weight:700;color:var(--accent)}
@@ -515,6 +531,10 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .notes .n .a .ell{color:var(--ink-3);padding:0 2px}
 .notes .memo{margin-top:6px;font-size:13px;color:var(--ink);background:var(--good-bg);border-left:3px solid var(--accent);padding:6px 8px;border-radius:6px;white-space:pre-wrap}
 .seg.small{margin-bottom:8px}.seg.small button{font-size:12px;padding:5px 4px}
+.ainote-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ainote-top .sk-h{flex:1}
+.ainote-q{width:100%;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);margin-bottom:10px}
+.ainote-q:focus{outline:2px solid var(--accent);outline-offset:1px}
 .notes .n .a{-webkit-user-select:text;user-select:text}
 .notes .n .a .b{font-weight:700}
 .notes .n .a .hl{background:#ffe98a;color:var(--ink);border-radius:2px}
@@ -640,6 +660,10 @@ details.more summary::-webkit-details-marker{display:none}
 .radgrid button[aria-pressed="true"] small{color:var(--accent-ink)}
 .mea .pitem .zh{font-size:24px}
 /* 회화 표현 · 성어 */
+.dbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--ink-2)}
+.dbox + .dbox{margin-top:8px}
+.reroll{font-size:16px;line-height:1;padding:4px 9px;color:var(--ink-2)}
+.dhead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink-2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .daily-item{cursor:pointer;border-radius:8px;padding:4px 6px;margin:0 -6px;display:flex;align-items:center;gap:10px}.daily-item:hover{background:var(--paper)}
 .daily-item .dtext{flex:1;min-width:0}.daily-item .dacts{flex:0 0 auto;display:flex;align-items:center;gap:8px}
 .plist{display:flex;flex-direction:column;gap:8px}
@@ -712,7 +736,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.0905</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.2049</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기">🤖</button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -726,11 +750,15 @@ details.more summary::-webkit-details-marker{display:none}
     <button class="tile" data-go="gram"><b>문법</b><span id="homeGram">0 / 570 학습</span></button>
     <button class="tile" data-go="exam"><b>모의고사</b><span id="homeExam">아직 없음</span></button>
   </div>
-  <div class="card" id="homeDaily" style="margin-bottom:12px;padding:12px 16px">
-    <div class="goal-row small" style="margin-bottom:6px"><span>오늘의 한 마디</span><button class="btn small" data-shuffle="p" title="다른 표현">🔄</button></div>
-    <div id="dailyPhrase" style="font-size:14px;color:var(--ink-2)">…</div>
-    <div class="goal-row small" style="margin:10px 0 6px"><span>오늘의 성어</span><button class="btn small" data-shuffle="i" title="다른 성어">🔄</button></div>
-    <div id="dailyIdiom" style="font-size:14px;color:var(--ink-2)">…</div>
+  <div id="homeDaily" style="margin-bottom:12px">
+    <section class="dbox">
+      <div class="dhead"><span>오늘의 한 마디</span><button class="btn small reroll" data-shuffle="p" title="다른 표현 보기" aria-label="다른 표현 보기">↻</button></div>
+      <div id="dailyPhrase">…</div>
+    </section>
+    <section class="dbox">
+      <div class="dhead"><span>오늘의 성어</span><button class="btn small reroll" data-shuffle="i" title="다른 성어 보기" aria-label="다른 성어 보기">↻</button></div>
+      <div id="dailyIdiom">…</div>
+    </section>
   </div>
   <div class="card" id="homeGoalCard" role="button" tabindex="0" title="통계 보기" style="cursor:pointer">
     <div class="goal-row"><span>오늘 목표</span><b id="homeGoalText">0 / 30</b></div>
@@ -776,9 +804,11 @@ details.more summary::-webkit-details-marker{display:none}
     </div>
     <form class="addform" id="addForm">
       <input id="addS" placeholder="한자 (예: 加油)" required aria-label="한자">
-      <input id="addPy" placeholder="병음 (jiā yóu 또는 jia1 you2)" aria-label="병음">
+      <input id="addPy" placeholder="병음 (jia1you2 · jiā yóu 다 됨)" aria-label="병음">
       <input id="addKo" placeholder="한국어 뜻 (예: 힘내다; 주유하다)" aria-label="한국어 뜻">
       <button class="btn" type="submit">+ 추가</button>
+      <div id="addPyHint" style="grid-column:1/-1;font-size:12px;color:var(--ink-2);min-height:1.2em"></div>
+      <div class="pykb" id="pyKb" aria-label="병음 성조 입력기"></div>
     </form>
   </div>
   <div class="card" style="padding:8px 12px">
@@ -812,10 +842,13 @@ details.more summary::-webkit-details-marker{display:none}
   </div>
   <div class="segpane" data-pane="ai" hidden>
     <div class="card">
-      <h3 class="sk-h">AI 문답 노트</h3>
-      <div class="dataops" style="margin:0 0 10px"><input id="aiNoteQ" type="search" placeholder="노트 검색" style="flex:1;min-width:140px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)"><button class="btn" id="btnAiNoteCopy">전체 복사</button><button class="btn" id="btnAiNoteFile">파일로 저장 (.md)</button></div>
+      <div class="ainote-top"><h3 class="sk-h" style="margin:0">AI 문답 노트</h3><button class="btn primary small" id="btnAiFree">＋ 새 질문</button></div>
+      <input id="aiNoteQ" type="search" placeholder="노트 검색 (질문 대상·질문·답변·메모)" class="ainote-q">
       <div class="seg small" id="aiNoteFilters"></div>
       <div id="aiNoteList" class="notes"></div>
+      <details class="more"><summary>내보내기</summary>
+        <div class="dataops"><button class="btn" id="btnAiNoteCopy">전체 복사</button><button class="btn" id="btnAiNoteFile">파일로 저장 (.md)</button></div>
+      </details>
     </div>
   </div>
   <div class="segpane" data-pane="all" hidden>
@@ -1507,6 +1540,41 @@ function renderUnitBar(){
 // 성조 부호가 붙은 병음(nǐ) → 숫자 병음(ni3). 채점할 때 두 표기를 하나로 맞추기 위해 사용.
 const TONE_MAP = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','ě':'e3','è':'e4','ī':'i1','í':'i2','ǐ':'i3','ì':'i4',
   'ō':'o1','ó':'o2','ǒ':'o3','ò':'o4','ū':'u1','ú':'u2','ǔ':'u3','ù':'u4','ǖ':'v1','ǘ':'v2','ǚ':'v3','ǜ':'v4','ü':'v','ń':'n2','ň':'n3','ǹ':'n4','ḿ':'m2'};
+/* ── 병음 입력 도우미 ──
+   "zhang3de" 처럼 붙여 쓰거나 "zhǎng de" 처럼 성조 부호로 써도 음절로 끊어 실제 병음으로 바꿔 준다.
+   normPinyin 이 먼저 성조 숫자 형태로 통일하고(hǎo→hao3, ü→v), 아래 유효 음절 목록(CEDICT 에서 추출)으로 끊는다. */
+const PY_SYL = new Set('a ai an ang ao ba bai ban bang bao bei ben beng bi bian biao bie bin bing bo bu ca cai can cang cao ce cen ceng cha chai chan chang chao che chen cheng chi chong chou chu chuai chuan chuang chui chun chuo ci cong cou cu cuan cui cun cuo da dai dan dang dao de dei den deng di dia dian diao die ding diu dong dou du duan dui dun duo e ei en eng er fa fan fang fei fen feng fo fou fu ga gai gan gang gao ge gei gen geng gong gou gu gua guai guan guang gui gun guo ha hai han hang hao he hei hen heng hong hou hu hua huai huan huang hui hun huo ji jia jian jiang jiao jie jin jing jiong jiu ju juan jue jun ka kai kan kang kao ke kei ken keng kong kou ku kua kuai kuan kuang kui kun kuo la lai lan lang lao le lei leng li lia lian liang liao lie lin ling liu lo long lou lu luan lun luo lv lve ma mai man mang mao me mei men meng mi mian miao mie min ming miu mo mou mu na nai nan nang nao ne nei nen neng ni nian niang niao nie nin ning niu nong nou nu nuan nun nuo nv nve o ou pa pai pan pang pao pei pen peng pi pian piao pie pin ping po pou pu qi qia qian qiang qiao qie qin qing qiong qiu qu quan que qun r ran rang rao re ren reng ri rong rou ru rua ruan rui run ruo sa sai san sang sao se sei sen seng sha shai shan shang shao she shei shen sheng shi shou shu shua shuai shuan shuang shui shun shuo si song sou su suan sui sun suo ta tai tan tang tao te tei teng ti tian tiao tie ting tong tou tu tuan tui tun tuo wa wai wan wang wei wen weng wo wu xi xia xian xiang xiao xie xin xing xiong xiu xu xuan xue xun ya yan yang yao ye yi yin ying yo yong you yu yuan yue yun za zai zan zang zao ze zei zen zeng zha zhai zhan zhang zhao zhe zhei zhen zheng zhi zhong zhou zhu zhua zhuai zhuan zhuang zhui zhun zhuo zi zong zou zu zuan zui zun zuo'.split(' '));
+function pySplitSyls(flat){   // "zhang3de" → [{b:'zhang',t:3},{b:'de',t:5}] · 끊을 수 없으면 null
+  const out = [];
+  const dfs = i => {
+    if (i >= flat.length) return true;
+    for (let len = Math.min(6, flat.length - i); len >= 1; len--){      // 긴 음절 먼저 (fang|an 처럼 갈리는 경우 대비)
+      const b = flat.slice(i, i + len); if (!PY_SYL.has(b)) continue;
+      let j = i + len, t = 5;
+      if (j < flat.length && flat[j] >= '1' && flat[j] <= '5'){ t = +flat[j]; j++; }
+      out.push({ b, t });
+      if (dfs(j)) return true;
+      out.pop();
+    }
+    return false;
+  };
+  return dfs(0) && out.length ? out : null;
+}
+function pyFromInput(raw){    // 사용자가 친 병음 → { py:'zhǎng de', pyn:'zhang3 de5' } · 못 읽으면 null
+  const parts = String(raw || '').trim().toLowerCase().split(/[\s'\u2019\u00b7\-]+/).filter(Boolean);
+  const syls = [];
+  for (const part of parts){
+    const flat = normPinyin(part);                                      // 성조 부호 → 숫자, ü → v
+    const got = flat && pySplitSyls(flat);
+    if (!got) return null;
+    syls.push(...got);
+  }
+  if (!syls.length) return null;
+  for (let i = syls.length - 1; i > 0; i--) if (syls[i].b === 'r' && syls[i].t === 5) syls.splice(i - 1, 2, { b: syls[i-1].b + 'r', t: syls[i-1].t });   // 儿化: hua1r → huār
+  const base = x => x.b.replace(/v/g, 'ü');
+  return { py: syls.map(x => x.t === 5 ? base(x) : pyMark(base(x) + x.t)).join(' '),
+           pyn: syls.map(x => base(x) + x.t).join(' ') };
+}
 function normPinyin(s){
   // 소문자화 → 공백/어포스트로피 단위로 끊고 → 성조부호를 숫자로 바꿔 음절 끝에 붙임 ("hǎo"→"hao3")
   // → 구두점 제거, ü→v, 경성(5/0) 제거. 결과가 같으면 정답으로 본다.
@@ -2177,7 +2245,7 @@ function go(name){
   if (name === 'idiom') loadExt('idioms').then(() => { renderIdiList(); renderIdiMine(); if (idiOpenQ){ const q = idiOpenQ; idiOpenQ = ''; $('idiSeg').querySelector('[data-seg=idlist]').click(); const inp = $('idiList').querySelector('.qsearch'); if (inp){ inp.value = q; inp.oninput(); } } renderIdiQuiz(); });
   if (name === 'hanzi') loadExt('hanzi').then(() => { renderHzRad(); renderHzMea(); renderHzDec(); });   // 시트/홈에서 만들어져 아직 안 들려준 카드는 세션 화면에 들어올 때 들려줌
   if (name === 'home') renderHome();
-  if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); }
+  if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); requestAnimationFrame(() => mqFit($('aiNoteList'))); }
   if (name === 'more') renderStats();
   if (name === 'read') renderReadList();
   if (name === 'gram') renderGramList();
@@ -2203,7 +2271,7 @@ document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e
   const b = e.target.closest('[data-seg]'); if (!b) return;
   seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
   const scr = seg.closest('.screen'); scr.querySelectorAll('.segpane').forEach(p => p.hidden = p.dataset.pane !== b.dataset.seg);
-  if (b.dataset.seg === 'all') renderList(); if (b.dataset.seg === 'stats') renderStats(); if (b.dataset.seg === 'ai') renderAiNotes();
+  if (b.dataset.seg === 'all') renderList(); if (b.dataset.seg === 'stats') renderStats(); if (b.dataset.seg === 'ai'){ renderAiNotes(); requestAnimationFrame(() => mqFit($('aiNoteList'))); }
 }));
 // 학습 시작 시트
 function openStartSheet(kind){
@@ -2334,7 +2402,7 @@ function hanziDecHtml(str){   // 글자 분해 (있는 글자만)
 }
 function moreExHtml(w){
   const S = EXT.sents2 && EXT.sents2.sents; const arr = S && S[String(w.id)]; if (!arr || !arr.length) return '';
-  return `<div class="more-ex"><div class="rh" style="color:var(--ink-2);margin-bottom:2px">예문 더 보기 <small>(${arr.some(x => x.ko) ? 'Tatoeba' : ''}${arr.some(x => x.ko) && arr.some(x => x.en) ? ' · ' : ''}${arr.some(x => x.en) ? 'Chinese Zero to Hero' : ''})</small></div>${arr.map(x => `<div class="s"><div class="z">${tapHtml(x.zh)} <button class="btn small" data-say="${x.zh}" style="padding:1px 6px">🔊</button></div><div class="p">${x.py}</div><div class="k">${x.ko || x.en || ''}</div></div>`).join('')}</div>`;
+  return `<div class="more-ex"><div class="rh" style="color:var(--ink-2);margin-bottom:2px">예문 더 보기</div>${arr.map(x => `<div class="s"><div class="z">${tapHtml(x.zh)} <button class="btn small" data-say="${x.zh}" style="padding:1px 6px">🔊</button></div><div class="p">${x.py}</div><div class="k">${x.ko || x.en || ''}</div></div>`).join('')}</div>`;
 }
 // 팝업·정답 화면에 보조 정보(글자 분해·추가 예문)를 데이터가 오는 대로 덧붙임
 function appendExtras(box, w, opts){
@@ -2541,6 +2609,11 @@ function aiGramCtx(g){
     { label:'비슷한 문법과 차이', q:`이 문법과 헷갈리기 쉬운 비슷한 문법이 있으면 차이를 설명해 줘.` },
   ] };
 }
+function aiFreeCtx(key){   // 자유 질문: 단어·문장 문맥 없이 중국어 전반을 묻는 노트 (키는 'f'+만든 시각, 질문할 때마다 새 노트)
+  return { key: key || ('f' + Date.now()), label: '자유 질문', free: 1,
+    text: '[상황] 한국어를 쓰는 중국어 학습자(HSK 공부 중)가 단어·문장 문맥 없이 자유롭게 묻는 질문이야. 한국어로 답하고, 중국어 예를 들 때는 병음과 한국어 뜻을 함께 적어 줘.',
+    quick: [] };
+}
 function aiOpen(ctx){
   aiCtx = ctx; $('aiSheet').hidden = false; $('aiCtx').textContent = ctx.label;
   $('aiQuick').innerHTML = ctx.quick.map((q,i) => `<button data-aiq="${i}">${q.label}</button>`).join('');
@@ -2570,6 +2643,10 @@ $('btnAiClose').onclick = () => { $('aiSheet').hidden = true; };
 $('btnAiNew').onclick = () => { if (!aiCtx) return; (AI_NOTES[aiCtx.key] || []).forEach(n => n.del = 1); store.set('zh.ai_notes', AI_NOTES); aiOpen(aiCtx); };   // 지우기 대신 삭제 표시 (동기화 때 되살아나지 않게)
 $('btnAsk').onclick = () => { if (!cur) return; aiOpen(mode().kind === 'sent' ? aiSentCtx(cur) : aiWordCtx(cur)); };
 $('btnGramAsk').onclick = () => { if (curGram) aiOpen(aiGramCtx(curGram)); };
+function openFreeAsk(){ aiOpen(aiFreeCtx()); }   // 홈 카드·AI 노트 탭에서 새 자유 질문 시작
+$('homeFreeAsk').onclick = openFreeAsk;
+$('homeFreeAsk').onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openFreeAsk(); } };
+$('btnAiFree').onclick = openFreeAsk;
 function aiPassageCtx(pg){
   const body = pg.sents.map((x,i) => `${i+1}. ${x.zh}`).join('\n');
   const text = `[현재 읽기 글] HSK ${pg.lv===7?'7~9':pg.lv}급 · 제목: ${pg.title}\n${body}\n[한국어 번역]\n${pg.sents.map((x,i) => `${i+1}. ${x.ko}`).join('\n')}`;
@@ -2673,13 +2750,15 @@ $('btnTypSkip').onclick = () => { if (!typ) return; typ.i++; $('typInput').value
 $('btnTypStop').onclick = () => { if (typ) typFinish(); };
 
 /* ═══════════ AI 문답 노트 보기 ═══════════ */
-function aiNoteLabel(key){
-  if (key[0] === 'w'){ const w = BY_ID.get(+key.slice(1)); return w ? { label: `${w.s} <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">${w.py} · ${KO[w.s]||w.ko||''}</small>`, ctx: () => aiWordCtx(w) } : null; }
-  if (key[0] === 'e'){ const t = key.slice(1); return { label: `<span style="font-size:15px">${t}</span> <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">표현</small>`, ctx: () => aiExprCtx(t, '', '표현') }; }
-  if (key[0] === 'x'){ const t = key.slice(1); return { label: `${t} <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">보조 사전</small>`, ctx: () => ({ key, label:t, text:`[단어] ${t}`, quick:[{ label:'뜻·용법 설명', q:`${t} 의 뜻과 쓰임을 설명해 줘.` }] }) }; }
-  if (key[0] === 's'){ const w = BY_ID.get(+key.slice(1)), st = w && sentOf(w); return st ? { label: `<span style="font-size:15px">${st.zh}</span> <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">${st.ko}</small>`, ctx: () => aiSentCtx(w) } : null; }
-  if (key[0] === 'g'){ const g = GRAM.find(x => x.id === key.slice(1)); return g ? { label: `${g.title_ko}`, ctx: () => aiGramCtx(g) } : null; }
-  if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: `${pg.title} <small style="font-family:inherit;font-size:12px;color:var(--ink-2)">읽기</small>`, ctx: () => aiPassageCtx(pg) } : null; }
+function aiNoteLabel(key){   // 노트 묶음 제목: label(진한 줄) + sub(옅은 줄, 아래에 따로 표시)
+  if (key[0] === 'w'){ const w = BY_ID.get(+key.slice(1)); return w ? { label: w.s, sub: `${w.py} · ${KO[w.s]||w.ko||''}`, ctx: () => aiWordCtx(w) } : null; }
+  if (key[0] === 'e'){ const t = key.slice(1); return { label: t, sub: '표현', ctx: () => aiExprCtx(t, '', '표현') }; }
+  if (key[0] === 'x'){ const t = key.slice(1); return { label: t, sub: '보조 사전', ctx: () => ({ key, label:t, text:`[단어] ${t}`, quick:[{ label:'뜻·용법 설명', q:`${t} 의 뜻과 쓰임을 설명해 줘.` }] }) }; }
+  if (key[0] === 's'){ const w = BY_ID.get(+key.slice(1)), st = w && sentOf(w); return st ? { label: st.zh, sub: st.ko, ctx: () => aiSentCtx(w) } : null; }
+  if (key[0] === 'g'){ const g = GRAM.find(x => x.id === key.slice(1)); return g ? { label: g.title_ko, sub: '문법', ctx: () => aiGramCtx(g) } : null; }
+  if (key[0] === 'f'){ const first = (AI_NOTES[key] || []).find(n => !n.del); const t = first ? first.q.replace(/\s+/g, ' ').slice(0, 60) + (first.q.length > 60 ? '…' : '') : '자유 질문';
+    return { label: t, sub: '자유 질문', ctx: () => aiFreeCtx(key) }; }
+  if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: pg.title, sub: '읽기', ctx: () => aiPassageCtx(pg) } : null; }
   return null;
 }
 let aiNoteFilter = 'all';   // all | star | hl
@@ -2740,12 +2819,12 @@ function renderAiNotes(){
   const q = ($('aiNoteQ').value || '').trim().toLowerCase();
   // 검색 대상: 질문 대상(제목 줄 — 한자·병음·한국어 뜻·문장·문법 이름) + 질문 글 + 답변 본문 + 내 메모
   const keep = (n, head) => !n.del && (aiNoteFilter === 'all' || (aiNoteFilter === 'star' && n.star) || (aiNoteFilter === 'hl' && (aiHlTexts(n).length || n.memo))) && (!q || (head + ' ' + n.q + n.a + (n.memo||'')).toLowerCase().includes(q));
-  const groups = Object.entries(AI_NOTES).map(([k, arr]) => { const lb = aiNoteLabel(k); const head = lb ? lb.label.replace(/<[^>]+>/g, ' ') : ''; return { k, arr: arr.filter(n => keep(n, head)) }; }).filter(g => g.arr.length);
+  const groups = Object.entries(AI_NOTES).map(([k, arr]) => { const lb = aiNoteLabel(k); const head = lb ? (lb.label + ' ' + (lb.sub || '')) : ''; return { k, arr: arr.filter(n => keep(n, head)) }; }).filter(g => g.arr.length);
   groups.sort((a, b) => Math.max(...b.arr.map(n => n.t)) - Math.max(...a.arr.map(n => n.t)));
   const total = Object.values(AI_NOTES).flat().filter(n => !n.del).length, stars = Object.values(AI_NOTES).flat().filter(n => !n.del && n.star).length;
   $('aiNoteFilters').innerHTML = [['all',`전체 ${total}`],['star',`★ 중요 ${stars}`],['hl','형광펜·메모']].map(([k,l]) => `<button data-nf="${k}" aria-selected="${aiNoteFilter===k}">${l}</button>`).join('');
-  $('aiNoteList').innerHTML = groups.map(g => { const lb = aiNoteLabel(g.k); if (!lb) return ''; return `<div class="nctx"><b>${lb.label}</b><button class="btn small" data-nopen="${g.k}">🤖 이어서 묻기</button></div>` +
-    g.arr.slice().reverse().map(n => `<div class="n ${n.star?'star':''}" data-nk="${g.k}" data-nt="${n.t}">
+  $('aiNoteList').innerHTML = groups.map(g => { const lb = aiNoteLabel(g.k); if (!lb) return ''; return `<div class="nctx"><div class="nctx-t"><b><span class="mq">${lb.label}</span></b>${lb.sub ? `<div class="nctx-sub"><span class="mq">${lb.sub}</span></div>` : ''}</div><button class="btn small" data-nopen="${g.k}">🤖 이어서 묻기</button></div>` +
+    g.arr.slice().sort((a, b) => a.t - b.t).map(n => `<div class="n ${n.star?'star':''}" data-nk="${g.k}" data-nt="${n.t}">
       <div class="q">${aiFmt(n.q)}</div>
       <div class="a ${aiNoteFilter === 'hl' && aiHlTexts(n).length ? 'only' : ''}">${aiFmtHl(n, aiNoteFilter === 'hl' && aiHlTexts(n).length > 0)}</div>
       ${n.memo ? `<div class="memo">✎ ${aiFmt(n.memo)}</div>` : ''}
@@ -2756,7 +2835,17 @@ function renderAiNotes(){
         <button data-ncopy="1">복사</button>
         <button data-ntoggle="1">${'펼치기'}</button>
         <button class="del" data-ndel="1">${aiNoteFilter === 'hl' ? '표시 지우기' : '삭제'}</button></div></div>`).join(''); }).join('')
-    || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q || aiNoteFilter!=='all' ? '해당하는 노트가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 🤖 묻기를 눌러 보세요.'}</p>`;
+    || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q || aiNoteFilter!=='all' ? '해당하는 노트가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 🤖 묻기를 누르거나, 위 ＋ 새 질문으로 아무거나 물어보세요.'}</p>`;
+  mqFit($('aiNoteList'));
+}
+function mqFit(root){   // 제목이 칸보다 길면 좌우로 천천히 흐르게 (짧으면 그대로 둠)
+  for (const b of root.querySelectorAll('.nctx b, .nctx-sub')){
+    const mq = b.firstElementChild; if (!mq) continue;
+    if (!b.clientWidth) continue;                       // 탭이 숨겨져 있으면 폭을 못 재므로 나중에 다시
+    const over = mq.scrollWidth - b.clientWidth;
+    if (over > 4){ b.classList.add('scroll'); b.style.setProperty('--mqx', -over + 'px'); b.style.setProperty('--mqd', Math.max(5, Math.round(over / 45) + 3) + 's'); }
+    else { b.classList.remove('scroll'); b.style.removeProperty('--mqx'); b.style.removeProperty('--mqd'); }
+  }
 }
 $('aiNoteQ').oninput = renderAiNotes;
 $('aiNoteFilters').addEventListener('click', e => { const b = e.target.closest('[data-nf]'); if (b){ aiNoteFilter = b.dataset.nf; renderAiNotes(); } });
@@ -2812,7 +2901,7 @@ $('aiNoteList').addEventListener('pointerup', hlDragEnd);
 $('aiNoteList').addEventListener('pointercancel', hlDragEnd);
 function aiNotesText(){
   const lines = [`# AI 선생님 문답 노트 (${new Date().toLocaleDateString()})`, ''];
-  for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label.replace(/<[^>]+>/g,'')}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${aiHlTexts(n).length ? '\n  형광펜: ' + aiHlTexts(n).join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
+  for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label}${lb.sub ? ' — ' + lb.sub : ''}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${aiHlTexts(n).length ? '\n  형광펜: ' + aiHlTexts(n).join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
   return lines.join('\n');
 }
 $('btnAiNoteCopy').onclick = async () => { const text = aiNotesText(); try{ await navigator.clipboard.writeText(text); showToast('복사했어요 — 메모 앱 등에 붙여넣기'); }catch(e){ $('io').value = text; showToast('더보기 → 설정 → 데이터 칸에 넣어 뒀어요'); } };
@@ -2861,7 +2950,7 @@ function renderDaily(){
     const P = (EXT.phrases && EXT.phrases.phrases) || [], I = (EXT.idioms && EXT.idioms.idioms) || [];
     const miss = '<span style="color:var(--bad)">데이터를 못 받았어요 — GitHub 의 data/ 폴더에 phrases·idioms 파일이 있는지 확인</span>';
     if (P.length){ const x = P[seed % Math.min(P.length, 400)]; $('dailyPhrase').innerHTML = `<div class="daily-item" data-open-phrase="${x.zh}" role="button"><div class="dtext"><span style="font-family:var(--hanzi);font-size:20px;color:var(--ink)">${x.zh}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${x.py}</div><div style="color:var(--ink)">${x.ko}${x.note ? ` <small style="color:var(--ink-2)">(${x.note})</small>` : ''}</div></div><div class="dacts"><button class="btn small" data-say="${x.zh}">🔊</button></div></div>`; } else $('dailyPhrase').innerHTML = miss;
-    if (I.length){ const y = I[(seedI * 7) % Math.min(I.length, 300)]; $('dailyIdiom').innerHTML = `<div class="daily-item" data-open-idiom="${y.w}" role="button"><div class="dtext"><span class="pstat" style="font-family:var(--mono)">#${I.indexOf(y) + 1}</span> <span style="font-family:var(--hanzi);font-size:20px;letter-spacing:.06em;color:var(--ink)">${y.w}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${y.py}</div><div style="color:var(--ink)">${idiomKoHtml(y.ko)}</div></div><div class="dacts"><button class="btn small" data-say="${y.w}">🔊</button></div></div>`; } else $('dailyIdiom').innerHTML = miss;
+    if (I.length){ const y = I[(seedI * 7) % Math.min(I.length, 300)]; $('dailyIdiom').innerHTML = `<div class="daily-item" data-open-idiom="${y.w}" role="button"><div class="dtext"><span style="font-family:var(--hanzi);font-size:20px;letter-spacing:.06em;color:var(--ink)">${y.w}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${y.py}</div><div style="color:var(--ink)">${idiomKoHtml(y.ko)}</div></div><div class="dacts"><button class="btn small" data-say="${y.w}">🔊</button></div></div>`; } else $('dailyIdiom').innerHTML = miss;
   }).catch(() => { $('dailyPhrase').innerHTML = $('dailyIdiom').innerHTML = '<span style="color:var(--bad)">데이터를 못 받았어요</span>'; });
 }
 let phrOpenQ = '', idiOpenQ = '';   // 홈에서 누른 항목 → 해당 화면에서 그 항목을 검색해 보여줌
@@ -3660,7 +3749,35 @@ $('mineBody').addEventListener('click', e => {
   const d = e.target.closest('[data-del]'); if (d){ const i = CUSTOM.findIndex(w=>w.id===+d.dataset.del); if (i>=0){ CUSTOM_DEL[CUSTOM[i].id] = Date.now(); store.set('zh.custom_del', CUSTOM_DEL); if (FAV[CUSTOM[i].id]) FAV[CUSTOM[i].id] = -Date.now(); CUSTOM.splice(i,1); store.set('zh.custom', CUSTOM); store.set('zh.fav', FAV); renderMine(); } }
 });
 $('mineBody').addEventListener('change', e => { if (e.target.dataset.s){ saveKo(e.target.dataset.s, e.target.value); showToast('저장됨'); } });
+// 성조 가상 키패드: 모음을 고르면 그 모음의 1~4성이 나오고, 누르면 커서 자리에 들어감
+const PYKB_V = ['a','e','i','o','u','ü'];
+let pykbSel = null;
+function renderPyKb(){
+  const box = $('pyKb'); if (!box) return;
+  let h = '<div class="row"><span class="lab">모음</span>' + PYKB_V.map(v => `<button type="button" data-v="${v}" class="${pykbSel===v?'sel':''}">${v}</button>`).join('') + '</div>';
+  h += '<div class="row"><span class="lab">성조</span>' + (pykbSel
+      ? [1,2,3,4].map(t => `<button type="button" data-ins="${pyMark(pykbSel + t)}">${pyMark(pykbSel + t)}</button>`).join('') + `<button type="button" data-ins="${pykbSel}" title="경성(성조 없음)">${pykbSel}</button>`
+      : '<span class="lab" style="width:auto">모음을 먼저 고르세요</span>') + '</div>';
+  box.innerHTML = h;
+}
+function pyKbInsert(ch){
+  const el = $('addPy'); const a = el.selectionStart ?? el.value.length, b = el.selectionEnd ?? a;
+  el.value = el.value.slice(0, a) + ch + el.value.slice(b);
+  const c = a + ch.length; try{ el.setSelectionRange(c, c); }catch(e){}
+  el.dispatchEvent(new Event('input'));
+}
+$('pyKb').addEventListener('mousedown', e => e.preventDefault());        // 입력칸 포커스 유지
+$('pyKb').addEventListener('click', e => {
+  const v = e.target.closest('[data-v]'); if (v){ pykbSel = (pykbSel === v.dataset.v) ? null : v.dataset.v; renderPyKb(); $('addPy').focus(); return; }
+  const i = e.target.closest('[data-ins]'); if (i){ pyKbInsert(i.dataset.ins); pykbSel = null; renderPyKb(); $('addPy').focus(); }
+});
+$('addPy').addEventListener('focus', () => { $('pyKb').classList.add('on'); renderPyKb(); });
+$('addPy').addEventListener('blur', () => { setTimeout(() => { if (document.activeElement !== $('addPy')) { $('pyKb').classList.remove('on'); pykbSel = null; } }, 150); });
 // 직접 추가: 병음은 부호/숫자 어느 쪽으로 넣어도 되고, 숫자 병음(pyn)은 채점용으로 자동 생성
+$('addPy').addEventListener('input', () => {
+  const v = $('addPy').value.trim(); const r = v && pyFromInput(v);
+  $('addPyHint').innerHTML = !v ? '' : r ? `병음으로 읽음: <b style="color:var(--ink)">${r.py}</b>` : '<span style="color:var(--bad)">병음으로 읽지 못했어요 — 입력한 그대로 저장돼요</span>';
+});
 $('addForm').addEventListener('submit', e => {
   e.preventDefault();
   const s = $('addS').value.trim(), py = $('addPy').value.trim(), ko = $('addKo').value.trim();
@@ -3668,12 +3785,13 @@ $('addForm').addEventListener('submit', e => {
   const exists = WORDS.find(w => w.s === s);
   if (exists){ FAV[exists.id] = Date.now(); store.set('zh.fav', FAV); if (ko) saveKo(s, ko); showToast(`${s} 는 HSK 단어라 별표로 담았어요`); }
   else {
+    const conv = pyFromInput(py);                                        // "zhang3de" → py 'zhǎng de' · pyn 'zhang3 de5'
     const toks = py.split(/\s+/).filter(Boolean);
     const id = 100000 + (CUSTOM.length ? Math.max(...CUSTOM.map(w=>w.id)) - 100000 + 1 : 0);
-    const w = { id, s, t: s, py: toks.join(' '), pyn: toks.map(x => normPinyin(x)).join(' '), en: '', ko, lv: 0, alt: [], custom: true, added: Date.now() };
+    const w = { id, s, t: s, py: conv ? conv.py : toks.join(' '), pyn: conv ? conv.pyn : toks.map(x => normPinyin(x)).join(' '), en: '', ko, lv: 0, alt: [], custom: true, added: Date.now() };
     CUSTOM.push(w); BY_ID.set(id, w); store.set('zh.custom', CUSTOM); showToast(`${s} 추가됨`);
   }
-  $('addS').value = $('addPy').value = $('addKo').value = ''; $('addS').focus(); renderMine();
+  $('addS').value = $('addPy').value = $('addKo').value = ''; $('addPyHint').textContent = ''; $('addS').focus(); renderMine();
 });
 $('btnMineStudy').onclick = () => {
   const ws = mineWords(); if (!ws.length){ showToast('내 단어장이 비어 있어요'); return; }
@@ -3725,8 +3843,8 @@ $('dictHits').addEventListener('click', e => {
   const ai = e.target.closest('[data-ai-text]'); if (ai){ const t = ai.dataset.aiText, d = EXT.dict && EXT.dict[t]; aiOpen({ key:'x' + t, label:t, text:`[단어] ${t}${d ? ` (${d[0]}) — ${d[1]}` : ''} (HSK 단어장에는 없는 단어)`, quick:[{ label:'뜻·용법 설명', q:`${t} 의 뜻과 쓰임을 설명해 줘.` },{ label:'예문 3개', q:`${t} 를 쓴 짧은 예문 3개를 병음·번역과 함께 만들어 줘.` },{ label:'한국어 뜻 한 줄', q:`${t} 의 한국어 뜻을 사전처럼 한 줄로 알려 줘.` }] }); return; }
   const ad = e.target.closest('[data-dict-add]'); if (ad){ const k = ad.dataset.dictAdd; if (CUSTOM.some(w => w.s === k)){ showToast('이미 내 단어장에 있어요'); return; }
     const ko = prompt(`${k} 의 한국어 뜻을 적어 두세요 (비워도 됨 — 영어 뜻이 대신 표시돼요)`, ''); if (ko === null) return;
-    const toks = ad.dataset.py.split(/\s+/).filter(Boolean); const id = 100000 + (CUSTOM.length ? Math.max(...CUSTOM.map(w=>w.id)) - 100000 + 1 : 0);
-    const w = { id, s: k, t: k, py: toks.join(' '), pyn: toks.map(x => normPinyin(x)).join(' '), en: (EXT.dict[k] || [])[1] || '', ko: ko.trim(), lv: 0, alt: [], custom: true, added: Date.now() };
+    const conv = pyFromInput(ad.dataset.py); const toks = ad.dataset.py.split(/\s+/).filter(Boolean); const id = 100000 + (CUSTOM.length ? Math.max(...CUSTOM.map(w=>w.id)) - 100000 + 1 : 0);
+    const w = { id, s: k, t: k, py: conv ? conv.py : toks.join(' '), pyn: conv ? conv.pyn : toks.map(x => normPinyin(x)).join(' '), en: (EXT.dict[k] || [])[1] || '', ko: ko.trim(), lv: 0, alt: [], custom: true, added: Date.now() };
     CUSTOM.push(w); BY_ID.set(id, w); store.set('zh.custom', CUSTOM); showToast(`${k} 를 내 단어장에 담았어요`); ad.textContent = '★'; renderMine && renderMine(); }
 });
 $('listLv').addEventListener('change', () => { page=0; renderList(); });
