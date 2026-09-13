@@ -605,11 +605,13 @@ details.more summary::-webkit-details-marker{display:none}
 .gmatch .m{font-family:var(--hanzi);font-size:17px;padding:6px 0;border-top:1px solid var(--line);line-height:1.6}
 .gmatch .m small{font-family:inherit;font-size:12px;color:var(--ink-2);margin-left:6px}
 /* 발음 기초 */
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;margin:6px 0 10px}   /* 칸 폭을 균일하게 (글자 길이와 무관) */
-.pgrid button{font:inherit;font-family:var(--mono);font-size:16px;padding:9px 4px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer;text-align:center}
-.pgrid.wide{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:4px;margin:4px 0 8px}   /* 칸 폭을 균일하게 (글자 길이와 무관), 한 화면에 들어오게 촘촘히 */
+.pgrid button{font:inherit;font-family:var(--mono);font-size:15px;padding:7px 2px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);cursor:pointer;text-align:center;line-height:1.25}
+.pgrid button .pstat{font-size:10px;display:block;margin-top:1px}
+.pgrid.wide{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+.pgrid.wide button{font-size:14px;padding:6px 2px}
 .pgrid button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.pdetail{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card);margin-bottom:12px}
+.pdetail{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);margin:2px 0 10px}
 .pdetail h4{margin:0 0 6px;font-size:22px;font-family:var(--mono);font-weight:500}
 .pdetail p{margin:0 0 8px;font-size:14px;line-height:1.55}
 .pdetail .ex{display:flex;flex-wrap:wrap;gap:6px}
@@ -635,7 +637,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.0602</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.0615</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -2184,8 +2186,11 @@ $('popup').addEventListener('click', e => {
 });
 // 문제 풀기: 보기를 누르면 바로 채점. 2문제 다 풀면 결과 저장
 $('pq').addEventListener('click', e => {
-  const tk = e.target.closest('.tok'); if (tk){ showLookup(tk); return; }   // 문제·보기 속 단어 → 사전 풍선 (보기 선택은 단어 밖을 누르면)
-  const b = e.target.closest('[data-oi]'); if (!b) return;
+  const b = e.target.closest('[data-oi]');
+  const tk = e.target.closest('.tok');
+  // 보기 속 단어: 답을 고르기 전에는 탭이 곧 '보기 선택'(단어 뜻은 안 보여줌 — 뜻을 보면 답이 드러남), 답을 고른 뒤에는 사전 풍선. 문제 글 속 단어는 언제나 사전
+  if (tk && (!b || readAns[+b.dataset.qi] >= 0)){ showLookup(tk); return; }
+  if (!b) return;
   const qi = +b.dataset.qi, oi = +b.dataset.oi; if (readAns[qi] >= 0) return;
   readAns[qi] = oi; const q = curPassage.qs[qi], ok = oi === q.ans;
   const block = $('pq').querySelector(`.qblock[data-qi="${qi}"]`);
@@ -2657,8 +2662,7 @@ function renderPronTable(){
       <div class="sh-label">예시 — 누르면 발음</div><div class="ex">${it.ex.map(pronExBtn).join('')}</div>
       ${extra.length ? `<div class="sh-label">이 소리가 든 다른 음절</div><div class="ex">${extra.map(pronExBtn).join('')}</div>` : ''}</div>`; }
   const isI = pronSel && pronSel[0] === 'i';
-  box.innerHTML = `<div class="sh-label">성모 (첫 자음) 21</div>${grid(PY.initials, 'i')}${isI ? detail : ''}<div class="sh-label">운모 (모음·받침) ${PY.finals.length}</div>${grid(PY.finals, 'f')}${isI ? '' : detail}
-    <p style="font-size:12px;color:var(--ink-2);margin:4px 0 0">소리는 대표 한자를 읽혀 냅니다. 설명은 한국어 화자 기준으로, 비슷한 한국어 소리와 다른 점을 적었어요.</p>`;
+  box.innerHTML = `<div class="sh-label">성모 (첫 자음) 21 — 누르면 설명과 예시 발음</div>${grid(PY.initials, 'i')}${isI ? detail : ''}<div class="sh-label">운모 (모음·받침) ${PY.finals.length}</div>${grid(PY.finals, 'f')}${isI ? '' : detail}`;
   if (pronSel){ const d = box.querySelector('.pdetail'); if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
 }
 $('pronTable').addEventListener('click', e => {
@@ -2679,11 +2683,10 @@ function pairCandidates(pr){
 function renderPronPair(){
   const box = $('pronPair'); if (!PY) return; const st = (STATS.pron && STATS.pron.pair) || {};
   if (!pq || pq.kind !== 'pair'){
-    const chip = pr => { const o = st[pr.k]; return `<button data-pair="${pr.k}" style="font-size:15px">${pr.k}<br><small class="pstat">${o ? `${Math.round(o.ok / o.n * 100)}% · ${o.n}` : '—'}</small></button>`; };
-    box.innerHTML = `<button class="btn primary" data-pair="*" style="width:100%;margin:4px 0 6px">전체 섞어서 10문제</button>
-      <div class="sh-label">성모(첫 자음) 짝</div><div class="pgrid wide">${PY.pairs.filter(pr => pr.kind === 'ini').map(chip).join('')}</div>
-      <div class="sh-label">운모(모음·받침) 짝</div><div class="pgrid wide">${PY.pairs.filter(pr => pr.kind === 'fin').map(chip).join('')}</div>
-      <p style="font-size:12px;color:var(--ink-2);margin-top:10px">짝을 누르면 그 짝만 10문제. 아래 숫자는 정답률 · 푼 수 — 낮은 짝이 약한 소리예요.</p>`; return; }
+    const chip = pr => { const o = st[pr.k]; return `<button data-pair="${pr.k}">${pr.k}<small class="pstat">${o ? `${Math.round(o.ok / o.n * 100)}% · ${o.n}` : '—'}</small></button>`; };
+    box.innerHTML = `<button class="btn primary" data-pair="*" style="width:100%;margin:2px 0 4px">전체 섞어서 10문제</button>
+      <div class="sh-label">성모(첫 자음) 짝 — 누르면 그 짝만 10문제 · 숫자는 정답률 · 푼 수</div><div class="pgrid wide">${PY.pairs.filter(pr => pr.kind === 'ini').map(chip).join('')}</div>
+      <div class="sh-label">운모(모음·받침) 짝</div><div class="pgrid wide">${PY.pairs.filter(pr => pr.kind === 'fin').map(chip).join('')}</div>`; return; }
   const q = pq.items[pq.i]; const pr = q.pr;
   const done = pq.i >= pq.items.length;
   if (done){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${pq.ok}/${pq.items.length}</h3><p class="msg">${pq.wrong.length ? '틀린 것: ' + pq.wrong.map(w => `${w.pr.k} (${pyMark(w.ans)})`).join(', ') : '전부 맞혔어요'}</p><div class="dataops" style="justify-content:center"><button class="btn primary" data-pair-again="1">다시</button><button class="btn" data-pair-back="1">짝 고르기</button></div></div>`; return; }
@@ -2724,10 +2727,10 @@ function renderPronTone(){
     box.innerHTML = `<div class="pgrid" style="grid-template-columns:1fr 1fr;gap:10px">
         <button class="mcard" data-tone-start="1" style="min-height:0;font-family:inherit"><b>1음절</b><small>한 음절을 듣고 성조 고르기</small><small class="pstat">${acc('1')}</small></button>
         <button class="mcard" data-tone-start="2" style="min-height:0;font-family:inherit"><b>2음절</b><small>두 음절을 듣고 각각 고르기 (성조 조합)</small><small class="pstat">${acc('2')}</small></button></div>
-      <div class="card" style="padding:12px 14px;margin-top:12px;font-size:13px;line-height:1.7">
+      <div class="card" style="padding:12px 14px;margin-top:12px">
         <div class="sh-label" style="margin-top:0">성조 모양</div>
-        <span class="s1">1성 ─</span> 높고 평평하게 &nbsp;·&nbsp; <span class="s2">2성 ↗</span> 올라가게 &nbsp;·&nbsp; <span class="s3">3성 ↘↗</span> 내렸다 올리기 &nbsp;·&nbsp; <span class="s4">4성 ↘</span> 뚝 떨어지게<br>
-        <span style="color:var(--ink-2)">3성이 연달아 오면 앞 3성은 2성처럼 읽어요. 각 항목 아래 숫자는 정답률 · 푼 수.</span></div>`; return; }
+        <div class="pgrid" style="grid-template-columns:repeat(4,1fr);margin:0 0 8px">${[['1','─','높고 평평'],['2','↗','올라감'],['3','↘↗','내렸다 올림'],['4','↘','뚝 떨어짐']].map(([t,a,d]) => `<div style="text-align:center;padding:8px 4px;border:1px solid var(--line);border-radius:10px"><div class="s${t}" style="font-size:22px;line-height:1.2">${a}</div><div style="font-size:13px;font-weight:600;margin-top:2px">${t}성</div><div style="font-size:11px;color:var(--ink-2)">${d}</div></div>`).join('')}</div>
+        <div style="font-size:12px;color:var(--ink-2)">3성이 연달아 오면 앞 3성은 2성처럼 읽어요. 위 카드의 숫자는 정답률 · 푼 수.</div></div>`; return; }
   const q = pq.items[pq.i]; if (!q){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${pq.ok}/${pq.items.length}</h3><div class="dataops" style="justify-content:center"><button class="btn primary" data-tone-start="${toneMode}">다시</button><button class="btn" data-tone-back="1">처음으로</button></div></div>`; return; }
   const names = ['1성 ─','2성 ↗','3성 ↘↗','4성 ↘'];
   box.innerHTML = `<div class="card pq"><div class="pstat" style="display:flex;justify-content:space-between;align-items:center"><button class="btn small" data-tone-back="1">‹ 처음으로</button><span>${pq.i + 1} / ${pq.items.length}</span><span style="width:70px"></span></div>
