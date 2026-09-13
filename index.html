@@ -604,6 +604,24 @@ details.more summary::-webkit-details-marker{display:none}
 .gmatch h4{margin:14px 0 6px;font-size:14px}
 .gmatch .m{font-family:var(--hanzi);font-size:17px;padding:6px 0;border-top:1px solid var(--line);line-height:1.6}
 .gmatch .m small{font-family:inherit;font-size:12px;color:var(--ink-2);margin-left:6px}
+/* 발음 기초 */
+.pgrid{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.pgrid button{font:inherit;font-family:var(--mono);font-size:16px;min-width:44px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer}
+.pgrid button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pdetail{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card);margin-bottom:12px}
+.pdetail h4{margin:0 0 6px;font-size:22px;font-family:var(--mono);font-weight:500}
+.pdetail p{margin:0 0 8px;font-size:14px;line-height:1.55}
+.pdetail .ex{display:flex;flex-wrap:wrap;gap:6px}
+.pdetail .ex button, .pq .opt{font:inherit;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer;padding:8px 12px;display:inline-flex;align-items:center;gap:8px}
+.pdetail .ex button b{font-family:var(--hanzi);font-size:20px;font-weight:500}
+.pdetail .ex button span{font-family:var(--mono);font-size:14px;color:var(--ink-2)}
+.pq{text-align:center}
+.pq .big{margin:14px 0 4px}.pq .big .btn{font-size:16px;padding:10px 22px}
+.pq .opts{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px 0}
+.pq .opt{font-family:var(--mono);font-size:22px;padding:14px 22px;min-width:110px;justify-content:center}
+.pq .opt.good{border-color:var(--good);background:var(--good-bg)}.pq .opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.pq .msg{min-height:1.6em;font-size:14px;margin:6px 0}
+.pstat{font-size:12px;color:var(--ink-2)}
 .gchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .gchips button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:4px 10px;cursor:pointer}
 .gchips button:hover{border-color:var(--accent)}
@@ -613,7 +631,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0912.2257</span></small></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.0541</span></small></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -644,6 +662,7 @@ details.more summary::-webkit-details-marker{display:none}
     <button class="mcard" data-go="gram"><span class="mi">法</span><b>문법</b><small>HSK 3.0 문법 570항목 · 예문 · 어순 연습</small></button>
     <button class="mcard" data-go="exam" data-focus="lis"><span class="mi">听</span><b>듣기 대화</b><small>두 목소리 대화 10문항 · 대본 확인</small></button>
     <button class="mcard" data-go="exam"><span class="mi">考</span><b>모의고사</b><small>실제 유형 40문항 · 시간 제한 · 오답 관리</small></button>
+    <button class="mcard" data-go="pron"><span class="mi">音</span><b>발음 기초</b><small>성모·운모 표 · 헷갈리는 소리 듣기 · 성조 듣기</small></button>
     <button class="mcard" data-go="typing"><span class="mi">打</span><b>타자 연습</b><small>학습한 단어·문장으로 속도·정확도 드릴</small></button>
   </div>
 </section>
@@ -909,6 +928,14 @@ details.more summary::-webkit-details-marker{display:none}
 </section>
 
 <!-- ═══════════ 타자 연습 ═══════════ -->
+<section class="screen pushed" data-screen="pron" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">발음 기초</b><span class="tb-right"></span></div>
+  <div class="seg" id="pronSeg"><button aria-selected="true" data-seg="ptable">발음표</button><button data-seg="ppair">헷갈리는 소리</button><button data-seg="ptone">성조 듣기</button></div>
+  <div class="segpane" data-pane="ptable" id="pronTable"><p style="color:var(--ink-2);font-size:13px">불러오는 중…</p></div>
+  <div class="segpane" data-pane="ppair" id="pronPair" hidden></div>
+  <div class="segpane" data-pane="ptone" id="pronTone" hidden></div>
+</section>
+
 <section class="screen pushed" data-screen="typing" data-parent="learn" hidden>
   <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">타자 연습</b><span class="tb-right" id="typClock"></span></div>
   <div id="typHome">
@@ -1110,6 +1137,7 @@ details.more summary::-webkit-details-marker{display:none}
 <script id="passages" type="application/json" data-src="data/passages.d342e778.json"></script>
 <script id="exam" type="application/json" data-src="data/exam.a589f29a.json"></script>
 <script id="grammar" type="application/json" data-src="data/grammar.6dbac83e.json"></script>
+<script id="pinyin" type="application/json" data-src="data/pinyin.f5145b2b.json"></script>
 <script>/* hanzi-writer (MIT, https://github.com/chanind/hanzi-writer) — 획순 애니메이션·쓰기 퀴즈 라이브러리 */
 /**
  * Hanzi Writer v3.7.3 | https://chanind.github.io/hanzi-writer
@@ -1993,7 +2021,8 @@ function go(name){
   $('popup').hidden = true; $('aiSheet').hidden = true; closeStartSheet();
   if (typ && name !== 'typing'){ clearInterval(typ.tick); typ = null; }
   curScreen = name; $('app').scrollTo({ top: 0 });
-  if (name === 'session') speakCardIfPending();   // 시트/홈에서 만들어져 아직 안 들려준 카드는 세션 화면에 들어올 때 들려줌
+  if (name === 'session') speakCardIfPending();
+  if (name === 'pron') loadPron().then(() => { renderPronTable(); renderPronPair(); renderPronTone(); });   // 시트/홈에서 만들어져 아직 안 들려준 카드는 세션 화면에 들어올 때 들려줌
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); }
   if (name === 'more') renderStats();
@@ -2595,6 +2624,131 @@ function aiNotesText(){
 }
 $('btnAiNoteCopy').onclick = async () => { const text = aiNotesText(); try{ await navigator.clipboard.writeText(text); showToast('복사했어요 — 메모 앱 등에 붙여넣기'); }catch(e){ $('io').value = text; showToast('더보기 → 설정 → 데이터 칸에 넣어 뒀어요'); } };
 $('btnAiNoteFile').onclick = () => downloadText(`ai-notes-${new Date().toISOString().slice(0,10)}.md`, aiNotesText(), 'text/markdown;charset=utf-8');
+
+/* ═══════════ 발음 기초 (성모·운모 표, 헷갈리는 소리 듣기, 성조 듣기) ═══════════
+   데이터 pinyin.json (build_pinyin.py): initials/finals 설명, pairs(헷갈리는 짝), syl(음절+성조 → 대표 한자), table(음절 → [성모, 운모]).
+   소리는 대표 한자를 TTS/mp3 로 읽혀서 냄 — 병음 글자 자체는 TTS 가 못 읽으므로. 화면에 들어올 때 처음 한 번만 데이터를 받음 */
+let PY = null, pyPromise = null;
+function loadPron(){ return pyPromise || (pyPromise = loadJson('pinyin', null).then(j => (PY = j))); }
+const TONE_MARK = { a:'āáǎàa', e:'ēéěèe', i:'īíǐìi', o:'ōóǒòo', u:'ūúǔùu', 'ü':'ǖǘǚǜü' };
+function pyMark(syl){   // "zhong1" → "zhōng" (성조 부호는 a>o>e>i/u 중 앞 글자, iu/ui 는 뒤 글자에)
+  const m = syl.match(/^([a-zü]+)([1-5])$/); if (!m) return syl; const [_, b, t] = m; const ti = +t - 1;
+  const put = (idx) => b.slice(0, idx) + TONE_MARK[b[idx]][ti] + b.slice(idx + 1);
+  for (const v of ['a','o','e']){ const i = b.indexOf(v); if (i >= 0) return put(i); }
+  const ii = Math.max(b.lastIndexOf('i'), b.lastIndexOf('u'), b.lastIndexOf('ü')); return ii >= 0 ? put(ii) : b;   // iu/ui 는 뒤 글자에
+}
+const pySylHtml = syl => `<span class="s${syl.slice(-1)}">${pyMark(syl)}</span>`;
+function pronSpeak(syl){ const c = PY && PY.syl[syl]; if (c) speak(c); }
+function pronExBtn(syl){ const c = PY.syl[syl]; return c ? `<button data-psyl="${syl}"><b>${c}</b><span>${pyMark(syl)}</span></button>` : ''; }
+// ── 발음표 ──
+let pronSel = null;
+function renderPronTable(){
+  const box = $('pronTable'); if (!PY){ box.innerHTML = '<p style="color:var(--ink-2)">발음 데이터를 불러오지 못했어요</p>'; return; }
+  const grid = (items, kind) => `<div class="pgrid">${items.map(it => `<button data-pk="${kind}:${it.k}" aria-pressed="${pronSel === kind + ':' + it.k}">${it.k}</button>`).join('')}</div>`;
+  let detail = '';
+  if (pronSel){ const [kind, k] = pronSel.split(':'); const it = (kind === 'i' ? PY.initials : PY.finals).find(x => x.k === k);
+    const more = Object.keys(PY.table).filter(syl => PY.table[syl][kind === 'i' ? 0 : 1] === k && !it.ex.includes(syl) && syl.slice(-1) !== '5');
+    const seen = new Set(); const extra = more.filter(syl => { const b = syl.slice(0, -1); if (seen.has(b)) return false; seen.add(b); return true; }).slice(0, 14);
+    detail = `<div class="pdetail"><h4>${k}${kind === 'i' ? ' <small style="font-size:13px;color:var(--ink-2);font-family:inherit">성모(첫 자음)</small>' : ' <small style="font-size:13px;color:var(--ink-2);font-family:inherit">운모(모음·받침)</small>'}</h4><p>${it.ko}</p>
+      <div class="sh-label">예시 — 누르면 발음</div><div class="ex">${it.ex.map(pronExBtn).join('')}</div>
+      ${extra.length ? `<div class="sh-label">이 소리가 든 다른 음절</div><div class="ex">${extra.map(pronExBtn).join('')}</div>` : ''}</div>`; }
+  const isI = pronSel && pronSel[0] === 'i';
+  box.innerHTML = `<div class="sh-label">성모 (첫 자음) 21</div>${grid(PY.initials, 'i')}${isI ? detail : ''}<div class="sh-label">운모 (모음·받침) ${PY.finals.length}</div>${grid(PY.finals, 'f')}${isI ? '' : detail}
+    <p style="font-size:12px;color:var(--ink-2);margin:4px 0 0">소리는 대표 한자를 읽혀 냅니다. 설명은 한국어 화자 기준으로, 비슷한 한국어 소리와 다른 점을 적었어요.</p>`;
+  if (pronSel){ const d = box.querySelector('.pdetail'); if (d) d.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+}
+$('pronTable').addEventListener('click', e => {
+  const b = e.target.closest('[data-pk]'); if (b){ pronSel = pronSel === b.dataset.pk ? null : b.dataset.pk; renderPronTable(); return; }
+  const sb = e.target.closest('[data-psyl]'); if (sb) pronSpeak(sb.dataset.psyl);
+});
+// ── 헷갈리는 소리 (최소대립쌍) ──
+//    짝(예: zh/j)마다 둘 다 존재하는 운모·성조 조합을 골라 하나를 들려주고 어느 쪽인지 고르게 함. j·q·x 의 ü 는 u 와 같은 자리로 봄
+let pq = null;   // 진행 중인 퀴즈 { kind:'pair'|'tone', items, i, ok, ... }
+function pairCandidates(pr){
+  const norm = f => f.replace('ü', 'u'); const byKey = {};
+  const pool = (PY.common && PY.common.length > 300) ? PY.common : Object.keys(PY.table);
+  for (const syl of pool){ const [ini, fin] = PY.table[syl]; const t = syl.slice(-1); if (t === '5') continue;
+    const side = pr.kind === 'ini' ? (ini === pr.a ? 'a' : ini === pr.b ? 'b' : null) : (fin === pr.a ? 'a' : fin === pr.b ? 'b' : null); if (!side) continue;
+    const key = pr.kind === 'ini' ? norm(fin) + t : ini + t; (byKey[key] = byKey[key] || {})[side] = syl; }
+  return Object.values(byKey).filter(o => o.a && o.b);
+}
+function renderPronPair(){
+  const box = $('pronPair'); if (!PY) return; const st = (STATS.pron && STATS.pron.pair) || {};
+  if (!pq || pq.kind !== 'pair'){
+    box.innerHTML = `<div class="sh-label">짝을 고르세요 — 하나를 들려주면 어느 쪽인지 맞히기 (10문제)</div><div class="pgrid">${PY.pairs.map(pr => { const o = st[pr.k]; return `<button data-pair="${pr.k}" style="font-size:15px">${pr.k}${o ? `<br><small class="pstat">${Math.round(o.ok / o.n * 100)}% · ${o.n}</small>` : ''}</button>`; }).join('')}</div>
+      <button class="btn" data-pair="*">전체 섞어서</button>
+      <p style="font-size:12px;color:var(--ink-2);margin-top:10px">정답률이 낮은 짝이 약한 소리예요. 발음표에서 그 소리의 설명을 다시 읽고 예시를 들어 보세요.</p>`; return; }
+  const q = pq.items[pq.i]; const pr = q.pr;
+  const done = pq.i >= pq.items.length;
+  if (done){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${pq.ok}/${pq.items.length}</h3><p class="msg">${pq.wrong.length ? '틀린 것: ' + pq.wrong.map(w => `${w.pr.k} (${pyMark(w.ans)})`).join(', ') : '전부 맞혔어요'}</p><div class="dataops" style="justify-content:center"><button class="btn primary" data-pair-again="1">다시</button><button class="btn" data-pair-back="1">짝 고르기</button></div></div>`; return; }
+  box.innerHTML = `<div class="card pq"><div class="pstat">${pq.i + 1} / ${pq.items.length} · ${pr.k}</div>
+    <div class="big"><button class="btn" data-pair-play="1">🔊 듣기</button></div>
+    <div class="opts">${['a','b'].map(side => `<button class="opt" data-pair-ans="${side}">${pySylHtml(q[side])}</button>`).join('')}</div>
+    <div class="msg" id="pairMsg">둘 중 들린 것을 고르세요</div>
+    <p class="pstat">${pr.ko}</p></div>`;
+  if (!q.played){ q.played = true; setTimeout(() => pronSpeak(q.ans), 150); }
+}
+function startPairQuiz(keys){
+  const prs = PY.pairs.filter(pr => keys === '*' || pr.k === keys); const items = [];
+  for (let n = 0; n < 10; n++){ const pr = prs[Math.floor(Math.random() * prs.length)]; const cands = pairCandidates(pr); if (!cands.length) continue;
+    const c = cands[Math.floor(Math.random() * cands.length)]; const side = Math.random() < .5 ? 'a' : 'b'; items.push({ pr, a: c.a, b: c.b, side, ans: c[side] }); }
+  pq = { kind:'pair', items, i:0, ok:0, wrong:[], keys }; renderPronPair();
+}
+$('pronPair').addEventListener('click', e => {
+  const t = e.target;
+  const pb = t.closest('[data-pair]'); if (pb){ startPairQuiz(pb.dataset.pair); return; }
+  if (t.closest('[data-pair-again]')){ startPairQuiz(pq.keys); return; }
+  if (t.closest('[data-pair-back]')){ pq = null; renderPronPair(); return; }
+  if (t.closest('[data-pair-play]')){ pronSpeak(pq.items[pq.i].ans); return; }
+  const ab = t.closest('[data-pair-ans]'); if (ab && pq && pq.kind === 'pair'){ const q = pq.items[pq.i]; if (q.answered) return; q.answered = true;
+    const good = ab.dataset.pairAns === q.side; if (good) pq.ok++; else pq.wrong.push(q);
+    STATS.pron = STATS.pron || { pair:{}, tone:{} }; bump(STATS.pron.pair, q.pr.k, good); store.set('zh.stats', STATS);
+    $('pronPair').querySelectorAll('[data-pair-ans]').forEach(b => { if (b.dataset.pairAns === q.side) b.classList.add('good'); else if (b === ab) b.classList.add('bad'); });
+    $('pairMsg').innerHTML = (good ? '정답 ✓ ' : `오답 ✕ 들린 건 <b>${pyMark(q.ans)}</b> `) + `— 두 소리 비교: <button class="btn small" data-cmp="${q.a}">${pyMark(q.a)}</button> <button class="btn small" data-cmp="${q.b}">${pyMark(q.b)}</button> <button class="btn small primary" data-pair-next="1">다음 →</button>`; return; }
+  const cmp = t.closest('[data-cmp]'); if (cmp){ pronSpeak(cmp.dataset.cmp); return; }
+  if (t.closest('[data-pair-next]')){ pq.i++; renderPronPair(); }
+});
+// ── 성조 듣기 ──
+//    1음절: 같은 음절의 1~4성 중 하나를 들려주고 고르기.  2음절: 두 음절을 이어 들려주고 각각의 성조 고르기 (실제 단어의 성조 조합 감각)
+let toneMode = 1;
+function renderPronTone(){
+  const box = $('pronTone'); if (!PY) return; const st = (STATS.pron && STATS.pron.tone) || {};
+  if (!pq || pq.kind !== 'tone'){
+    const acc = k => st[k] ? `${Math.round(st[k].ok / st[k].n * 100)}% · ${st[k].n}` : '기록 없음';
+    box.innerHTML = `<div class="sh-label">음절을 들려주면 성조를 고르기 (10문제)</div>
+      <div class="pgrid"><button data-tone-start="1" style="font-family:inherit;font-size:15px">1음절<br><small class="pstat">${acc('1')}</small></button><button data-tone-start="2" style="font-family:inherit;font-size:15px">2음절 (성조 조합)<br><small class="pstat">${acc('2')}</small></button></div>
+      <p style="font-size:12px;color:var(--ink-2);margin-top:10px">1성 높고 평평 ─ · 2성 올라감 ↗ · 3성 내렸다 올림 ↘↗ · 4성 뚝 떨어짐 ↘. 3성이 연달아 오면 앞 3성은 2성처럼 읽어요.</p>`; return; }
+  const q = pq.items[pq.i]; if (!q){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${pq.ok}/${pq.items.length}</h3><div class="dataops" style="justify-content:center"><button class="btn primary" data-tone-start="${toneMode}">다시</button><button class="btn" data-tone-back="1">처음으로</button></div></div>`; return; }
+  const names = ['1성 ─','2성 ↗','3성 ↘↗','4성 ↘'];
+  box.innerHTML = `<div class="card pq"><div class="pstat">${pq.i + 1} / ${pq.items.length}</div>
+    <div class="big"><button class="btn" data-tone-play="1">🔊 듣기</button></div>
+    <div style="font-family:var(--mono);font-size:24px;margin:4px 0">${q.syls.map(x => x.slice(0, -1)).join('  ')}</div>
+    ${q.syls.map((x, i) => `<div class="opts" data-row="${i}">${[1,2,3,4].map(t => `<button class="opt t${t}" data-tone-ans="${i}:${t}" style="min-width:80px;font-family:inherit;font-size:16px">${names[t-1]}</button>`).join('')}</div>`).join('')}
+    <div class="msg" id="toneMsg">${q.syls.length > 1 ? '각 음절의 성조를 고르세요' : '들린 성조를 고르세요'}</div></div>`;
+  if (!q.played){ q.played = true; setTimeout(() => speak(q.syls.map(x => PY.syl[x]).join('')), 150); }
+}
+function startPronTone(n){
+  toneMode = n; const bodies = {}; for (const syl of ((PY.common && PY.common.length > 300) ? PY.common : Object.keys(PY.table))){ const t = +syl.slice(-1); if (t === 5) continue; (bodies[syl.slice(0, -1)] = bodies[syl.slice(0, -1)] || []).push(syl); }
+  const rich = Object.values(bodies).filter(a => a.length >= (n === 1 ? 3 : 2)); const items = [];
+  for (let k = 0; k < 10; k++){ const syls = []; for (let j = 0; j < n; j++){ const grp = rich[Math.floor(Math.random() * rich.length)]; syls.push(grp[Math.floor(Math.random() * grp.length)]); } items.push({ syls, picks: [] }); }
+  pq = { kind:'tone', items, i:0, ok:0 }; renderPronTone();
+}
+$('pronTone').addEventListener('click', e => {
+  const t = e.target;
+  const st = t.closest('[data-tone-start]'); if (st){ startPronTone(+st.dataset.toneStart); return; }
+  if (t.closest('[data-tone-back]')){ pq = null; renderPronTone(); return; }
+  if (t.closest('[data-tone-play]')){ const q = pq.items[pq.i]; speak(q.syls.map(x => PY.syl[x]).join('')); return; }
+  if (t.closest('[data-tone-next]')){ pq.i++; renderPronTone(); return; }
+  const ab = t.closest('[data-tone-ans]'); if (ab && pq && pq.kind === 'tone'){ const q = pq.items[pq.i]; if (q.answered) return;
+    const [row, tone] = ab.dataset.toneAns.split(':').map(Number); if (q.picks[row] != null) return; q.picks[row] = tone;
+    ab.parentElement.querySelectorAll('.opt').forEach(b => b.setAttribute('aria-pressed', b === ab));
+    if (q.picks.filter(x => x != null).length < q.syls.length) return;
+    q.answered = true; const good = q.syls.every((x, i) => +x.slice(-1) === q.picks[i]); if (good) pq.ok++;
+    STATS.pron = STATS.pron || { pair:{}, tone:{} }; bump(STATS.pron.tone, String(toneMode), good); store.set('zh.stats', STATS);
+    q.syls.forEach((x, i) => { const row = $('pronTone').querySelector(`[data-row="${i}"]`); row.querySelectorAll('.opt').forEach(b => { const tn = +b.dataset.toneAns.split(':')[1]; if (tn === +x.slice(-1)) b.classList.add('good'); else if (tn === q.picks[i]) b.classList.add('bad'); }); });
+    $('toneMsg').innerHTML = (good ? '정답 ✓ ' : '오답 ✕ ') + `정답: ${q.syls.map(pySylHtml).join(' ')} (${q.syls.map(x => PY.syl[x]).join('')}) <button class="btn small primary" data-tone-next="1">다음 →</button>`; }
+});
+$('pronSeg').addEventListener('click', e => { const b = e.target.closest('[data-seg]'); if (!b) return; if (b.dataset.seg === 'ptable') renderPronTable(); if (b.dataset.seg === 'ppair') renderPronPair(); if (b.dataset.seg === 'ptone') renderPronTone(); });
 
 /* ═══════════ 관련 단어 ═══════════
    정답을 확인한 뒤 그 단어와 얽힌 단어들을 보여줌 (전부 앱 안에서 자동 계산 — 따로 만든 데이터 없음)
