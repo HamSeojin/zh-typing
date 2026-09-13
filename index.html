@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F4F6F9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141922" media="(prefers-color-scheme: dark)">
@@ -136,6 +136,27 @@ button.btn:focus-visible,nav button:focus-visible{outline:2px solid var(--accent
 .koedit{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .koedit label{font-size:12px;color:var(--ink-2);white-space:nowrap}
 .koedit input{flex:1;min-width:160px;font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+#mineBody input.edit,#tbody input.edit{width:100%;min-width:72px;font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+.mlist{display:flex;flex-direction:column;gap:8px;padding:8px 0}
+.wcard{display:block;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);cursor:pointer}
+.wcard:hover{border-color:var(--accent)}
+.wcard.editing{background:color-mix(in srgb,var(--accent) 6%,transparent);display:flex;flex-direction:column;gap:8px;cursor:default}
+.wcard .wc-top{display:flex;align-items:center;gap:8px}
+.wc-hz{font-family:var(--hanzi);font-size:22px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-lv{font-size:11px;color:var(--ink-2);flex:0 0 auto}
+.wc-acts{display:flex;gap:4px;flex:0 0 auto}
+.wc-py{font-family:var(--mono);font-size:13px;margin-top:2px}
+.wc-ko{font-size:15px;margin-top:2px}
+.wc-en{font-size:12px;color:var(--ink-2);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wc-prog{font-size:11px;color:var(--ink-2);margin-top:4px}
+.wcard .edit.hz{font-size:20px}
+.wc-acts .del{color:var(--bad)}
+button.btn.small.del{background:var(--card);border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line));border-radius:10px;padding:5px 10px;color:var(--bad);font-size:12px;font-weight:500;line-height:1.2}
+button.btn.small.del:active{background:color-mix(in srgb,var(--bad) 10%,var(--card))}
+.btn.small.del .ic-trash{margin-right:5px}
+#mineBody input.edit.hz{font-family:var(--hanzi);font-size:17px}
+#mineBody input.edit:focus,#tbody input.edit:focus{outline:2px solid var(--accent);outline-offset:1px}
+#mineBody tr.editing{background:color-mix(in srgb,var(--accent) 6%,transparent)}
 .koedit input:focus{outline:2px solid var(--accent);outline-offset:1px}
 /* 설정 */
 .set{display:grid;gap:10px}
@@ -275,7 +296,13 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .toneArea{margin-top:10px;display:flex;flex-direction:column;gap:8px;align-items:center}
 .tone-syl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
 .tone-syl .syl{font-family:var(--mono);font-size:20px;min-width:64px;text-align:right}
+.ic-spk{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.15em;background:currentColor;
+  -webkit-mask:var(--spk) center/contain no-repeat;mask:var(--spk) center/contain no-repeat}
+.ic-trash{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.15em;background:currentColor;
+  -webkit-mask:var(--trash) center/contain no-repeat;mask:var(--trash) center/contain no-repeat}
+:root{--trash:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 3.8h6M4.5 6.6h15M6.6 6.6l.8 12.1a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.8-12.1M10 10.2v6.3M14 10.2v6.3' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round'/></svg>");--spk:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 9.2h3.6L11.8 5v14L6.6 14.8H3z'/><path d='M15.4 9.1a4.2 4.2 0 0 1 0 5.8M18.3 6.6a8 8 0 0 1 0 10.8' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/></svg>")}
 button,label,[role=button]{touch-action:manipulation}   /* 연타해도 iOS 가 '두 번 탭 확대'로 해석하지 않게 */
+html{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* 손가락 두 개로 벌리거나 두 번 탭해도 확대되지 않게 (스크롤은 그대로) */
 .tone-syl button{font:inherit;font-family:var(--mono);font-size:16px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer;min-width:44px}
 .tone-syl button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--good-bg)}
 .tone-syl button.t1{color:var(--t1)}.tone-syl button.t2{color:var(--t2)}.tone-syl button.t3{color:var(--t3)}.tone-syl button.t4{color:var(--t4)}.tone-syl button.t5{color:var(--t5)}
@@ -300,7 +327,8 @@ button,label,[role=button]{touch-action:manipulation}   /* 연타해도 iOS 가 
 .mine-head .hint{font-size:12px;color:var(--ink-2);display:block}
 .mine-head select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
 .addform{display:grid;grid-template-columns:1.2fr 1.4fr 2fr auto;gap:8px;padding-top:12px;border-top:1px dashed var(--line)}
-.addform input{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);min-width:0}
+.addform input{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);min-width:0;text-overflow:ellipsis}
+.addform input::placeholder{font-size:13px}
 .addform input:focus{outline:2px solid var(--accent);outline-offset:1px}
 @media (max-width:560px){.addform{grid-template-columns:1fr 1fr}}
 .pykb{grid-column:1/-1;display:none;flex-direction:column;gap:6px}
@@ -342,6 +370,9 @@ td.k input:hover{border-color:var(--line)}
 td.k input:focus{outline:none;border-color:var(--accent);background:var(--paper)}
 td.b{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
 .pager{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px;font-size:13px;color:var(--ink-2)}
+.totop{position:fixed;right:14px;bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:30;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink-2);font-size:18px;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.12);cursor:pointer;opacity:.92}
+body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.totop:active{background:var(--paper)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
 @media (max-width:480px){
@@ -390,6 +421,7 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .apphead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:18px 0 12px}
 .apphead h1{font-family:var(--hanzi);font-weight:700;font-size:24px;margin:0;letter-spacing:.02em}
 .apphead small{font-size:12px;color:var(--ink-2)}
+.apphead{cursor:pointer}
 .apphead .askbtn{margin-left:auto;align-self:center;font-size:16px;line-height:1;padding:6px 8px;border:1px solid var(--line);border-radius:10px;background:var(--paper);cursor:pointer}
 .apphead .askbtn:active{background:var(--line)}
 .apphead .hx{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--accent);margin-left:4px;letter-spacing:.04em}
@@ -502,7 +534,7 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .wk-l .py{font-family:var(--mono);font-size:13px;color:var(--accent)}
 .wk-l small{font-size:13px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .wk-r{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto;min-width:9.5em}
-.wk-r .dots{font-style:normal;font-size:9px;letter-spacing:2px;color:var(--bad);line-height:1;width:5.2em;text-align:left}
+.wk-r .dots{font-style:normal;font-size:9px;letter-spacing:2px;color:var(--bad);line-height:1;white-space:nowrap;flex:0 0 auto;text-align:left}
 .wk-r small{font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap;width:6.2em;text-align:right}
 /* AI 노트 */
 .notes .nctx{margin:12px 0 4px;font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px}
@@ -663,6 +695,24 @@ details.more summary::-webkit-details-marker{display:none}
 .dbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--ink-2)}
 .dbox + .dbox{margin-top:8px}
 .reroll{font-size:16px;line-height:1;padding:4px 9px;color:var(--ink-2)}
+/* 홈은 스크롤 없이 한 화면에 들어오도록 간격만 촘촘하게 (다른 화면은 그대로) */
+.wrap:has(> .screen[data-screen="home"]:not([hidden])){padding-bottom:8px}
+.screen[data-screen="home"] .apphead{padding:12px 0 8px}
+.screen[data-screen="home"] .hero{padding:12px 16px;margin-bottom:10px}
+.screen[data-screen="home"] .hero-sub{margin-top:6px;padding-top:6px}
+.screen[data-screen="home"] .hero-cta{width:58px;height:58px}
+.screen[data-screen="home"] .tiles{gap:8px;margin-bottom:10px}
+.screen[data-screen="home"] .tile{padding:9px 12px}
+.screen[data-screen="home"] .tile b{font-size:18px}
+.screen[data-screen="home"] #homeDaily{margin-bottom:10px}
+.screen[data-screen="home"] .dbox{padding:8px 14px 10px}
+.screen[data-screen="home"] .dbox + .dbox{margin-top:8px}
+.screen[data-screen="home"] .dhead{margin-bottom:4px;padding-bottom:4px}
+.screen[data-screen="home"] .daily-item{padding:2px 6px}
+.screen[data-screen="home"] .daily-item .dtext > div{margin-top:0 !important;line-height:1.4}
+.screen[data-screen="home"] .daily-item .dtext > div:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* 뜻이 길어도 한 줄 — 눌러서 전체 보기 */
+.screen[data-screen="home"] .daily-item .dtext > span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.screen[data-screen="home"] #homeGoalCard{padding:12px 16px}
 .dhead{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink-2);margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .daily-item{cursor:pointer;border-radius:8px;padding:4px 6px;margin:0 -6px;display:flex;align-items:center;gap:10px}.daily-item:hover{background:var(--paper)}
 .daily-item .dtext{flex:1;min-width:0}.daily-item .dacts{flex:0 0 auto;display:flex;align-items:center;gap:8px}
@@ -736,7 +786,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.2049</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기">🤖</button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.2132</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기">🤖</button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -803,20 +853,17 @@ details.more summary::-webkit-details-marker{display:none}
       </div>
     </div>
     <form class="addform" id="addForm">
-      <input id="addS" placeholder="한자 (예: 加油)" required aria-label="한자">
-      <input id="addPy" placeholder="병음 (jia1you2 · jiā yóu 다 됨)" aria-label="병음">
-      <input id="addKo" placeholder="한국어 뜻 (예: 힘내다; 주유하다)" aria-label="한국어 뜻">
+      <input id="addS" placeholder="한자 · 加油" required aria-label="한자">
+      <input id="addPy" placeholder="병음 · jia1you2" aria-label="병음">
+      <input id="addKo" placeholder="뜻 · 힘내다" aria-label="한국어 뜻">
       <button class="btn" type="submit">+ 추가</button>
-      <div id="addPyHint" style="grid-column:1/-1;font-size:12px;color:var(--ink-2);min-height:1.2em"></div>
+      <div id="addPyHint" style="grid-column:1/-1;font-size:12px;line-height:1.5;color:var(--ink-2);min-height:1.2em">병음은 <b>jia1you2</b> 처럼 숫자로 입력<br>또는 아래 성조 키패드로 입력</div>
       <div class="pykb" id="pyKb" aria-label="병음 성조 입력기"></div>
     </form>
   </div>
   <div class="card" style="padding:8px 12px">
-    <div class="tblwrap"><table>
-      <thead><tr><th></th><th>급</th><th>간체</th><th>병음</th><th>한국어 뜻 (클릭해서 수정)</th><th>영어 뜻</th><th title="복습 상자(1~5, 높을수록 잘 외운 것) · 맞힌 횟수 · 틀린 횟수">학습 기록</th><th></th></tr></thead>
-      <tbody id="mineBody"></tbody>
-    </table></div>
-    <p id="mineEmpty" class="hint" style="padding:16px 4px;margin:0" hidden>아직 없어요. 학습 화면의 ☆로 담거나 위에서 직접 추가하세요.</p>
+    <div id="mineBody" class="mlist"></div>
+    <p id="mineEmpty" class="hint" style="padding:16px 4px;margin:0;font-size:13px;line-height:1.6" hidden>아직 없어요.<br>학습 화면의 ☆로 담거나 위에서 직접 추가하세요.</p>
   </div>
 
   </div>
@@ -1023,7 +1070,7 @@ details.more summary::-webkit-details-marker{display:none}
     </div>
     <div class="answer">
       <input id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="여기에 입력하고 Enter" aria-label="답 입력">
-      <button class="btn icon" id="btnSpeak" title="발음 듣기 (Alt+P)">🔊</button>
+      <button class="btn icon" id="btnSpeak" title="발음 듣기 (Alt+P)"><i class="ic-spk"></i></button>
       <button class="btn icon" id="btnStar" title="내 단어장에 담기 / 빼기 (Alt+S)">☆</button>
       <button class="btn primary" id="btnCheck">확인</button>
     </div>
@@ -1142,7 +1189,7 @@ details.more summary::-webkit-details-marker{display:none}
     <div class="unitbar toolbar">
       <label class="tog"><input type="checkbox" id="rdPy"> 병음</label>
       <label class="tog"><input type="checkbox" id="rdKo"> 번역</label>
-      <button class="btn icon" id="btnReadSpeak" title="전체 읽어주기">🔊</button>
+      <button class="btn icon" id="btnReadSpeak" title="전체 읽어주기"><i class="ic-spk"></i></button>
       <button class="btn" id="btnReadAsk" title="AI 선생님에게 이 글에 대해 묻기">🤖 묻기</button>
       </div>
     <div class="card" id="readCard">
@@ -1217,7 +1264,7 @@ details.more summary::-webkit-details-marker{display:none}
     <div class="card" id="lisCard" style="margin-top:12px">
       <div id="lisBody" class="exam-body"></div>
       <div class="dataops" style="margin-top:14px;justify-content:space-between">
-        <span style="display:flex;gap:8px"><button class="btn icon" id="btnLisSpeak" title="다시 듣기">🔊 다시 듣기</button><button class="btn icon" id="btnLisSlow" title="느리게 (0.75배)" aria-pressed="false">🐢</button></span>
+        <span style="display:flex;gap:8px"><button class="btn icon" id="btnLisSpeak" title="다시 듣기"><i class="ic-spk"></i> 다시 듣기</button><button class="btn icon" id="btnLisSlow" title="느리게 (0.75배)" aria-pressed="false">🐢</button></span>
         <button class="btn primary" id="btnLisNext" hidden>다음 →</button>
       </div>
     </div>
@@ -1229,7 +1276,7 @@ details.more summary::-webkit-details-marker{display:none}
       <div class="q-meta"><span id="examType"></span><span class="box" id="examSec"></span></div>
       <div id="examBody" class="exam-body"></div>
       <div class="dataops" style="margin-top:14px;justify-content:space-between">
-        <button class="btn icon" id="btnExamSpeak" title="다시 듣기">🔊 <span id="examReplay"></span></button>
+        <button class="btn icon" id="btnExamSpeak" title="다시 듣기"><i class="ic-spk"></i> <span id="examReplay"></span></button>
         <button class="btn primary" id="btnExamNext">다음 →</button>
       </div>
     </div>
@@ -1278,6 +1325,7 @@ details.more summary::-webkit-details-marker{display:none}
   </div>
 </div>
 
+<button class="totop" id="btnTop" hidden aria-label="맨 위로">↑</button>
 <div class="toast" id="toast"></div>
 <div class="popup" id="popup" hidden></div>
 <!-- AI 선생님 패널 (화면 아래에서 올라오는 시트) -->
@@ -1543,6 +1591,7 @@ const TONE_MAP = {'ā':'a1','á':'a2','ǎ':'a3','à':'a4','ē':'e1','é':'e2','�
 /* ── 병음 입력 도우미 ──
    "zhang3de" 처럼 붙여 쓰거나 "zhǎng de" 처럼 성조 부호로 써도 음절로 끊어 실제 병음으로 바꿔 준다.
    normPinyin 이 먼저 성조 숫자 형태로 통일하고(hǎo→hao3, ü→v), 아래 유효 음절 목록(CEDICT 에서 추출)으로 끊는다. */
+const ADD_HINT = '병음은 <b>jia1you2</b> 처럼 숫자로 입력<br>또는 아래 성조 키패드로 입력';
 const PY_SYL = new Set('a ai an ang ao ba bai ban bang bao bei ben beng bi bian biao bie bin bing bo bu ca cai can cang cao ce cen ceng cha chai chan chang chao che chen cheng chi chong chou chu chuai chuan chuang chui chun chuo ci cong cou cu cuan cui cun cuo da dai dan dang dao de dei den deng di dia dian diao die ding diu dong dou du duan dui dun duo e ei en eng er fa fan fang fei fen feng fo fou fu ga gai gan gang gao ge gei gen geng gong gou gu gua guai guan guang gui gun guo ha hai han hang hao he hei hen heng hong hou hu hua huai huan huang hui hun huo ji jia jian jiang jiao jie jin jing jiong jiu ju juan jue jun ka kai kan kang kao ke kei ken keng kong kou ku kua kuai kuan kuang kui kun kuo la lai lan lang lao le lei leng li lia lian liang liao lie lin ling liu lo long lou lu luan lun luo lv lve ma mai man mang mao me mei men meng mi mian miao mie min ming miu mo mou mu na nai nan nang nao ne nei nen neng ni nian niang niao nie nin ning niu nong nou nu nuan nun nuo nv nve o ou pa pai pan pang pao pei pen peng pi pian piao pie pin ping po pou pu qi qia qian qiang qiao qie qin qing qiong qiu qu quan que qun r ran rang rao re ren reng ri rong rou ru rua ruan rui run ruo sa sai san sang sao se sei sen seng sha shai shan shang shao she shei shen sheng shi shou shu shua shuai shuan shuang shui shun shuo si song sou su suan sui sun suo ta tai tan tang tao te tei teng ti tian tiao tie ting tong tou tu tuan tui tun tuo wa wai wan wang wei wen weng wo wu xi xia xian xiang xiao xie xin xing xiong xiu xu xuan xue xun ya yan yang yao ye yi yin ying yo yong you yu yuan yue yun za zai zan zang zao ze zei zen zeng zha zhai zhan zhang zhao zhe zhei zhen zheng zhi zhong zhou zhu zhua zhuai zhuan zhuang zhui zhun zhuo zi zong zou zu zuan zui zun zuo'.split(' '));
 function pySplitSyls(flat){   // "zhang3de" → [{b:'zhang',t:3},{b:'de',t:5}] · 끊을 수 없으면 null
   const out = [];
@@ -1611,7 +1660,7 @@ function loadVoices(){
   voices = speechSynthesis.getVoices().filter(v => /^zh|cmn/i.test(v.lang));
   optVoice.innerHTML = voices.length ? voices.map(v=>`<option value="${v.name}">${v.name} (${v.lang})</option>`).join('') : '<option value="">중국어 음성 없음</option>';
   if (SETTINGS.voice && voices.some(v=>v.name===SETTINGS.voice)) optVoice.value = SETTINGS.voice;
-  ttsState.textContent = voices.length ? `🔊 ${voices.length}개 중국어 음성` : '⚠ 중국어 음성 없음 — OS 언어팩 설치 필요';
+  ttsState.textContent = voices.length ? `중국어 음성 ${voices.length}개` : '⚠ 중국어 음성 없음 — OS 언어팩 설치 필요';
 }
 /* ── 미리 만든 발음 mp3 (make_audio.py 로 생성한 audio/ 폴더) ──
    audio/index.json: { w: { 단어id: [파일번호, 시작초, 길이초] }, s: { 단어id(예문): [...] } }
@@ -1684,7 +1733,7 @@ function renderQuestion(){
   if (!cur){ qHanzi.textContent='—'; qKo.textContent='과를 골라 시작하세요'; qEn.textContent=''; return; }
   const p = PROGRESS[cur.id];
   qBox.textContent = (session.wrong.has(cur.id) ? '다시 · ' : '') + (p ? `상자 ${p.box} · ${p.c}○ ${p.w}✕${p.h?` ${p.h}힌트`:''}` : '새 단어');
-  qKind.textContent = M.input==='pinyin' ? '병음을 입력하세요 (예: ni3hao3)' : (SETTINGS.study==='listen' ? '발음을 듣고 한자를 입력하세요 (🔊 다시 듣기 · 뜻은 참고용)' : SETTINGS.study==='learn' ? '보고 따라 입력하세요' : '한자를 입력하세요');
+  qKind.textContent = M.input==='pinyin' ? '병음을 입력하세요 (예: ni3hao3)' : (SETTINGS.study==='listen' ? '발음을 듣고 한자를 입력하세요 (다시 듣기 버튼 · 뜻은 참고용)' : SETTINGS.study==='learn' ? '보고 따라 입력하세요' : '한자를 입력하세요');
   ans.placeholder = M.input==='pinyin' ? 'ni3 hao3 또는 nǐ hǎo' : '한자 입력 후 Enter';
   const showH = M.showH;
   // 숨길 때는 한자를 아예 넣지 않고 글자 수만큼 □ 로 표시 (예전엔 투명 글자로 숨겼는데 윤곽이 비쳐 보였음)
@@ -1702,7 +1751,7 @@ function renderQuestion(){
     document.querySelector('.answer').classList.add('hiddenInput');
     startSay();
   } else if (M.input === 'initial'){
-    qKind.textContent = '발음을 듣고 음절의 첫 자음을 고르세요 (🔊 다시 듣기)';
+    qKind.textContent = '발음을 듣고 음절의 첫 자음을 고르세요 (다시 듣기 버튼으로 재생)';
     qHanzi.innerHTML = renderMask(cur.s, 0); qHanzi.className = 'hanzi';
     qPinyin.innerHTML = ''; qTrad.textContent = '';
     qKo.textContent = ''; qKo.className = 'ko'; qEn.textContent = '';   // 뜻은 숨김 (힌트·답 확인 후 공개)
@@ -1733,7 +1782,7 @@ function renderQuestion(){
   const showP = M.showP;
   qPinyin.innerHTML = showP ? renderPinyin(cur) : '';
   qTrad.textContent = [(SETTINGS.showTrad && cur.t && cur.t!==cur.s) ? `번체 ${cur.t}` : '', showP ? altText(cur) : ''].filter(Boolean).join('  ·  ');
-  qKo.textContent = (M.showM && SETTINGS.showKo) ? (ko || '(한국어 뜻 미입력)') : (M.showM || ['tone','initial'].includes(SETTINGS.study) ? '' : '🔊 발음을 듣고 입력하세요');
+  qKo.textContent = (M.showM && SETTINGS.showKo) ? (ko || '(한국어 뜻 미입력)') : (M.showM || ['tone','initial'].includes(SETTINGS.study) ? '' : '발음을 듣고 입력하세요');
   qKo.className = 'ko' + (ko && M.showM ? '' : ' empty');
   qEn.textContent = (M.showM && SETTINGS.showEn) ? cur.en.split(' ; ').slice(0, window.innerWidth < 480 ? 2 : 4).join(' ; ') : '';   // 영어 뜻은 앞 4개(폰은 2개)까지만
   }
@@ -1872,7 +1921,7 @@ $('btnMic').onclick = () => {
     check();
     const target = cur.pyn.toLowerCase().split(/\s+/);
     if (j.ok) fb.innerHTML = '정답 ✓ ' + (j.exact ? '정확히 알아들었어요' : `다른 글자(${j.heard})로 들렸지만 발음은 같아요`);
-    else fb.innerHTML = `오답 ✕ "${j.heard}"${j.syls ? ` (${j.syls.map(x => x || '?').join(' ')})` : ''} 로 들렸어요${j.toneOnly ? ' — 자음·모음은 맞고 성조가 달라요' : ''} — 정답 <span class="ans">${cur.s}</span> ${cur.py}` + (j.syls && j.syls.length === target.length ? `<br><small>음절별: ${j.syls.map((g, i) => !g ? '?' : sylBase(g) === sylBase(target[i]) ? (g === target[i] ? '✓' : `성조 ${g.slice(-1)}→${target[i].slice(-1)}`) : `${g}→${target[i]}`).join(' · ')}</small>` : '') + '. 🔊로 듣고 다시 해 보세요';
+    else fb.innerHTML = `오답 ✕ "${j.heard}"${j.syls ? ` (${j.syls.map(x => x || '?').join(' ')})` : ''} 로 들렸어요${j.toneOnly ? ' — 자음·모음은 맞고 성조가 달라요' : ''} — 정답 <span class="ans">${cur.s}</span> ${cur.py}` + (j.syls && j.syls.length === target.length ? `<br><small>음절별: ${j.syls.map((g, i) => !g ? '?' : sylBase(g) === sylBase(target[i]) ? (g === target[i] ? '✓' : `성조 ${g.slice(-1)}→${target[i].slice(-1)}`) : `${g}→${target[i]}`).join(' · ')}</small>` : '') + '. <i class="ic-spk"></i>로 듣고 다시 해 보세요';
   }
   recog.onerror = e => { $('sayNote').textContent = e.error === 'not-allowed' ? '마이크 사용이 허용되지 않았어요. 브라우저 주소창의 자물쇠/설정에서 마이크를 허용해 주세요.' : e.error === 'no-speech' ? '소리를 못 들었어요. 다시 눌러 보세요.' : '음성 인식 오류: ' + e.error; };
   recog.onend = () => { if (recog !== me) return; recog = null; finish(finals.length ? finals : (me.__interim ? [me.__interim] : [])); };
@@ -1968,7 +2017,7 @@ function renderSentQuestion(M, ko){
     qKo.textContent = st.ko + (SETTINGS.showKo && ko ? `  (빈칸: ${ko})` : '');
     ans.placeholder = '빈칸 단어 입력 후 Enter';
   } else if (SETTINGS.study === 'dict'){
-    qKind.textContent = '문장을 듣고 전체를 입력하세요 (🔊 다시 듣기)';
+    qKind.textContent = '문장을 듣고 전체를 입력하세요 (다시 듣기 버튼으로 재생)';
     qHanzi.innerHTML = [...stripSent(st.zh)].map(()=>'<span class="blank"></span>').join('');
     qKo.textContent = st.ko;
     ans.placeholder = '문장 전체 입력 후 Enter (구두점 생략 가능)';
@@ -2206,6 +2255,12 @@ function renderModeBar(){
   $('modebar').innerHTML = es.filter(([k,m])=>!m.group).map(btn).join('');
   $('modebar2').innerHTML = es.filter(([k,m])=>m.group==='sent').map(btn).join('');
 }
+// 맨 위로: 화면 제목줄을 탭하거나, 지금 보고 있는 탭 버튼을 한 번 더 누르면 (iOS 상태표시줄 탭은 앱 안쪽 스크롤에는 닿지 않음)
+function scrollTop(smooth){ $('app').scrollTo({ top: 0, behavior: smooth === false ? 'auto' : 'smooth' }); }
+document.querySelectorAll('.apphead, .pushed .topbar .title').forEach(h => h.addEventListener('click', e => { if (e.target.closest('button,a,input,select')) return; scrollTop(); }));
+$('tabbar').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.getAttribute('aria-selected') === 'true') scrollTop(); }, true);
+$('btnTop').onclick = () => scrollTop();
+$('app').addEventListener('scroll', () => { $('btnTop').hidden = $('app').scrollTop < 400; }, { passive: true });   // 한참 내려갔을 때만 보임
 $('modebar2').addEventListener('click', e => $('modebar').onclick(e));
 $('modebar').onclick = (e) => {
   const b = e.target.closest('[data-mode]'); if (!b) return;
@@ -2402,7 +2457,7 @@ function hanziDecHtml(str){   // 글자 분해 (있는 글자만)
 }
 function moreExHtml(w){
   const S = EXT.sents2 && EXT.sents2.sents; const arr = S && S[String(w.id)]; if (!arr || !arr.length) return '';
-  return `<div class="more-ex"><div class="rh" style="color:var(--ink-2);margin-bottom:2px">예문 더 보기</div>${arr.map(x => `<div class="s"><div class="z">${tapHtml(x.zh)} <button class="btn small" data-say="${x.zh}" style="padding:1px 6px">🔊</button></div><div class="p">${x.py}</div><div class="k">${x.ko || x.en || ''}</div></div>`).join('')}</div>`;
+  return `<div class="more-ex"><div class="rh" style="color:var(--ink-2);margin-bottom:2px">예문 더 보기</div>${arr.map(x => `<div class="s"><div class="z">${tapHtml(x.zh)} <button class="btn small" data-say="${x.zh}" style="padding:1px 6px"><i class="ic-spk"></i></button></div><div class="p">${x.py}</div><div class="k">${x.ko || x.en || ''}</div></div>`).join('')}</div>`;
 }
 // 팝업·정답 화면에 보조 정보(글자 분해·추가 예문)를 데이터가 오는 대로 덧붙임
 function appendExtras(box, w, opts){
@@ -2413,7 +2468,7 @@ function showLookup(el){
   document.querySelectorAll('.tok.sel').forEach(x=>x.classList.remove('sel')); el.classList.add('sel');
   const tok = el.dataset.tok, ws = lookup(tok);
   const pop = $('popup'); pop.hidden = false;
-  const acts = w => `<div class="acts"><button data-say="${tok}">🔊 발음</button>${w?`<button data-fav="${w.id}">${isFav(w.id)?'★ 내 단어장에서 빼기':'☆ 내 단어장에 담기'}</button><button data-ai="${w.id}">🤖 묻기</button>`:`<button data-ai-text="${tok}">🤖 묻기</button>`}<button data-close="1">닫기</button></div>`;
+  const acts = w => `<div class="acts"><button data-say="${tok}"><i class="ic-spk"></i> 발음</button>${w?`<button data-fav="${w.id}">${isFav(w.id)?'★ 내 단어장에서 빼기':'☆ 내 단어장에 담기'}</button><button data-ai="${w.id}">🤖 묻기</button>`:`<button data-ai-text="${tok}">🤖 묻기</button>`}<button data-close="1">닫기</button></div>`;
   const dictLine = () => { const D = EXT.dict; const d = D && D[tok]; return d ? `<div><b>${tok}</b><span class="py">${d[0]}</span><span style="font-size:13px">${d[1]}</span><small style="color:var(--ink-2)">CC-CEDICT</small></div>` : ''; };
   if (!ws.length || (ws.length > 1 && ws[0].s !== tok)){   // 단어장에 그 단어가 없음 → 보조 사전에서 찾고, 그래도 없으면 글자별
     const render = () => { const dl = dictLine(); pop.innerHTML = (dl || `<div><b>${tok}</b> <span style="color:var(--ink-2);font-size:13px">단어장·보조 사전에 없는 단어예요</span></div>`) + ws.map(w => `<div><b>${w.s}</b><span class="py">${w.py}</span><span>${KO[w.s]||w.ko||''}</span><small style="color:var(--ink-2)">${w.lv?w.lv+'급':''}</small></div>`).join('') + acts(null); appendExtras(pop, { s: tok, id: -1 }); };
@@ -2931,7 +2986,7 @@ $('hzRad').addEventListener('click', e => { const b = e.target.closest('[data-ra
 function renderHzMea(){
   const box = $('hzMea'); const M = EXT.hanzi && EXT.hanzi.measure; if (!M) return;
   const chip = n => `<span class="tok" data-tok="${n}" style="display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:8px;margin:2px 4px 2px 0;background:var(--paper)">${n}</span>`;
-  box.innerHTML = `<div class="sh-label">양사(量词) ${M.length} — 자주 쓰는 순. 양사·명사·예문의 단어를 누르면 사전, 🔊는 예문 발음</div><div class="plist mea">${M.map(m => `<div class="pitem"><div class="zh"><span class="tok" data-tok="${m.w}">${m.w}</span> <small style="font-family:var(--mono);font-size:13px;color:var(--ink-2)">${m.py}</small></div><div class="ko">${m.ko}</div><div class="note" style="font-family:var(--hanzi);font-size:15px;color:var(--ink)">${m.nouns.split(/\s+/).map(chip).join('')}</div><div class="note"><span style="font-family:var(--hanzi);font-size:15px;color:var(--ink)">${tapHtml(m.ex.replace(/\s+/g, ''))}</span> — ${m.ex_ko}${m.note ? `<br>${m.note}` : ''}</div><div class="acts"><button data-say="${m.ex.replace(/\s+/g, '')}">🔊</button></div></div>`).join('')}</div>`;
+  box.innerHTML = `<div class="sh-label">양사(量词) ${M.length} — 자주 쓰는 순. 양사·명사·예문의 단어를 누르면 사전, <i class="ic-spk"></i>는 예문 발음</div><div class="plist mea">${M.map(m => `<div class="pitem"><div class="zh"><span class="tok" data-tok="${m.w}">${m.w}</span> <small style="font-family:var(--mono);font-size:13px;color:var(--ink-2)">${m.py}</small></div><div class="ko">${m.ko}</div><div class="note" style="font-family:var(--hanzi);font-size:15px;color:var(--ink)">${m.nouns.split(/\s+/).map(chip).join('')}</div><div class="note"><span style="font-family:var(--hanzi);font-size:15px;color:var(--ink)">${tapHtml(m.ex.replace(/\s+/g, ''))}</span> — ${m.ex_ko}${m.note ? `<br>${m.note}` : ''}</div><div class="acts"><button data-say="${m.ex.replace(/\s+/g, '')}"><i class="ic-spk"></i></button></div></div>`).join('')}</div>`;
 }
 $('hzMea').addEventListener('click', e => { const sb = e.target.closest('[data-say]'); if (sb){ speak(sb.dataset.say); return; } const tk = e.target.closest('.tok'); if (tk) showLookup(tk); });
 function renderHzDec(){
@@ -2949,8 +3004,8 @@ function renderDaily(){
   Promise.all([loadExt('phrases'), loadExt('idioms')]).then(() => {
     const P = (EXT.phrases && EXT.phrases.phrases) || [], I = (EXT.idioms && EXT.idioms.idioms) || [];
     const miss = '<span style="color:var(--bad)">데이터를 못 받았어요 — GitHub 의 data/ 폴더에 phrases·idioms 파일이 있는지 확인</span>';
-    if (P.length){ const x = P[seed % Math.min(P.length, 400)]; $('dailyPhrase').innerHTML = `<div class="daily-item" data-open-phrase="${x.zh}" role="button"><div class="dtext"><span style="font-family:var(--hanzi);font-size:20px;color:var(--ink)">${x.zh}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${x.py}</div><div style="color:var(--ink)">${x.ko}${x.note ? ` <small style="color:var(--ink-2)">(${x.note})</small>` : ''}</div></div><div class="dacts"><button class="btn small" data-say="${x.zh}">🔊</button></div></div>`; } else $('dailyPhrase').innerHTML = miss;
-    if (I.length){ const y = I[(seedI * 7) % Math.min(I.length, 300)]; $('dailyIdiom').innerHTML = `<div class="daily-item" data-open-idiom="${y.w}" role="button"><div class="dtext"><span style="font-family:var(--hanzi);font-size:20px;letter-spacing:.06em;color:var(--ink)">${y.w}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${y.py}</div><div style="color:var(--ink)">${idiomKoHtml(y.ko)}</div></div><div class="dacts"><button class="btn small" data-say="${y.w}">🔊</button></div></div>`; } else $('dailyIdiom').innerHTML = miss;
+    if (P.length){ const x = P[seed % Math.min(P.length, 400)]; $('dailyPhrase').innerHTML = `<div class="daily-item" data-open-phrase="${x.zh}" role="button"><div class="dtext"><span style="font-family:var(--hanzi);font-size:20px;color:var(--ink)">${x.zh}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${x.py}</div><div style="color:var(--ink)">${x.ko}${x.note ? ` <small style="color:var(--ink-2)">(${x.note})</small>` : ''}</div></div><div class="dacts"><button class="btn small" data-say="${x.zh}"><i class="ic-spk"></i></button></div></div>`; } else $('dailyPhrase').innerHTML = miss;
+    if (I.length){ const y = I[(seedI * 7) % Math.min(I.length, 300)]; $('dailyIdiom').innerHTML = `<div class="daily-item" data-open-idiom="${y.w}" role="button"><div class="dtext"><span style="font-family:var(--hanzi);font-size:20px;letter-spacing:.06em;color:var(--ink)">${y.w}</span><div style="font-family:var(--mono);font-size:12px;margin-top:2px">${y.py}</div><div style="color:var(--ink)">${idiomKoHtml(y.ko)}</div></div><div class="dacts"><button class="btn small" data-say="${y.w}"><i class="ic-spk"></i></button></div></div>`; } else $('dailyIdiom').innerHTML = miss;
   }).catch(() => { $('dailyPhrase').innerHTML = $('dailyIdiom').innerHTML = '<span style="color:var(--bad)">데이터를 못 받았어요</span>'; });
 }
 let phrOpenQ = '', idiOpenQ = '';   // 홈에서 누른 항목 → 해당 화면에서 그 항목을 검색해 보여줌
@@ -2978,7 +3033,7 @@ function renderPhrList(){
   box.innerHTML = `<input class="qsearch" placeholder="검색 (한자·병음·한국어)" value="${q.replace(/"/g,'&quot;')}">
     <div class="tagbar">${tags.map(t => `<button data-tag="${t}" aria-pressed="${t === phrTag}">${t}</button>`).join('')}</div>
     <div class="plist">${list.map((x, i) => `<div class="pitem" data-i="${P.indexOf(x)}"><div class="zh">${tapHtml(x.zh)}</div><div class="py">${x.py}</div><div class="ko">${x.ko}</div><div class="note">${x.note || ''}</div>
-      <div class="acts"><button data-psay="1" title="듣기">🔊</button><button data-pshadow="1" title="따라 말하기">🎤</button><button data-pask="1" title="AI 선생님에게 묻기">🤖</button></div><div class="sres"></div></div>`).join('')}</div>
+      <div class="acts"><button data-psay="1" title="듣기"><i class="ic-spk"></i></button><button data-pshadow="1" title="따라 말하기">🎤</button><button data-pask="1" title="AI 선생님에게 묻기">🤖</button></div><div class="sres"></div></div>`).join('')}</div>
     <p style="font-size:12px;color:var(--ink-2);margin-top:8px">${list.length}${list.length >= 200 ? '+' : ''} / ${P.length} · 자막 말뭉치(OpenSubtitles)에서 자주 나온 말을 골라 다듬은 것. 출처 특성상 반말·구어체가 많아요.</p>`;
   const inp = box.querySelector('.qsearch'); inp.oninput = () => { const v = inp.value; renderPhrList(); const n = box.querySelector('.qsearch'); n.value = v; n.focus(); n.setSelectionRange(v.length, v.length); };
 }
@@ -3017,7 +3072,7 @@ function renderPhrQuiz(){
   const q = phrQ.items[phrQ.i];
   if (!q){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${phrQ.ok}/${phrQ.items.length}</h3><div class="dataops" style="justify-content:center"><button class="btn primary" data-phq-start="1">다시</button><button class="btn" data-phq-back="1">처음으로</button></div></div>`; return; }
   box.innerHTML = `<div class="card pq"><div class="pstat" style="display:flex;justify-content:space-between;align-items:center"><button class="btn small" data-phq-back="1">‹ 처음으로</button><span>${phrQ.i + 1} / ${phrQ.items.length}</span><span style="width:70px"></span></div>
-    <div class="big"><button class="btn" data-phq-play="1">🔊 듣기</button></div>
+    <div class="big"><button class="btn" data-phq-play="1"><i class="ic-spk"></i> 듣기</button></div>
     <div class="opts" style="flex-direction:column;align-items:stretch">${q.opts.map((o, i) => `<button class="opt" data-phq-ans="${i}" style="font-family:inherit;font-size:15px;text-align:left;justify-content:flex-start">${o.ko}</button>`).join('')}</div>
     <div class="msg" id="phqMsg">들린 표현의 뜻을 고르세요</div></div>`;
   if (!q.played){ q.played = true; setTimeout(() => speak(q.ans.zh), 150); }
@@ -3043,7 +3098,7 @@ function renderPhrSub(){
   $('subQ').oninput = () => { clearTimeout(t); t = setTimeout(() => { const v = $('subQ').value.trim(); if (!v){ $('subOut').innerHTML = ''; return; }
     $('subOut').innerHTML = '<p style="font-size:13px;color:var(--ink-2)">찾는 중…</p>';
     loadExt('opus').then(() => { const P = (EXT.opus && EXT.opus.pairs) || []; const hits = []; for (const pr of P){ if (pr[0].includes(v) || pr[1].includes(v)){ hits.push(pr); if (hits.length >= 60) break; } }
-      $('subOut').innerHTML = hits.length ? `<div class="sh-label">${hits.length}${hits.length >= 60 ? '+' : ''}줄</div><div class="plist">${hits.map(pr => `<div class="pitem"><div class="zh">${tapHtml(pr[0])}</div><div class="ko">${pr[1]}</div><div class="acts"><button data-say="${pr[0]}">🔊</button><button data-ask-zh="${pr[0]}" data-ask-ko="${pr[1]}" title="AI 선생님에게 묻기">🤖</button></div></div>`).join('')}</div>` : '<p style="font-size:13px;color:var(--ink-2)">없어요</p>'; }); }, 250); };
+      $('subOut').innerHTML = hits.length ? `<div class="sh-label">${hits.length}${hits.length >= 60 ? '+' : ''}줄</div><div class="plist">${hits.map(pr => `<div class="pitem"><div class="zh">${tapHtml(pr[0])}</div><div class="ko">${pr[1]}</div><div class="acts"><button data-say="${pr[0]}"><i class="ic-spk"></i></button><button data-ask-zh="${pr[0]}" data-ask-ko="${pr[1]}" title="AI 선생님에게 묻기">🤖</button></div></div>`).join('')}</div>` : '<p style="font-size:13px;color:var(--ink-2)">없어요</p>'; }); }, 250); };
 }
 $('phrSub').addEventListener('click', e => { const sb = e.target.closest('[data-say]'); if (sb){ speak(sb.dataset.say); return; } const ak = e.target.closest('[data-ask-zh]'); if (ak){ aiOpen(aiExprCtx(ak.dataset.askZh, ak.dataset.askKo, '자막 대사')); return; } const tk = e.target.closest('.tok'); if (tk) showLookup(tk); });
 $('phrSeg').addEventListener('click', e => { const b = e.target.closest('[data-seg]'); if (!b) return; if (b.dataset.seg === 'phlist') renderPhrList(); else if (b.dataset.seg === 'phquiz') renderPhrQuiz(); else renderPhrSub(); });
@@ -3053,10 +3108,10 @@ let idiQ = null, idiPage = 0, idiFilter = 'all';
 function idiomKoHtml(ko){ const i = ko.indexOf(' — '); return i < 0 ? ko : `<b>${ko.slice(0, i)}</b><div style="font-size:13px;color:var(--ink-2);margin-top:1px">${ko.slice(i + 3)}</div>`; }
 function idiomCard(x, n){
   const st = IDI_STAT[n];
-  return `<div class="idcard ${isIdiDone(n) ? 'done' : ''}" data-n="${n}"><span class="pstat" style="font-family:var(--mono);margin-right:6px">#${n}</span><span class="w">${x.w}</span><span class="py">${x.py}</span><span style="float:right;display:flex;gap:4px"><button class="btn small" data-done-i="${n}" title="학습 완료 표시" aria-pressed="${isIdiDone(n)}">학습</button><button class="btn small" data-fav-i="${n}" title="성어 단어장">${isFavI(n) ? '★' : '☆'}</button><button class="btn small" data-say="${x.w}">🔊</button><button class="btn small" data-ask-idiom="${x.w}" title="AI 선생님에게 묻기">🤖</button></span>
+  return `<div class="idcard ${isIdiDone(n) ? 'done' : ''}" data-n="${n}"><span class="pstat" style="font-family:var(--mono);margin-right:6px">#${n}</span><span class="w">${x.w}</span><span class="py">${x.py}</span><span style="float:right;display:flex;gap:4px"><button class="btn small" data-done-i="${n}" title="학습 완료 표시" aria-pressed="${isIdiDone(n)}">학습</button><button class="btn small" data-fav-i="${n}" title="성어 단어장">${isFavI(n) ? '★' : '☆'}</button><button class="btn small" data-say="${x.w}"><i class="ic-spk"></i></button><button class="btn small" data-ask-idiom="${x.w}" title="AI 선생님에게 묻기">🤖</button></span>
     ${st ? `<div class="pstat" style="margin-top:2px">퀴즈 <span style="color:var(--good)">✓${st.c || 0}</span> <span style="color:var(--bad)">✕${st.w || 0}</span></div>` : ''}
     <div class="ko">${idiomKoHtml(x.ko)}</div><div class="desc">${x.desc}</div>
-    <div class="ex"><div class="z">${tapHtml(x.ex)} <button class="btn small" data-say="${x.ex}" style="padding:1px 6px">🔊</button></div><div class="k">${x.expy}<br>${x.ex_ko}</div></div></div>`;
+    <div class="ex"><div class="z">${tapHtml(x.ex)} <button class="btn small" data-say="${x.ex}" style="padding:1px 6px"><i class="ic-spk"></i></button></div><div class="k">${x.expy}<br>${x.ex_ko}</div></div></div>`;
 }
 function renderIdiMine(){
   const box = $('idiMine'); const I = EXT.idioms && EXT.idioms.idioms; if (!I) return;
@@ -3104,7 +3159,7 @@ function renderIdiQuiz(){
   const q = idiQ.items[idiQ.i];
   if (!q){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${idiQ.ok}/${idiQ.items.length}</h3><div class="dataops" style="justify-content:center"><button class="btn primary" data-idq-start="${idiQ.range}">다시</button><button class="btn" data-idq-back="1">처음으로</button></div></div>`; return; }
   box.innerHTML = `<div class="card pq"><div class="pstat" style="display:flex;justify-content:space-between;align-items:center"><button class="btn small" data-idq-back="1">‹ 처음으로</button><span>${idiQ.i + 1} / ${idiQ.items.length}</span><span style="width:70px"></span></div>
-    <div style="font-family:var(--hanzi);font-size:34px;letter-spacing:.1em;margin:14px 0 2px">${q.ans.w}</div><div style="font-family:var(--mono);color:var(--ink-2)">#${I.indexOf(q.ans) + 1} · ${q.ans.py} <button class="btn small" data-say="${q.ans.w}">🔊</button> <button class="btn small" data-fav-i="${I.indexOf(q.ans) + 1}">${isFavI(I.indexOf(q.ans) + 1) ? '★' : '☆'}</button></div>
+    <div style="font-family:var(--hanzi);font-size:34px;letter-spacing:.1em;margin:14px 0 2px">${q.ans.w}</div><div style="font-family:var(--mono);color:var(--ink-2)">#${I.indexOf(q.ans) + 1} · ${q.ans.py} <button class="btn small" data-say="${q.ans.w}"><i class="ic-spk"></i></button> <button class="btn small" data-fav-i="${I.indexOf(q.ans) + 1}">${isFavI(I.indexOf(q.ans) + 1) ? '★' : '☆'}</button></div>
     <div class="opts" style="flex-direction:column;align-items:stretch">${q.opts.map((o, i) => `<button class="opt" data-idq-ans="${i}" style="font-family:inherit;font-size:15px;text-align:left;justify-content:flex-start">${o.ko}</button>`).join('')}</div>
     <div class="msg" id="idqMsg"></div></div>`;
 }
@@ -3181,7 +3236,7 @@ function renderPronPair(){
   const done = pq.i >= pq.items.length;
   if (done){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${pq.ok}/${pq.items.length}</h3><p class="msg">${pq.wrong.length ? '틀린 것: ' + pq.wrong.map(w => `${w.pr.k} (${pyMark(w.ans)})`).join(', ') : '전부 맞혔어요'}</p><div class="dataops" style="justify-content:center"><button class="btn primary" data-pair-again="1">다시</button><button class="btn" data-pair-back="1">짝 고르기</button></div></div>`; return; }
   box.innerHTML = `<div class="card pq"><div class="pstat" style="display:flex;justify-content:space-between;align-items:center"><button class="btn small" data-pair-back="1">‹ 짝 고르기</button><span>${pq.i + 1} / ${pq.items.length} · ${pr.k}</span><span style="width:70px"></span></div>
-    <div class="big"><button class="btn" data-pair-play="1">🔊 듣기</button></div>
+    <div class="big"><button class="btn" data-pair-play="1"><i class="ic-spk"></i> 듣기</button></div>
     <div class="opts">${['a','b'].map(side => `<button class="opt" data-pair-ans="${side}">${pySylHtml(q[side])}</button>`).join('')}</div>
     <div class="msg" id="pairMsg">둘 중 들린 것을 고르세요</div>
     <p class="pstat">${pr.ko}</p></div>`;
@@ -3224,7 +3279,7 @@ function renderPronTone(){
   const q = pq.items[pq.i]; if (!q){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${pq.ok}/${pq.items.length}</h3><div class="dataops" style="justify-content:center"><button class="btn primary" data-tone-start="${toneMode}">다시</button><button class="btn" data-tone-back="1">처음으로</button></div></div>`; return; }
   const names = ['1성 ─','2성 ↗','3성 ↘↗','4성 ↘'];
   box.innerHTML = `<div class="card pq"><div class="pstat" style="display:flex;justify-content:space-between;align-items:center"><button class="btn small" data-tone-back="1">‹ 처음으로</button><span>${pq.i + 1} / ${pq.items.length}</span><span style="width:70px"></span></div>
-    <div class="big"><button class="btn" data-tone-play="1">🔊 듣기</button></div>
+    <div class="big"><button class="btn" data-tone-play="1"><i class="ic-spk"></i> 듣기</button></div>
     ${q.syls.map((x, i) => `<div class="trow" data-row="${i}"><span class="tl">${x.slice(0, -1)}</span>${[1,2,3,4].map(t => `<button class="opt t${t}" data-tone-ans="${i}:${t}">${names[t-1]}</button>`).join('')}</div>`).join('')}
     <div class="msg" id="toneMsg">${q.syls.length > 1 ? '각 음절의 성조를 고르세요' : '들린 성조를 고르세요'}</div></div>`;
   if (!q.played){ q.played = true; setTimeout(() => speak(q.syls.map(x => PY.syl[x]).join('')), 150); }
@@ -3344,7 +3399,7 @@ function renderLis(){
   setTimeout(() => speakTurns(it.turns, it.qs[0].q), 300);
 }
 function lisShowScript(it){
-  $('lisScript').innerHTML = `<div class="script">${it.turns.map((t, k) => `<div class="ln"><b>${it.kind === 'mono' ? '▶' : t.s}</b><span>${tapHtml(t.t)}</span><button class="btn small" data-say-turn="${k}" title="이 줄 듣기">🔊</button><button class="btn small" data-shadow="${k}" title="따라 말하기 (음성 인식으로 발음 확인)">🎤</button></div><div class="shadow-res" data-res="${k}"></div>`).join('')}
+  $('lisScript').innerHTML = `<div class="script">${it.turns.map((t, k) => `<div class="ln"><b>${it.kind === 'mono' ? '▶' : t.s}</b><span>${tapHtml(t.t)}</span><button class="btn small" data-say-turn="${k}" title="이 줄 듣기"><i class="ic-spk"></i></button><button class="btn small" data-shadow="${k}" title="따라 말하기 (음성 인식으로 발음 확인)">🎤</button></div><div class="shadow-res" data-res="${k}"></div>`).join('')}
     ${it.qs.map((q, k) => `<div class="ln q"><b>Q${it.qs.length > 1 ? k+1 : ''}</b><span>${tapHtml(q.q)} → ${tapHtml(q.opts[q.ans])}</span></div>`).join('')}<div class="ko">${it.ko}</div></div>`;
 }
 $('lisBody').addEventListener('click', e => {
@@ -3359,7 +3414,7 @@ $('lisBody').addEventListener('click', e => {
   { const h = histToday(); h.n++; if (ok) h.ok++; store.set('zh.history', HISTORY); }
   bump(STATS.mode, 'listenDlg', ok); store.set('zh.stats', STATS); updateStats();
   if (!ok && !lis.wrong.includes(it)) lis.wrong.push(it);
-  if (qi + 1 < it.qs.length){   // 다음 문제: 질문만 다시 읽어줌 (대화는 다시 안 읽음 — 🔊 다시 듣기로)
+  if (qi + 1 < it.qs.length){   // 다음 문제: 질문만 다시 읽어줌 (대화는 다시 안 읽음 — 다시 듣기 버튼으로)
     lis.qi = qi + 1; $('lisQs').insertAdjacentHTML('beforeend', lisQHtml(it, lis.qi)); setTimeout(() => speakTurns([], it.qs[lis.qi].q), 200); return; }
   lis.answered = true; lisShowScript(it);
   $('btnLisNext').hidden = false; $('btnLisNext').textContent = lis.i === lis.items.length-1 ? '결과 보기' : '다음 →';
@@ -3448,7 +3503,7 @@ function renderGramList(){
 document.querySelectorAll('#gramLv input').forEach(i => i.onchange = () => { $('gramSearch').value = ''; renderGramList(); });
 $('gramSearch').oninput = renderGramList;
 $('glist').addEventListener('click', e => { const b = e.target.closest('[data-gid]'); if (b) openGram(b.dataset.gid); });
-function gramExHtml(e){ return `<div class="gex"><div class="z">${tapHtml(e.zh)}<button class="say" data-say="${e.zh}" title="발음">🔊</button></div><div class="p">${e.py.replace(/\s*[。，！？、；：!?,.…—""''（）]/g, m => m.trim().replace(/^[。！？!?.]$/, '') )}</div><div class="k">${e.ko}</div></div>`; }
+function gramExHtml(e){ return `<div class="gex"><div class="z">${tapHtml(e.zh)}<button class="say" data-say="${e.zh}" title="발음"><i class="ic-spk"></i></button></div><div class="p">${e.py.replace(/\s*[。，！？、；：!?,.…—""''（）]/g, m => m.trim().replace(/^[。！？!?.]$/, '') )}</div><div class="k">${e.ko}</div></div>`; }
 function openGram(id){
   curGram = GRAM.find(g => g.id === id); if (!curGram) return;
   const g = curGram;
@@ -3717,7 +3772,7 @@ function renderMineSents(){
   $('mineSentCount').textContent = ws.length;
   $('mineSents').innerHTML = ws.map(w => { const st = sentOf(w); return `<div class="srow"><button class="star on" data-favs="${w.id}" title="내 문장에서 빼기">★</button>
     <div><div class="szh">${sentTokensHtml(st, w.s)}</div><div class="spy">${st.py}</div><div class="sko">${st.ko}</div></div>
-    <button class="btn icon" data-say="${st.zh}" title="문장 듣기">🔊</button></div>`; }).join('') || '<p class="hint" style="padding:12px 4px;margin:0;font-size:13px;color:var(--ink-2)">아직 없어요. 문장 연습에서 ☆를 누르면 담겨요.</p>';
+    <button class="btn icon" data-say="${st.zh}" title="문장 듣기"><i class="ic-spk"></i></button></div>`; }).join('') || '<p class="hint" style="padding:12px 4px;margin:0;font-size:13px;color:var(--ink-2)">아직 없어요.<br>문장 연습에서 ☆를 누르면 담겨요.</p>';
 }
 $('mineSents').addEventListener('click', e => {
   const b = e.target.closest('[data-say]'); if (b) speak(b.dataset.say);
@@ -3729,6 +3784,7 @@ $('btnMineSentStudy').onclick = () => {
   go('session');
   startSession('mine', ws, { label: '내 문장' });
 };
+let MINE_EDIT = null;   // 지금 수정 중인 단어 id (아무것도 안 누르면 표는 읽기 전용)
 function renderMine(){
   renderMineSents();
   const ws = mineWords();
@@ -3737,18 +3793,56 @@ function renderMine(){
   const chunks = mineChunks();
   $('mineChunk').innerHTML = chunks.length <= 1 ? `<option value="0">전체 (${ws.length}단어)</option>`
     : `<option value="all">전체 (${ws.length}단어)</option>` + chunks.map((c,i)=>`<option value="${i}">${i+1}묶음 (${i*unitSize()+1}~${i*unitSize()+c.length})</option>`).join('');
-  $('mineBody').innerHTML = ws.map(w => { const p = PROGRESS[w.id];
-    return `<tr><td><button class="star on" data-fav="${w.id}" title="내 단어장에서 빼기">★</button></td><td class="b">${w.custom?'직접':w.lv}</td><td class="h">${w.s}</td>
-      <td class="p">${renderPinyin(w)}</td><td class="k"><input data-s="${w.s}" value="${(KO[w.s]||w.ko||'').replace(/"/g,'&quot;')}" placeholder="뜻 입력"></td>
-      <td class="e">${w.en||''}</td><td class="prog-cell">${p?`상자 <b>${p.box}</b> · <span class="ok">✓${p.c}</span> <span class="bad">✕${p.w}</span>`:'<span style="color:var(--ink-2)">아직 안 봄</span>'}</td>
-      <td style="white-space:nowrap"><button class="btn icon" data-say="${w.s}" title="발음">🔊</button>${w.custom?` <button class="del" data-del="${w.id}" title="삭제">삭제</button>`:''}</td></tr>`; }).join('');
+  $('mineBody').innerHTML = ws.map(w => { const p = PROGRESS[w.id], ed = MINE_EDIT === w.id, ko = KO[w.s] || w.ko || '';
+    if (ed) return `<div class="wcard editing">
+      <div class="wc-top"><input class="edit hz" id="edS" value="${w.s.replace(/"/g,'&quot;')}" aria-label="한자" ${w.custom?'':'readonly'}></div>
+      <input class="edit" id="edPy" value="${w.py.replace(/"/g,'&quot;')}" placeholder="jia1you2" aria-label="병음" ${w.custom?'':'readonly'}>
+      <input class="edit" id="edKo" value="${ko.replace(/"/g,'&quot;')}" placeholder="한국어 뜻" aria-label="한국어 뜻">
+      <div class="wc-acts"><button class="btn small primary" data-edsave="${w.id}" title="저장">✓ 저장</button><button class="btn small" data-edcancel="1" title="취소">✕ 취소</button>${w.custom?`<button class="btn small del" data-del="${w.id}" title="삭제"><i class="ic-trash"></i> 삭제</button>`:''}</div></div>`;
+    return `<div class="wcard" data-open="${w.s}" role="button" tabindex="0" title="전체 검색에서 이 단어 보기">
+      <div class="wc-top">
+        <button class="star on" data-fav="${w.id}" title="내 단어장에서 빼기">★</button>
+        <b class="wc-hz">${w.s}</b><span class="wc-lv">${w.custom?'직접':w.lv+'급'}</span>
+        <span class="wc-acts"><button class="btn icon" data-edit="${w.id}" title="수정">✎</button><button class="btn icon" data-ask-w="${w.id}" title="AI 선생님에게 묻기">🤖</button><button class="btn icon" data-say="${w.s}" title="발음"><i class="ic-spk"></i></button></span>
+      </div>
+      <div class="wc-py">${renderPinyin(w)}</div>
+      <div class="wc-ko">${ko || '<span style="color:var(--ink-2)">뜻 없음</span>'}</div>
+      ${w.en ? `<div class="wc-en">${w.en}</div>` : ''}
+      <div class="wc-prog">${p?`상자 <b>${p.box}</b> · <span class="ok">✓${p.c}</span> <span class="bad">✕${p.w}</span>`:'아직 안 봄'}</div>
+    </div>`; }).join('');
 }
 $('mineBody').addEventListener('click', e => {
-  const b = e.target.closest('[data-say]'); if (b) speak(b.dataset.say);
-  const f = e.target.closest('[data-fav]'); if (f){ toggleFav(+f.dataset.fav); if (cur && cur.id===+f.dataset.fav) updateStar(); renderMine(); }
+  const ed = e.target.closest('[data-edit]'); if (ed){ MINE_EDIT = +ed.dataset.edit; renderMine(); const f = $('edS') || $('edKo'); if (f) f.focus(); return; }
+  const sv = e.target.closest('[data-edsave]'); if (sv){ saveMineEdit(+sv.dataset.edsave); return; }
+  if (e.target.closest('[data-edcancel]')){ MINE_EDIT = null; renderMine(); return; }
+  const a = e.target.closest('[data-ask-w]'); if (a){ const w = BY_ID.get(+a.dataset.askW); if (w) aiOpen(aiWordCtx(w)); return; }
+  const b = e.target.closest('[data-say]'); if (b){ speak(b.dataset.say); return; }
+  const f = e.target.closest('[data-fav]'); if (f){ toggleFav(+f.dataset.fav); if (cur && cur.id===+f.dataset.fav) updateStar(); renderMine(); return; }
+  const o = e.target.closest('[data-open]'); if (o && !e.target.closest('button')){ openInAll(o.dataset.open); return; }   // 카드 본문 탭 → 전체 검색에서 이 단어
   const d = e.target.closest('[data-del]'); if (d){ const i = CUSTOM.findIndex(w=>w.id===+d.dataset.del); if (i>=0){ CUSTOM_DEL[CUSTOM[i].id] = Date.now(); store.set('zh.custom_del', CUSTOM_DEL); if (FAV[CUSTOM[i].id]) FAV[CUSTOM[i].id] = -Date.now(); CUSTOM.splice(i,1); store.set('zh.custom', CUSTOM); store.set('zh.fav', FAV); renderMine(); } }
 });
-$('mineBody').addEventListener('change', e => { if (e.target.dataset.s){ saveKo(e.target.dataset.s, e.target.value); showToast('저장됨'); } });
+$('mineBody').addEventListener('keydown', e => { if (e.key === 'Enter' && MINE_EDIT != null && e.target.classList.contains('edit')){ e.preventDefault(); saveMineEdit(MINE_EDIT); } });
+function openInAll(str){   // 전체 검색 탭으로 옮겨 그 단어를 검색한 상태로 보여 줌
+  $('wordsSeg').querySelector('[data-seg=all]').click();
+  const q = $('q'); q.value = str; page = 0; renderList(); renderDictHits();
+  $('app').scrollTo({ top: 0, behavior: 'smooth' });
+}
+function saveMineEdit(id){
+  const w = BY_ID.get(id); if (!w) { MINE_EDIT = null; renderMine(); return; }
+  const sNew = ($('edS') ? $('edS').value : w.s).trim(), pyNew = ($('edPy') ? $('edPy').value : w.py).trim(), koNew = ($('edKo') ? $('edKo').value : '').trim();
+  if (w.custom){
+    if (!sNew){ showToast('한자를 비울 수 없어요'); return; }
+    if (sNew !== w.s && WORDS.some(x => x !== w && x.s === sNew)){ showToast(`${sNew} 는 이미 있어요`); return; }
+    if (sNew !== w.s && KO[w.s] !== undefined){ KO[sNew] = KO[w.s]; delete KO[w.s]; KO_T[sNew] = KO_T[w.s] = Date.now(); store.set('zh.ko', KO); store.set('zh.ko_t', KO_T); }
+    w.s = w.t = sNew;
+    const conv = pyFromInput(pyNew);                                      // jia1you2 → jiā yóu (채점용 숫자 병음도 같이)
+    w.py = conv ? conv.py : pyNew;
+    w.pyn = conv ? conv.pyn : pyNew.split(/\s+/).filter(Boolean).map(x => normPinyin(x)).join(' ');
+    store.set('zh.custom', CUSTOM);
+  }
+  saveKo(w.s, koNew);
+  MINE_EDIT = null; showToast('저장됨'); renderMine();
+}
 // 성조 가상 키패드: 모음을 고르면 그 모음의 1~4성이 나오고, 누르면 커서 자리에 들어감
 const PYKB_V = ['a','e','i','o','u','ü'];
 let pykbSel = null;
@@ -3776,7 +3870,7 @@ $('addPy').addEventListener('blur', () => { setTimeout(() => { if (document.acti
 // 직접 추가: 병음은 부호/숫자 어느 쪽으로 넣어도 되고, 숫자 병음(pyn)은 채점용으로 자동 생성
 $('addPy').addEventListener('input', () => {
   const v = $('addPy').value.trim(); const r = v && pyFromInput(v);
-  $('addPyHint').innerHTML = !v ? '' : r ? `병음으로 읽음: <b style="color:var(--ink)">${r.py}</b>` : '<span style="color:var(--bad)">병음으로 읽지 못했어요 — 입력한 그대로 저장돼요</span>';
+  $('addPyHint').innerHTML = !v ? ADD_HINT : r ? `병음으로 읽음: <b style="color:var(--ink)">${r.py}</b>` : '<span style="color:var(--bad)">병음으로 읽지 못했어요 — 입력한 그대로 저장돼요</span>';
 });
 $('addForm').addEventListener('submit', e => {
   e.preventDefault();
@@ -3791,7 +3885,7 @@ $('addForm').addEventListener('submit', e => {
     const w = { id, s, t: s, py: conv ? conv.py : toks.join(' '), pyn: conv ? conv.pyn : toks.map(x => normPinyin(x)).join(' '), en: '', ko, lv: 0, alt: [], custom: true, added: Date.now() };
     CUSTOM.push(w); BY_ID.set(id, w); store.set('zh.custom', CUSTOM); showToast(`${s} 추가됨`);
   }
-  $('addS').value = $('addPy').value = $('addKo').value = ''; $('addPyHint').textContent = ''; $('addS').focus(); renderMine();
+  $('addS').value = $('addPy').value = $('addKo').value = ''; $('addPyHint').innerHTML = ADD_HINT; $('addS').focus(); renderMine();
 });
 $('btnMineStudy').onclick = () => {
   const ws = mineWords(); if (!ws.length){ showToast('내 단어장이 비어 있어요'); return; }
@@ -3809,19 +3903,27 @@ function filtered(){
   const q = $('q').value.trim().toLowerCase(), lv = $('listLv').value;
   return WORDS.filter(w => (!lv || w.lv==+lv) && (!q || w.s.includes(q) || w.t.includes(q) || w.pyn.replace(/\s/g,'').includes(q.replace(/\s/g,'')) || w.py.includes(q) || w.en.toLowerCase().includes(q) || (KO[w.s]||'').includes(q)));
 }
+let LIST_EDIT = null;   // 전체 검색 표도 ✎ 를 눌러야 뜻이 입력칸으로 바뀜
 function renderList(){
   const rows = filtered(); const pages = Math.max(1, Math.ceil(rows.length/PAGE)); page = Math.min(page, pages-1);
   $('pgInfo').textContent = `${rows.length}단어 · ${page+1} / ${pages}`;
   $('tbody').innerHTML = rows.slice(page*PAGE, page*PAGE+PAGE).map(w => {
     const p = PROGRESS[w.id];
     return `<tr><td><button class="star ${isFav(w.id)?'on':''}" data-fav="${w.id}" title="내 단어장">${isFav(w.id)?'★':'☆'}</button></td><td class="b">${w.lv}</td><td class="h">${w.s}</td><td class="p">${renderPinyin(w)}${w.alt&&w.alt.length?`<br><small style="color:var(--ink-2)">${w.alt.map(a=>a.py).join(' / ')}</small>`:''}</td>
-      <td class="k"><input data-s="${w.s}" value="${(KO[w.s]||w.ko||'').replace(/"/g,'&quot;')}" placeholder="뜻 입력"></td>
+      <td class="k">${LIST_EDIT === w.id ? `<input class="edit" id="lsKo" value="${(KO[w.s]||w.ko||'').replace(/"/g,'&quot;')}" placeholder="뜻 입력" aria-label="한국어 뜻">` : `${KO[w.s]||w.ko||'<span style="color:var(--ink-2)">뜻 없음</span>'}`}</td>
       <td class="e">${w.en}</td><td class="prog-cell">${p?`상자 <b>${p.box}</b> · <span class="ok">✓${p.c}</span> <span class="bad">✕${p.w}</span>`:'<span style="color:var(--ink-2)">아직 안 봄</span>'}</td>
-      <td><button class="btn icon" data-say="${w.s}" title="발음">🔊</button></td></tr>`;
+      <td style="white-space:nowrap;text-align:right">${LIST_EDIT === w.id
+        ? `<button class="btn small primary" data-lssave="${w.id}" title="저장">✓</button> <button class="btn small" data-lscancel="1" title="취소">✕</button>`
+        : `<button class="btn icon" data-lsedit="${w.id}" title="뜻 수정">✎</button> <button class="btn icon" data-ask-w="${w.id}" title="AI 선생님에게 묻기">🤖</button> <button class="btn icon" data-say="${w.s}" title="발음"><i class="ic-spk"></i></button>`}</td></tr>`;
   }).join('');
 }
-$('tbody').addEventListener('change', e => { if (e.target.dataset.s){ saveKo(e.target.dataset.s, e.target.value); showToast('저장됨'); } });
+$('tbody').addEventListener('keydown', e => { if (e.key === 'Enter' && LIST_EDIT != null && e.target.id === 'lsKo'){ e.preventDefault(); saveListKo(LIST_EDIT); } });
+function saveListKo(id){ const w = BY_ID.get(id); if (w && $('lsKo')) saveKo(w.s, $('lsKo').value); LIST_EDIT = null; showToast('저장됨'); renderList(); }
 $('tbody').addEventListener('click', e => {
+  const le = e.target.closest('[data-lsedit]'); if (le){ LIST_EDIT = +le.dataset.lsedit; renderList(); if ($('lsKo')) $('lsKo').focus(); return; }
+  const ls = e.target.closest('[data-lssave]'); if (ls){ saveListKo(+ls.dataset.lssave); return; }
+  if (e.target.closest('[data-lscancel]')){ LIST_EDIT = null; renderList(); return; }
+  const a = e.target.closest('[data-ask-w]'); if (a){ const w = BY_ID.get(+a.dataset.askW); if (w) aiOpen(aiWordCtx(w)); return; }
   const b = e.target.closest('[data-say]'); if (b) speak(b.dataset.say);
   const f = e.target.closest('[data-fav]'); if (f){ const on = toggleFav(+f.dataset.fav); f.textContent = on?'★':'☆'; f.classList.toggle('on', on); if (cur && cur.id===+f.dataset.fav) updateStar(); }
 });
@@ -3835,7 +3937,7 @@ function renderDictHits(){
     const D = EXT.dict || {}; const qn = q.replace(/\s/g, ''); const hits = [];
     for (const k in D){ const [py, en, f] = D[k]; if (k.includes(q) || py.replace(/\s/g, '').includes(qn) || en.toLowerCase().includes(q)) hits.push([k, py, en, f]); }
     hits.sort((a, b) => a[3] - b[3]);
-    box.innerHTML = hits.length ? `<div class="sh-label">보조 사전(CC-CEDICT, HSK 밖)에서 ${hits.length}개${hits.length > 30 ? ' — 자주 쓰는 30개만' : ''}</div><div class="plist">${hits.slice(0, 30).map(([k, py, en]) => `<div class="pitem"><div class="zh">${k}</div><div class="py">${py}</div><div class="ko" style="color:var(--ink-2)">${en}</div><div class="acts"><button data-say="${k}">🔊</button><button data-dict-add="${k}" data-py="${py}" title="내 단어장에 담기">☆</button><button data-ai-text="${k}" title="AI 선생님에게 묻기">🤖</button></div></div>`).join('')}</div>` : '';
+    box.innerHTML = hits.length ? `<div class="sh-label">보조 사전(CC-CEDICT, HSK 밖)에서 ${hits.length}개${hits.length > 30 ? ' — 자주 쓰는 30개만' : ''}</div><div class="plist">${hits.slice(0, 30).map(([k, py, en]) => `<div class="pitem"><div class="zh">${k}</div><div class="py">${py}</div><div class="ko" style="color:var(--ink-2)">${en}</div><div class="acts"><button data-say="${k}"><i class="ic-spk"></i></button><button data-dict-add="${k}" data-py="${py}" title="내 단어장에 담기">☆</button><button data-ai-text="${k}" title="AI 선생님에게 묻기">🤖</button></div></div>`).join('')}</div>` : '';
   }), 200);
 }
 $('dictHits').addEventListener('click', e => {
@@ -4002,6 +4104,9 @@ startUnit(currentUnitIndex());
 if (onScreen('home')) renderHome();   // 첫 화면(홈)의 오늘 목표·복습 수 등을 채움 — 전에는 다른 탭에 갔다 와야 채워졌음
 const __ld = document.getElementById('loading'); if (__ld) __ld.remove();
 // 서비스 워커에 현재 데이터 파일 목록을 알려 옛 버전 캐시를 정리하게 함
+// 확대·축소 막기 — iOS 사파리는 viewport 메타의 user-scalable=no 를 무시하므로 제스처를 직접 막는다 (입력칸 포커스 때 자동 확대도 없음: 글자 크기가 16px 이상)
+for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, e => e.preventDefault(), { passive: false });
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 if (navigator.serviceWorker && navigator.serviceWorker.controller){ const urls = [...document.querySelectorAll('script[data-src]')].map(el => el.dataset.src); if (urls.length) navigator.serviceWorker.controller.postMessage({ type:'keep-data', urls }); }
 </script>
 
