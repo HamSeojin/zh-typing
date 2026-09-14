@@ -28,12 +28,15 @@ eblob = json.dumps(exam, ensure_ascii=False, separators=(",", ":")).replace("<",
 import datetime, hashlib, glob
 gram = json.load(open("grammar.json", encoding="utf-8")) if os.path.exists("grammar.json") else {"points": []}
 gblob = json.dumps(gram, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
-blobs = {"words": blob, "sents": sblob, "strokes": kblob, "passages": pblob, "exam": eblob, "grammar": gblob}
+pyblob = open("pinyin.json", encoding="utf-8").read().replace("<", "\\u003c")   # 발음 기초 (build_pinyin.py)
+ext = {k: open(f"{k}.json", encoding="utf-8").read().replace("<", "\\u003c") for k in ("dict", "hanzi", "sents2", "phrases", "idioms", "opus")}   # HSK 밖 보조 데이터 (build_ext.py), 필요할 때 받음
+blobs = {"words": blob, "sents": sblob, "strokes": kblob, "passages": pblob, "exam": eblob, "grammar": gblob, "pinyin": pyblob, **ext}
 print("읽기 글", len(passages["passages"]), "편 포함")
 version = "v" + datetime.datetime.now().strftime("%m%d.%H%M")
 common = tpl.replace("__APP_VERSION__", version).replace("__HANZI_WRITER_JS__", hw.replace("</script>", "<\\/script>"))   # 라이브러리 안의 </script> 문자열이 태그를 닫지 않게
 # ── artifact.html: claude.ai 게시용. 데이터를 페이지 안에 통째로 내장 (claude.ai 는 외부 파일 fetch 가 막혀 있어서) ──
-embedded = "\n".join(f'<script id="{k}" type="application/json">{v}</script>' for k, v in blobs.items())
+ART_SKIP = {"opus"}   # claude.ai 아티팩트는 16MB 제한 → 자막 말뭉치(2.8MB)는 GitHub 버전에서만
+embedded = "\n".join(f'<script id="{k}" type="application/json">{v if k not in ART_SKIP else ""}</script>' for k, v in blobs.items())
 with open("artifact.html", "w", encoding="utf-8") as f:
     f.write(common.replace("__DATA_BLOCKS__", embedded))
 # ── index.html (GitHub Pages): 데이터를 data/*.json 으로 분리. 파일 이름에 내용 해시(지문) 8자리를 붙여
@@ -56,12 +59,12 @@ head = f"""<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F4F6F9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141922" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="汉习">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232B7F68'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='white' font-family='serif'%3E习%3C/text%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
