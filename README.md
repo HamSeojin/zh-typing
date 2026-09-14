@@ -66,17 +66,42 @@ python make_audio.py --levels 1 2 3 --sents    # 1~3급 예문 문장까지
 
 ## 데이터 다시 만들기
 
+빌드 순서대로 실행하면 `index.html` + `data/` 가 새로 만들어집니다. LLM 으로 만든 중간 산출물(`*_out/*.json`)은 저장소에 없고, 없으면 그 단계는 건너뛰면 됩니다(해당 기능만 빠짐).
+
 ```bash
-# 1) 원본 데이터 (MIT 라이선스, CC-CEDICT 기반)
+# 0) 원본 단어 데이터 (MIT, CC-CEDICT 기반)
 git clone https://github.com/drkameleon/complete-hsk-vocabulary.git data/complete-hsk-vocabulary
-#    다음자(说 shuō/shuì 처럼 읽기가 여러 개인 단어)의 대표 읽기를 정하는 데 쓰는 목록
-git clone --depth 1 https://github.com/krmanik/HSK-3.0.git data/HSK-3.0
-# 2) words.json 생성 (기존 words.json 의 한국어 뜻은 보존됨)
-python build_words.py
-# 3) 문법 (선택): python build_grammar.py
-# 4) index.html + data/ 합치기
-python make_index.py
+git clone --depth 1 https://github.com/krmanik/HSK-3.0.git data/HSK-3.0   # 다음자 대표 읽기 참고용
+
+python build_words.py     # → words.json      (기존 words.json 의 한국어 뜻은 보존)
+python build_sents.py     # → sentences.json  (sent_out/*.json 필요)
+python build_read.py      # → passages.json   (read_out/*.json 필요)
+python build_exam.py      # → exam.json       (exam_out/*.json 필요)
+python build_lis.py       # → exam.json 에 듣기 연습 합치기 (lis_out/*.json 필요, build_exam.py 다음)
+python build_grammar.py   # → grammar.json    (grammar_prep.json + gram_out/*.json)
+python build_pinyin.py    # → pinyin.json     (발음 기초: 성모·운모 설명, 음절표, 최소 대립쌍)
+python build_ext.py       # → dict/idioms/hanzi/phrases/sents2.json  (아래 ext/ 준비 필요)
+
+python make_index.py      # app_template.html + 위 json + 획순 → index.html, data/, artifact.html
 ```
+
+`vendor/` 는 `npm install hanzi-writer hanzi-writer-data` 결과입니다(획순). 없으면 획순 기능 없이 만들어집니다.
+
+### `ext/` 준비 (build_ext.py 입력)
+
+용량·라이선스가 제각각이라 저장소에 넣지 않았습니다. 아래를 받아 `ext/` 에 두면 재생성됩니다.
+
+| 파일 | 어디서 | 라이선스 |
+|---|---|---|
+| `ext/cedict.txt` | [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cc-cedict) `cedict_ts.u8` | CC BY-SA 4.0 |
+| `ext/idiom.json` | [chinese-xinhua](https://github.com/pwxcoo/chinese-xinhua) `data/idiom.json` | MIT |
+| `ext/mmah_dictionary.txt`, `ext/hanzi_raw.json` | [Make Me a Hanzi](https://github.com/skishore/makemeahanzi) `dictionary.txt` → HSK 한자만 추림 | Arphic Public License / LGPL |
+| `ext/cmn_sentences.tsv`, `ext/kor_sentences.tsv`, `ext/cmn-kor_links.tsv` → `ext/tatoeba_ko.json` | [Tatoeba 내려받기](https://tatoeba.org/en/downloads) | CC BY 2.0 FR |
+| `ext/olp_vocab.csv` → `ext/olp_ex.json` | [Chinese Zero to Hero](https://github.com/chinesezerotohero) 어휘·예문 | 각 저장소 표기 |
+| `ext/opus/*` | [OPUS OpenSubtitles zh-ko](https://opus.nlpl.eu/OpenSubtitles.php) 병렬 자막 | CC BY-NC(비상업) — 학습용 발췌만 |
+| `ext/zh_freq.json` | `pip install wordfreq` 후 `large_zh.msgpack.gz` 추출 (SUBTLEX-CH 대체) | MIT (데이터는 각 출처) |
+
+LLM 으로 만든 부분(한국어 번역·설명): `ext/idiom_sel.json` + `ext/idiom_out/*.json`(성어 600 한국어 뜻·예문), `ext/hz_out/*.json`(한자 어원 한국어 힌트), `ext/subs_out/*.json`(자막에서 고른 회화 표현 1,142), `ext/misc_out/{radicals,measure}.json`(부수 214·양사 71). 같은 형식으로 다시 만들면 됩니다 — 각 `*_batches/` 폴더의 프롬프트 파일이 그대로 들어 있습니다.
 
 ## GitHub Pages 에 올리기 (폰에서 링크로 열기)
 
@@ -99,11 +124,22 @@ python make_index.py
 
 `s` 간체 · `t` 번체 · `py` 병음(성조부호) · `pyn` 병음(숫자) · `en` 영어 뜻 · `ko` 한국어 뜻 · `lv` HSK 3.0 급수 1~9 (원본은 7~9급이 한 덩어리라 빈도순으로 7·8·9급으로 나눔) · `lv26` 2026 개정 급수 · `old` HSK 2.0 급수 · `freq` 빈도 순위(작을수록 흔함) · `pos` 품사
 
-## 출처
+## 출처 · 라이선스
 
-- 획순 데이터·라이브러리: [hanzi-writer](https://github.com/chanind/hanzi-writer) (MIT), [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) — Make Me a Hanzi 기반 (Arphic Public License)
-- 단어 목록·뜻·병음: [drkameleon/complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) (MIT) — [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cedict) (CC BY-SA 4.0) 기반
+앱과 함께 배포되는 데이터의 출처입니다. 원본 라이선스를 따르며, 재배포가 제한된 원본(`ext/`)은 저장소에 포함하지 않았습니다.
 
-- `build_lis.py` — lis_out/*.json(듣기 연습 확장: 짧은 대화 추가·긴 대화·이야기)을 exam.json 에 합침. build_exam.py 다음에 실행
-- `build_ext.py` — HSK 밖 공개 데이터: CC-CEDICT 보조 사전(dict.json), 성어 600(idioms.json), 한자 분해(hanzi.json), 자막 회화 표현(phrases.json), Tatoeba·Zero to Hero 추가 예문(sents2.json). 원본은 ext/ (라이선스: CC BY-SA 4.0 / MIT / CC BY / CC0), 빈도는 wordfreq
-- `build_pinyin.py` — 발음 기초 데이터(pinyin.json)
+| 쓰임 | 출처 | 라이선스 |
+|---|---|---|
+| 단어·뜻·병음 (`words.json`) | [drkameleon/complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) — [CC-CEDICT](https://www.mdbg.net/chinese/dictionary?page=cedict) 기반 | MIT / CC BY-SA 4.0 |
+| 급수·다음자 참고 | [krmanik/HSK-3.0](https://github.com/krmanik/HSK-3.0) | MIT |
+| 획순 (`vendor/`, `data/strokes`) | [hanzi-writer](https://github.com/chanind/hanzi-writer), [hanzi-writer-data](https://github.com/chanind/hanzi-writer-data) — Make Me a Hanzi 기반 | MIT / Arphic Public License |
+| 보조 사전 (`dict.json`, 48,961 단어) | CC-CEDICT | CC BY-SA 4.0 |
+| 성어 600 (`idioms.json`) | [chinese-xinhua](https://github.com/pwxcoo/chinese-xinhua) 성어 목록 + 한국어 뜻·예문은 LLM 작성 | MIT |
+| 한자 분해·부수 (`hanzi.json`, 3,020자) | [Make Me a Hanzi](https://github.com/skishore/makemeahanzi) + 한국어 힌트는 LLM 작성 | Arphic Public License / LGPL |
+| 회화 표현 1,142 · 자막 검색 4만 줄 (`phrases.json`, `opus.json`) | [OPUS OpenSubtitles](https://opus.nlpl.eu/OpenSubtitles.php) zh-ko 병렬 자막에서 선별 | CC BY-NC (비상업 학습용) |
+| 추가 예문 (`sents2.json`) | [Tatoeba](https://tatoeba.org) zh-ko, Chinese Zero to Hero 어휘 예문 | CC BY 2.0 FR / 각 저장소 표기 |
+| 빈도 정렬 | [wordfreq](https://github.com/rspeer/wordfreq) (자막·위키 등 합산) | MIT |
+| 예문·읽기 글·모의고사·문법 설명·듣기 대화 | 이 프로젝트에서 LLM 으로 생성 (HSK 3.0 요목을 참고했을 뿐 기출문제 아님) | — |
+| 발음 mp3 (`audio/`, 선택) | Microsoft Edge 신경망 음성(edge-tts)으로 생성 | 개인 학습용 |
+
+앱 안에서 쓰는 바깥 링크: YouGlish(영상 속 발음), Forvo(원어민 녹음), 네이버 중국어사전.
