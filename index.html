@@ -959,7 +959,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2130</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2240</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -4499,7 +4499,7 @@ $('talkSetup').addEventListener('click', e => {
   const b = e.target.closest('[data-sit]'); if (!b) return;
   if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
   const sit = TALK_SITS[+b.dataset.sit];
-  talk = { sit: sit[0], desc: sit[1], lv: talkLv(), hist: [], hint: '', n: 0, key: 't' + Date.now() };
+  talk = { sit: sit[0], desc: sit[1], lv: talkLv(), hist: [], said: [], hint: '', n: 0, key: 't' + Date.now() };
   $('talkLog').innerHTML = ''; renderTalk(); $('talkTop').textContent = `${talk.sit} · ${talk.lv}급`;
   talkSend('', true);
 });
@@ -4514,7 +4514,20 @@ function talkSystem(){
 [병음] (그 한 마디의 병음)
 [뜻] (한국어 번역)
 [교정] (학습자가 방금 한 중국어에 대한 지적. 고칠 데가 없으면 정확히 "좋아요". 한 가지만 짧게. 첫 마디에는 "-")
-[힌트] (학습자가 다음에 할 만한 대답 예시 하나: 중국어 — 한국어 뜻)`;
+[힌트] (학습자가 다음에 할 만한 대답 예시 하나: 중국어 — 한국어 뜻)`
+  + (talk.said.length ? `\n\n[네가 이미 한 말 — 같은 것을 다시 묻지 말고 새로운 화제로 넘어가라]\n${talk.said.slice(-12).join('\n')}` : '');
+}
+/* 한 대화 안에서는 주고받은 말을 전부 기억한다 (회화는 한 마디가 짧아 다 보내도 부담이 적음).
+   다만 아주 길어지면 비용이 계속 늘어나므로 글자 수 예산(약 4,000자 — 보통 30턴 이상)을 두고,
+   넘치면 오래된 것부터 뺀다. 빠진 내용도 시스템 규칙의 '이미 한 말' 목록에는 남아 되풀이를 막는다. */
+function talkHist(){
+  const out = []; let left = 4000;
+  for (let i = talk.hist.length - 1; i >= 0; i--){
+    const h = talk.hist[i], size = (h.q + h.a).length;
+    if (left - size < 0 && out.length >= 4) break;
+    left -= size; out.unshift(h);
+  }
+  return out;
 }
 function talkParse(t){
   const g = k => { const m = String(t).match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
@@ -4540,9 +4553,9 @@ async function talkSend(text, kick){
     const user = kick ? '대화를 시작해 줘. 네가 먼저 한 마디 건네.'
       : asking ? `[학습자의 질문 — 한국어] ${text}\n(이것은 대화 속 발화가 아니다. 학습자가 이 내용을 중국어로 말했다고 가정하지 마라. [교정] 칸에 한국어로 답하고, 알려 줄 중국어 표현은 병음과 뜻을 함께 적어라. [상대] 칸은 이야기를 진행시키지 말고 방금 한 질문을 다시 묻거나 대답을 기다리는 짧은 말로 둬라.)`
       : text;
-    const a = await aiCall(user, talkSystem(), talk.hist.slice(-3));
+    const a = await aiCall(user, talkSystem(), talkHist());
     const o = talkParse(a);
-    talk.hist.push({ q: user, a }); talk.hint = o.hint || ''; talk.n++;
+    talk.hist.push({ q: user, a }); if (o.zh) talk.said.push(o.zh); talk.hint = o.hint || ''; talk.n++;
     // 노트에는 칸 표시([상대] 같은 것)를 떼고 읽기 좋은 줄글로 저장
     const noteA = [o.zh && `상대: ${o.zh}`, o.py && `(${o.py})`, o.ko && `뜻: ${o.ko}`,
                    (!kick && o.fix && o.fix !== '-') && `${asking ? '답' : '교정'}: ${o.fix}`, o.hint && `힌트: ${o.hint}`].filter(Boolean).join('\n') || a;
