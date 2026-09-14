@@ -1,15 +1,18 @@
 /* 서비스 워커: 브라우저 뒤에서 도는 작은 프로그램. 앱 파일을 폰에 저장해 두고(캐시) 인터넷이 없어도 열어 준다.
    방식(네트워크 우선): 인터넷이 되면 항상 최신 파일을 받아 보여주고 캐시를 갱신, 안 되면 저장본을 보여줌.
    → 새 버전을 올리면 다음 열 때 바로 반영되고, 오프라인에서도 열린다. */
-const CACHE = 'zh-typing-v3';
+const CACHE = 'zh-typing-v4';
 const FILES = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;   // GitHub API, CDN 등 외부 요청은 건드리지 않음
-  // data/ 아래 파일은 이름에 내용 해시가 붙어 있어 내용이 바뀌면 이름도 바뀜 → 한 번 받으면 캐시에서 바로 꺼내 씀(캐시 우선). 음성 mp3 도 같음
-  if (/\/(data|audio)\//.test(url.pathname) && !url.pathname.endsWith('index.json')){
+  // 음성 mp3 는 손대지 않는다 — 오디오 재생기는 파일을 조각(Range)으로 나눠 달라고 요청하는데,
+  // 서비스 워커가 통째로 된 응답을 돌려주면 재생기가 기다리기만 하고 소리가 안 난다
+  if (/\/audio\//.test(url.pathname) || e.request.headers.has('range') || e.request.destination === 'audio') return;
+  // data/ 아래 파일은 이름에 내용 해시가 붙어 있어 내용이 바뀌면 이름도 바뀜 → 한 번 받으면 캐시에서 바로 꺼내 씀(캐시 우선)
+  if (/\/data\//.test(url.pathname) && !url.pathname.endsWith('index.json')){
     e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(res => { if (res && res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone())); return res; })));
     return;
   }

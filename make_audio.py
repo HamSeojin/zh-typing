@@ -84,17 +84,19 @@ for kind in ("w", "s"):
         print(f"[{kind}] {i+1}~{i+len(chunk)} 음성 생성 중…")
         ok = asyncio.run(synth_all(chunk))
         chunk = [t for t, o in zip(chunk, ok) if o]
-        # 각 조각을 같은 규격(CBR 48kbps, 24kHz, 모노)으로 바꾼 뒤 이어 붙임 — 규격이 같아야 구간 탐색(seek)이 정확
+        # 각 조각을 압축을 푼 소리(WAV)로 바꿔 이어 붙인 뒤, 마지막에 딱 한 번만 mp3 로 압축한다.
+        # mp3 조각을 그대로 이어 붙이면(-c copy) 조각마다 압축 장치가 넣는 여백(약 0.066초)이 계속 쌓여서
+        # 뒤로 갈수록 구간 위치가 밀리고, 결국 엉뚱한 단어가 재생된다. WAV 는 그런 여백이 없어 위치가 정확하다.
         parts = []
         for t in chunk:
-            src = os.path.join(tmp, f"{t[0]}{t[1]}.mp3"); dst = src + ".cbr.mp3"
-            subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", src, "-ar", "24000", "-ac", "1", "-b:a", "48k", "-af", "apad=pad_dur=0.15", dst])
-            parts.append((t, dst, dur(dst)))
+            src = os.path.join(tmp, f"{t[0]}{t[1]}.mp3"); dst = src + ".wav"
+            subprocess.run(["ffmpeg", "-y", "-v", "error", "-i", src, "-ar", "24000", "-ac", "1", "-af", "apad=pad_dur=0.15", "-c:a", "pcm_s16le", dst])
+            parts.append((t, dst, (os.path.getsize(dst) - 44) / (24000 * 2)))   # WAV 는 파일 크기로 길이를 정확히 계산
         lst = os.path.join(tmp, "list.txt")
         with open(lst, "w", encoding="utf-8") as f:
             for _, p, _ in parts: f.write(f"file '{p}'\n")
         out = f"audio/{kind}-{file_no:03d}.mp3"
-        subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", out])
+        subprocess.run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst, "-ar", "24000", "-ac", "1", "-b:a", "48k", out])
         pos = 0.0
         for t, _, d in parts:
             index[kind][str(t[1])] = [file_no, round(pos, 3), round(d, 3)]
