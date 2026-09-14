@@ -429,13 +429,13 @@ body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 /* 회화 롤플레이 · 작문 연습 */
-.tk{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--card)}
-.tk.me{background:var(--good-bg);border-color:color-mix(in srgb,var(--accent) 35%,var(--line));margin-left:auto;max-width:86%}
-.tk.ai{margin-right:auto;max-width:92%}
-.tk .tz{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.tk .zt{font-family:var(--hanzi);font-size:20px;line-height:1.5}
-.tk .tp{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:3px}
-.tk .tko{font-size:14px;color:var(--ink-2);margin-top:2px}
+.tkb{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--card)}
+.tkb.me{background:var(--good-bg);border-color:color-mix(in srgb,var(--accent) 35%,var(--line));margin-left:auto;max-width:86%}
+.tkb.ai{margin-right:auto;max-width:92%}
+.tkb .tz{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.tkb .zt{font-family:var(--hanzi);font-size:20px;line-height:1.5}
+.tkb .tp{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:3px}
+.tkb .tko{font-size:14px;color:var(--ink-2);margin-top:2px}
 .tfix{font-size:13px;margin:-2px 0 8px;padding:7px 10px;border-radius:10px;background:var(--paper);border:1px dashed var(--line)}
 .tfix.ok{color:var(--good);border-style:solid;border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
 .talk-in{display:flex;gap:6px;align-items:center;margin-top:4px}
@@ -457,7 +457,7 @@ body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .wr-badge.bad{background:var(--bad-bg);color:var(--bad)}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .wr-badge.soso{background:#3a3420;color:#e2c766}}
 :root[data-theme=dark] .wr-badge.soso{background:#3a3420;color:#e2c766}
-@media (max-width:480px){.sitgrid{grid-template-columns:1fr}.tk .zt{font-size:19px}}
+@media (max-width:480px){.sitgrid{grid-template-columns:1fr}.tkb .zt{font-size:19px}}
 .loading{position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;z-index:999}
 .loading-box{text-align:center;color:var(--ink-2);font-size:14px}
 .loading-hz{font-family:'Noto Serif SC',serif;font-size:56px;color:var(--accent);margin-bottom:8px}
@@ -956,7 +956,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2022</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2043</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1620,7 +1620,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes','zh.write']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes','zh.write','zh.talk_lv']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
@@ -3048,8 +3048,19 @@ function aiNoteLabel(key){   // 노트 묶음 제목: label(진한 줄) + sub(�
   if (key[0] === 'g'){ const g = GRAM.find(x => x.id === key.slice(1)); return g ? { label: g.title_ko, sub: '문법', ctx: () => aiGramCtx(g) } : null; }
   if (key[0] === 'f'){ const first = (AI_NOTES[key] || []).find(n => !n.del); const t = first ? first.q.replace(/\s+/g, ' ').slice(0, 60) + (first.q.length > 60 ? '…' : '') : '자유 질문';
     return { label: t, sub: '자유 질문', ctx: () => aiFreeCtx(key) }; }
+  if (key[0] === 't'){ const arr = (AI_NOTES[key] || []).filter(n => !n.del); const f = arr[0];
+    return { label: `회화 · ${f && f.sit ? f.sit : '롤플레이'}`, sub: `${f && f.lv ? f.lv + '급 · ' : ''}주고받은 말 ${arr.length}`, ctx: () => aiTalkCtx(key) }; }
   if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: pg.title, sub: '읽기', ctx: () => aiPassageCtx(pg) } : null; }
   return null;
+}
+function aiTalkCtx(key){   // 저장된 회화를 문맥으로 이어서 묻기 (다시 대화하는 게 아니라 그 대화에 대해 질문)
+  const arr = (AI_NOTES[key] || []).filter(n => !n.del), f = arr[0] || {};
+  const script = arr.slice(-8).map(n => `나: ${n.q}\n상대/선생님: ${(n.a || '').replace(/\n/g, ' ')}`).join('\n');
+  return { key, label: `회화 · ${f.sit || '롤플레이'}`, text: `[지난 회화 연습] 상황: ${f.sit || ''} · HSK ${f.lv || 1}급\n${script}`, quick: [
+    { label: '내가 틀린 곳 정리', q: '이 대화에서 내가 한 중국어의 틀린 곳·어색한 곳을 모아서 정리해 줘.' },
+    { label: '더 자연스러운 표현', q: '내가 한 말들을 원어민이라면 어떻게 말했을지 바꿔 줘.' },
+    { label: '이 상황 필수 표현', q: '이 상황에서 자주 쓰는 표현 5개를 병음·뜻과 함께 알려 줘.' },
+  ] };
 }
 let aiNoteFilter = 'all';   // all | star | hl
 function aiTouch(n){ n.u = Date.now(); store.set('zh.ai_notes', AI_NOTES); }
@@ -4422,28 +4433,41 @@ const TALK_SITS = [
   ['자유 대화', '주제 없이 편하게'],
 ];
 let talk = null, talkRec = null;
-function talkLv(){ const ls = (SETTINGS.levels || []).map(Number).filter(Boolean); return ls.length ? Math.min(...ls) : 1; }
+let TALK_LV = +store.get('zh.talk_lv', 0) || 0;   // 0 = 학습 급수를 따라감. 1~9 = 회화만 그 급수로
+function talkLv(){ if (TALK_LV) return TALK_LV; const ls = (SETTINGS.levels || []).map(Number).filter(Boolean); return ls.length ? Math.min(...ls) : 1; }
 function renderTalk(){
   if (talk){ $('talkSetup').hidden = true; $('talkPlay').hidden = false; return; }
   $('talkPlay').hidden = true; $('talkSetup').hidden = false; $('talkTop').textContent = '';
+  const studyLv = (() => { const ls = (SETTINGS.levels || []).map(Number).filter(Boolean); return ls.length ? Math.min(...ls) : 1; })();
   $('talkSetup').innerHTML = `<div class="card">
-    <h3 class="sk-h">상황 고르기 <small>HSK ${talkLv()}급 수준으로 말해 줘요 (학습 급수 설정을 따름)</small></h3>
+    <h3 class="sk-h">말하기 수준 <small>이 화면에서만 쓰는 급수 — 단어 학습 급수와 따로 둘 수 있어요</small></h3>
+    <div class="lvbar wrap" id="talkLvBar">
+      <label><input type="radio" name="tlv" value="0"${TALK_LV ? '' : ' checked'}>학습 급수 (${studyLv}급)</label>
+      ${[1,2,3,4,5,6,7,8,9].map(n => `<label><input type="radio" name="tlv" value="${n}"${TALK_LV === n ? ' checked' : ''}>${n}급</label>`).join('')}
+    </div>
+    <div class="sh-label" style="margin-top:14px">상황 고르기 <small style="font-weight:400">· HSK ${talkLv()}급 수준으로 말해 줘요</small></div>
     <div class="sitgrid">${TALK_SITS.map((x, i) => `<button data-sit="${i}"><b>${x[0]}</b><small>${x[1]}</small></button>`).join('')}</div>
     <p class="hint" style="font-size:12px;color:var(--ink-2);margin:10px 0 0">${AI.key ? 'AI 선생님과 같은 키를 씁니다 — 한 마디당 1~2원쯤 들어요.' : '설정 탭 → AI 선생님에서 API 키를 먼저 넣어 주세요.'}</p>
   </div>`;
 }
+$('talkSetup').addEventListener('change', e => {
+  const r = e.target.closest('input[name="tlv"]'); if (!r) return;
+  TALK_LV = +r.value || 0; store.set('zh.talk_lv', TALK_LV); renderTalk();
+});
 $('talkSetup').addEventListener('click', e => {
   const b = e.target.closest('[data-sit]'); if (!b) return;
   if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
   const sit = TALK_SITS[+b.dataset.sit];
-  talk = { sit: sit[0], desc: sit[1], lv: talkLv(), hist: [], hint: '', n: 0 };
+  talk = { sit: sit[0], desc: sit[1], lv: talkLv(), hist: [], hint: '', n: 0, key: 't' + Date.now() };
   $('talkLog').innerHTML = ''; renderTalk(); $('talkTop').textContent = `${talk.sit} · ${talk.lv}급`;
   talkSend('', true);
 });
 function talkSystem(){
   return `너는 지금 중국어 회화 연습의 상대역이다. 상황: ${talk.sit} (${talk.desc}). 학습자 수준: HSK ${talk.lv}급.
 - 그 급수 안의 쉬운 단어로, 한 번에 한 마디(1~2문장)만 말한다.
-- 학습자가 한국어로 물으면 [교정] 칸에서 한국어로 답해 주고, [상대] 칸은 대화를 이어 간다.
+- 학습자의 말에 한자가 하나도 없고 한국어로만 되어 있으면, 그것은 대화 속 발화가 아니라 **나에게 하는 질문**이다.
+  그 내용을 학습자가 중국어로 말했다고 가정하지 말고, [교정] 칸에 한국어로 답한다(알려 줄 중국어 표현은 병음과 함께).
+  이때 [상대] 칸은 이야기를 앞으로 진행시키지 말고, 방금 했던 질문을 다시 묻거나 대답을 기다리는 짧은 말로 둔다.
 - 아래 다섯 칸 형식으로만 답한다. 다른 말·인사·설명 금지.
 [상대] (중국어 한 마디)
 [병음] (그 한 마디의 병음)
@@ -4455,14 +4479,14 @@ function talkParse(t){
   const g = k => { const m = String(t).match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
   return { zh: g('상대'), py: g('병음'), ko: g('뜻'), fix: g('교정'), hint: g('힌트'), raw: String(t) };
 }
-function talkAddMe(text){ $('talkLog').insertAdjacentHTML('beforeend', `<div class="tk me"><span class="zt">${tapHtml(text)}</span></div>`); $('app').scrollTo({ top: $('app').scrollHeight }); }
+function talkAddMe(text){ $('talkLog').insertAdjacentHTML('beforeend', `<div class="tkb me"><span class="zt">${tapHtml(text)}</span></div>`); $('app').scrollTo({ top: $('app').scrollHeight }); }
 function talkAiHtml(o){
-  return `<div class="tk ai"><div class="tz"><span class="zt">${tapHtml(o.zh || o.raw)}</span><button class="btn icon" data-tsay="${(o.zh || '').replace(/"/g, '&quot;')}" title="듣기"><i class="ic-spk"></i></button></div>
+  return `<div class="tkb ai"><div class="tz"><span class="zt">${tapHtml(o.zh || o.raw)}</span><button class="btn icon" data-tsay="${(o.zh || '').replace(/"/g, '&quot;')}" title="듣기"><i class="ic-spk"></i></button></div>
     <div class="tp" hidden>${o.py || ''}</div><div class="tko" hidden>${o.ko || ''}</div>
     ${o.py || o.ko ? `<button class="btn small" data-treveal="1" style="margin-top:6px">병음·뜻 보기</button>` : ''}</div>`;
 }
 function talkAddAi(o, thinking){
-  $('talkLog').insertAdjacentHTML('beforeend', thinking ? `<div class="tk ai"><span class="thinking">생각 중</span></div>` : talkAiHtml(o));
+  $('talkLog').insertAdjacentHTML('beforeend', thinking ? `<div class="tkb ai"><span class="thinking">생각 중</span></div>` : talkAiHtml(o));
   $('app').scrollTo({ top: $('app').scrollHeight });
   return $('talkLog').lastElementChild;
 }
@@ -4471,14 +4495,24 @@ async function talkSend(text, kick){
   if (!kick){ if (!text.trim()) return; talkAddMe(text); }
   const el = talkAddAi(null, true); $('btnTalkSend').disabled = true;
   try{
-    const user = kick ? '대화를 시작해 줘. 네가 먼저 한 마디 건네.' : text;
+    const asking = !kick && !/[\u4e00-\u9fff]/.test(text) && /[가-힣]/.test(text);   // 한자 없이 한국어만 → 대화가 아니라 질문
+    const user = kick ? '대화를 시작해 줘. 네가 먼저 한 마디 건네.'
+      : asking ? `[학습자의 질문 — 한국어] ${text}\n(이것은 대화 속 발화가 아니다. 학습자가 이 내용을 중국어로 말했다고 가정하지 마라. [교정] 칸에 한국어로 답하고, 알려 줄 중국어 표현은 병음과 뜻을 함께 적어라. [상대] 칸은 이야기를 진행시키지 말고 방금 한 질문을 다시 묻거나 대답을 기다리는 짧은 말로 둬라.)`
+      : text;
     const a = await aiCall(user, talkSystem(), talk.hist.slice(-3));
     const o = talkParse(a);
     talk.hist.push({ q: user, a }); talk.hint = o.hint || ''; talk.n++;
+    // 노트에는 칸 표시([상대] 같은 것)를 떼고 읽기 좋은 줄글로 저장
+    const noteA = [o.zh && `상대: ${o.zh}`, o.py && `(${o.py})`, o.ko && `뜻: ${o.ko}`,
+                   (!kick && o.fix && o.fix !== '-') && `${asking ? '답' : '교정'}: ${o.fix}`, o.hint && `힌트: ${o.hint}`].filter(Boolean).join('\n') || a;
+    const note = { q: kick ? '(대화 시작)' : text, a: noteA, t: Date.now(), sit: talk.sit, lv: talk.lv };
+    (AI_NOTES[talk.key] = AI_NOTES[talk.key] || []).push(note);
+    if (AI_NOTES[talk.key].length > 40) AI_NOTES[talk.key].shift();
+    store.set('zh.ai_notes', AI_NOTES);
     let fixHtml = '';
     if (!kick && o.fix && o.fix !== '-'){
       const ok = /^좋아요/.test(o.fix);
-      fixHtml = `<div class="tfix ${ok ? 'ok' : ''}">${ok ? '✓ 좋아요' : '✎ ' + aiFmtRaw(o.fix)}</div>`;
+      fixHtml = `<div class="tfix ${ok ? 'ok' : ''}">${asking ? '💬 ' : ok ? '✓ 좋아요' : '✎ '}${ok && !asking ? '' : aiFmtRaw(o.fix)}</div>`;
     }
     el.outerHTML = fixHtml + talkAiHtml(o);   // '생각 중' 자리를 교정 + 상대 말로 교체
     if (o.zh) speak(o.zh);
@@ -4495,6 +4529,9 @@ $('btnTalkEnd').onclick = async () => {
   try{
     const a = await aiCall('대화를 여기서 끝내자. 지금까지 내가 한 중국어에서 고칠 점과 잘한 점을 정리해 줘. 형식 칸 없이 한국어로, 6줄 이내.', `너는 중국어 선생님이다. 학습자 수준 HSK ${talk.lv}급.`, talk.hist.slice(-4));
     el.innerHTML = `<div style="font-size:14px">${aiFmtRaw(a)}</div>`;
+    (AI_NOTES[talk.key] = AI_NOTES[talk.key] || []).push({ q: '(총평)', a, t: Date.now(), sit: talk.sit, lv: talk.lv });
+    store.set('zh.ai_notes', AI_NOTES);
+    showToast('이 대화는 단어장 탭 → AI 노트에 저장됐어요');
   }catch(err){ el.innerHTML = `<div style="color:var(--bad);font-size:13px">${err.message}</div>`; }
   talk = null; $('talkTop').textContent = '';
 };
@@ -4511,7 +4548,7 @@ $('btnTalkMic').onclick = () => {
 };
 $('talkLog').addEventListener('click', e => {
   const sy = e.target.closest('[data-tsay]'); if (sy){ speak(sy.dataset.tsay); return; }
-  const rv = e.target.closest('[data-treveal]'); if (rv){ const c = rv.closest('.tk'); c.querySelector('.tp').hidden = false; c.querySelector('.tko').hidden = false; rv.remove(); return; }
+  const rv = e.target.closest('[data-treveal]'); if (rv){ const c = rv.closest('.tkb'); c.querySelector('.tp').hidden = false; c.querySelector('.tko').hidden = false; rv.remove(); return; }
   const tk = e.target.closest('.tok'); if (tk) showLookup(tk);
 });
 
