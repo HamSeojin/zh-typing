@@ -895,13 +895,38 @@ details.more summary::-webkit-details-marker{display:none}
 /* ☆ 글자는 아이콘보다 작아 보여서 조금 키움 */
 #btnStar{font-size:20px}
 .wc-acts [data-fav],.rowacts [data-fav],.idcard [data-fav-i],.srow .star{font-size:19px}
+
+/* 단어 풍선은 AI 시트 위에 (묻기 화면에서 단어를 눌렀을 때 가려지지 않게) */
+.popup{z-index:40}
+
+/* 설정 탭: 입력칸·버튼 높이를 하나로 */
+.segpane[data-pane="settings"] .btn,
+.segpane[data-pane="settings"] .btn.small{min-height:40px;padding:0 14px;font-size:13px}
+.segpane[data-pane="settings"] select,
+.segpane[data-pane="settings"] input[type="text"],
+.segpane[data-pane="settings"] input[type="password"],
+.segpane[data-pane="settings"] input:not([type]){min-height:40px;box-sizing:border-box;font:inherit;font-size:14px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+.segpane[data-pane="settings"] .dataops{gap:8px}
+.segpane[data-pane="settings"] input[type="password"]{height:40px;padding:0 10px;border-radius:10px}
+
+/* 설정 탭의 접이식 항목을 한눈에 보이게 — 눌러서 펼치는 칸임을 분명히 */
+.segpane[data-pane="settings"] details.more{margin:12px 0 0;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}
+.segpane[data-pane="settings"] details.more > summary{padding:11px 14px;font-size:14px;font-weight:600;color:var(--ink);gap:8px;background:var(--paper)}
+.segpane[data-pane="settings"] details.more > summary::before{content:'▸';font-size:13px;color:var(--ink-2)}
+.segpane[data-pane="settings"] details.more > summary::after{content:'펼치기';margin-left:auto;font-size:12px;font-weight:400;color:var(--ink-2)}
+.segpane[data-pane="settings"] details.more[open] > summary{border-bottom:1px solid var(--line);background:var(--card)}
+.segpane[data-pane="settings"] details.more[open] > summary::after{content:'접기'}
+.segpane[data-pane="settings"] details.more{padding:0 14px}
+.segpane[data-pane="settings"] details.more > summary{margin:0 -14px}
+.segpane[data-pane="settings"] details.more > :nth-child(2){margin-top:12px}
+.segpane[data-pane="settings"] details.more > :last-child{margin-bottom:14px}
 </style>
 
 <div class="wrap" id="app">
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.0401</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.1239</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1100,7 +1125,7 @@ details.more summary::-webkit-details-marker{display:none}
     <div id="syncBox">
       <p id="syncStatus" style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">확인 중…</p>
       <div id="gistSetup" hidden>
-        <div class="dataops"><input id="gistToken" type="password" placeholder="GitHub 토큰 (gist 권한)" style="flex:1;min-width:200px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)"><button class="btn" id="btnGistConnect">연결</button><button class="btn" id="btnGistOff" hidden>연결 해제</button></div>
+        <div class="dataops"><input id="gistToken" type="password" placeholder="GitHub 토큰 (gist 권한)" style="flex:1;min-width:200px;font:inherit;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)"><button class="btn" id="btnGistConnect">연결</button><button class="btn" id="btnGistOff" hidden>연결 해제</button></div>
         <details class="more" style="border-top:0;margin-top:4px"><summary>토큰 만드는 법</summary><p style="margin:6px 0 0;font-size:13px;color:var(--ink-2)">GitHub → Settings → Developer settings → Personal access tokens → <b>Tokens (classic)</b> → Generate new token → <b>gist</b> 권한만 체크 → 만들어진 토큰을 위 칸에 붙여넣기. 기록은 비공개 Gist(깃허브 개인 메모)에 저장되고, 다른 기기에 같은 토큰을 넣으면 이어져요. 항목마다 더 최근 것이 이기는 방식으로 합쳐집니다.</p></details>
       </div>
       <div class="dataops" style="margin-top:8px"><button class="btn small" id="btnSyncNow">지금 동기화</button></div>
@@ -1129,7 +1154,9 @@ details.more summary::-webkit-details-marker{display:none}
         <p class="pnote">② 말투·분량 — 마음대로 바꿔도 되는 부분이에요. 답변 길이는 위 설정이 자동으로 덧붙습니다.</p>
         <textarea id="aiPrompt" rows="6" class="ptext"></textarea>
         <div class="dataops"><button class="btn" id="btnPromptSave">말투 저장</button><button class="btn" id="btnPromptReset">기본값으로</button></div>
-        <p class="pnote">③ 그때그때 부탁할 것은 묻기 화면의 <b>요구사항</b> 버튼에서 — 위 두 가지보다 우선합니다.</p>
+        <p class="pnote">③ 내 요구사항 — 묻기 화면의 <b>요구사항</b> 버튼과 같은 내용이고, 위 두 가지보다 우선합니다.</p>
+        <textarea id="aiRulesSet" rows="3" class="ptext" placeholder="예) 반말로 답해 줘 · 예문은 꼭 3개 · 한국어와 비교해서 설명"></textarea>
+        <div class="dataops"><button class="btn" id="btnRulesSetSave">요구사항 저장</button><button class="btn" id="btnRulesSetClear">비우기</button></div>
       </details>
       <div class="dataops"><button class="btn primary" id="btnAiSave">저장</button><button class="btn" id="btnAiTest">연결 테스트</button><button class="btn" id="btnAiOff">이 서비스 키 지우기</button></div>
       <p id="aiStatus" style="margin:6px 0 0;font-size:13px;color:var(--ink-2)"></p>
@@ -2747,7 +2774,7 @@ function aiSystem(){   // 핵심 규칙 + 말투 + 답변 길이 + 내 요구사
 }
 
 $('btnAiRules').onclick = () => { const b = $('aiRulesBox'); b.hidden = !b.hidden; if (!b.hidden){ $('aiRules').value = AI_TXT.rules || ''; $('aiRules').focus(); } };
-$('btnAiRulesSave').onclick = () => { const v = $('aiRules').value.trim(); AI_TXT.rules = v; aiTxtSave(); $('aiRulesBox').hidden = true; showToast(v ? '요구사항을 저장했어요 — 다음 답변부터 적용' : '요구사항을 지웠어요'); };
+$('btnAiRulesSave').onclick = () => { const v = $('aiRules').value.trim(); AI_TXT.rules = v; aiTxtSave(); if ($('aiRulesSet')) $('aiRulesSet').value = v; $('aiRulesBox').hidden = true; showToast(v ? '요구사항을 저장했어요 — 다음 답변부터 적용' : '요구사항을 지웠어요'); };
 $('btnAiRulesClear').onclick = () => { $('aiRules').value = ''; };
 if (AI.prompt || AI.rules){ AI_TXT.prompt = AI_TXT.prompt || AI.prompt || ''; AI_TXT.rules = AI_TXT.rules || AI.rules || ''; AI_TXT.t = Date.now(); delete AI.prompt; delete AI.rules; store.set('zh.ai', AI); store.set('zh.ai_prompt', AI_TXT); }   // 예전에 기기에만 저장했던 것 옮기기
 function aiTxtSave(){ AI_TXT.t = Date.now(); store.set('zh.ai_prompt', AI_TXT); }
@@ -2760,6 +2787,9 @@ function promptSave(key, el, def, name){
   if (key === 'style') delete AI_TXT.prompt;
   aiTxtSave(); showToast(AI_TXT[key] ? `${name}을 저장했어요 — 다음 질문부터 적용` : `${name}을 기본값으로 되돌렸어요`);
 }
+$('aiRulesSet').value = AI_TXT.rules || '';
+$('btnRulesSetSave').onclick = () => { AI_TXT.rules = $('aiRulesSet').value.trim(); aiTxtSave(); showToast(AI_TXT.rules ? '요구사항을 저장했어요' : '요구사항을 지웠어요'); };
+$('btnRulesSetClear').onclick = () => { $('aiRulesSet').value = ''; AI_TXT.rules = ''; aiTxtSave(); showToast('요구사항을 지웠어요'); };
 $('btnCoreSave').onclick   = () => promptSave('core',  $('aiCore'),   AI_PROMPT_CORE,  '핵심 규칙');
 $('btnCoreReset').onclick  = () => { AI_TXT.core = '';  aiTxtSave(); $('aiCore').value   = AI_PROMPT_CORE;  showToast('기본값으로 되돌렸어요'); };
 $('btnPromptSave').onclick = () => promptSave('style', $('aiPrompt'), AI_PROMPT_STYLE, '말투');
@@ -3405,8 +3435,8 @@ $('idiList').addEventListener('click', idiListClick);
 $('idiMine').addEventListener('click', e => { if (idiListClick(e)) return; const st = e.target.closest('[data-idq-start]'); if (st){ $('idiSeg').querySelector('[data-seg=idquiz]').click(); startIdiQuiz('mine'); } });
 function startIdiQuiz(r){
   const I = EXT.idioms.idioms; const mine = Object.keys(FAV_I).filter(n => isFavI(n)).map(n => I[+n - 1]).filter(Boolean);
-  const pool = r === 'mine' ? mine : r === 'todo' ? I.filter((x, i) => !isIdiDone(i + 1)) : +r ? I.slice((+r - 1) * 200, +r * 200) : I;
-  if (pool.length < 2){ showToast('성어를 2개 이상 담아 주세요'); return; }
+  const pool = r === 'mine' ? mine : r === 'done' ? I.filter((x, i) => isIdiDone(i + 1)) : r === 'todo' ? I.filter((x, i) => !isIdiDone(i + 1)) : +r ? I.slice((+r - 1) * 200, +r * 200) : I;
+  if (pool.length < 2){ showToast(r === 'done' ? '학습 표시한 성어가 2개 이상이어야 해요 — 성어 목록에서 카드를 눌러 표시하세요' : r === 'mine' ? '성어를 2개 이상 담아 주세요' : '문제를 낼 성어가 부족해요'); return; }
   const items = []; const distract = pool.length >= 4 ? pool : I;
   for (let k = 0; k < Math.min(10, pool.length); k++){ const ans = pool[Math.floor(Math.random() * pool.length)]; const opts = [ans]; while (opts.length < 4){ const o = distract[Math.floor(Math.random() * distract.length)]; if (!opts.includes(o)) opts.push(o); } opts.sort(() => Math.random() - .5); items.push({ ans, opts }); }
   idiQ = { items, i: 0, ok: 0, range: r }; renderIdiQuiz();
@@ -3414,7 +3444,7 @@ function startIdiQuiz(r){
 function renderIdiQuiz(){
   const box = $('idiQuiz'); const I = EXT.idioms && EXT.idioms.idioms; if (!I) return;
   if (!idiQ){ const st = (STATS.pron && STATS.pron.idiom) || null;
-    box.innerHTML = `<div class="card pq"><p style="margin:0 0 12px;font-size:14px;color:var(--ink-2)">성어를 보고 뜻을 고르세요 (10문제)</p><div class="pgrid wide" style="margin-bottom:10px">${[['1','#1~200'],['2','#201~400'],['3','#401~600'],['0','전체'],['todo','미완료만'],['mine','내 성어']].map(([r, l]) => `<button data-idq-start="${r}" style="font-family:inherit;font-size:14px">${l}</button>`).join('')}</div>${st && st.n ? `<div class="pstat">지금까지 ${st.n}문제 · 정답률 ${Math.round(st.ok / st.n * 100)}%</div>` : ''}</div>`; return; }
+    box.innerHTML = `<div class="card pq"><p style="margin:0 0 12px;font-size:14px;color:var(--ink-2)">성어를 보고 뜻을 고르세요 (10문제)</p><div class="pgrid wide" style="margin-bottom:10px">${[['1','#1~200'],['2','#201~400'],['3','#401~600'],['0','전체'],['done','학습한 것만'],['todo','아직 안 한 것만'],['mine','내 성어']].map(([r, l]) => `<button data-idq-start="${r}" style="font-family:inherit;font-size:14px">${l}</button>`).join('')}</div>${st && st.n ? `<div class="pstat">지금까지 ${st.n}문제 · 정답률 ${Math.round(st.ok / st.n * 100)}%</div>` : ''}</div>`; return; }
   const q = idiQ.items[idiQ.i];
   if (!q){ box.innerHTML = `<div class="card pq"><h3 class="sk-h">끝 — ${idiQ.ok}/${idiQ.items.length}</h3><div class="dataops" style="justify-content:center"><button class="btn primary" data-idq-start="${idiQ.range}">다시</button><button class="btn" data-idq-back="1">처음으로</button></div></div>`; return; }
   box.innerHTML = `<div class="card pq"><div class="pstat" style="display:flex;justify-content:space-between;align-items:center"><button class="btn small" data-idq-back="1">‹ 처음으로</button><span>${idiQ.i + 1} / ${idiQ.items.length}</span><span style="width:70px"></span></div>
