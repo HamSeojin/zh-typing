@@ -607,6 +607,9 @@ body{word-break:keep-all;overflow-wrap:break-word}
 @keyframes mqslide{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(var(--mqx,0))}}
 @media (prefers-reduced-motion:reduce){.notes .nctx b.scroll .mq,.notes .nctx-sub.scroll .mq{animation:none}.notes .nctx b,.notes .nctx-sub{text-overflow:ellipsis}}
 .notes .nctx button{margin-left:auto;flex:0 0 auto}
+.notes .nctx.fold{cursor:pointer;user-select:none}
+.notes .nctx.fold .caret{font-size:12px;color:var(--ink-2)}
+.notes .nctx-when{flex:0 0 auto;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .notes .n{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--card);cursor:pointer}
 .notes .n.hlmode{cursor:default}
 .notes .n:not(.open) .a::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1.6em;background:linear-gradient(transparent,var(--card))}   /* 접혀 있을 때 아래를 흐리게 — 더 있다는 표시 */
@@ -956,7 +959,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2043</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2130</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1064,6 +1067,7 @@ details.more summary::-webkit-details-marker{display:none}
       <div class="ainote-top"><h3 class="sk-h" style="margin:0">AI 문답 노트</h3><button class="btn primary small" id="btnAiFree">＋ 새 질문</button></div>
       <input id="aiNoteQ" type="search" placeholder="노트 검색 (질문 대상·질문·답변·메모)" class="ainote-q">
       <div class="seg small" id="aiNoteFilters"></div>
+      <div class="tagbar" id="aiNoteKinds"></div>
       <div id="aiNoteList" class="notes"></div>
       <details class="more"><summary>내보내기</summary>
         <div class="dataops"><button class="btn" id="btnAiNoteCopy">전체 복사</button><button class="btn" id="btnAiNoteFile">파일로 저장 (.md)</button></div>
@@ -3063,6 +3067,12 @@ function aiTalkCtx(key){   // 저장된 회화를 문맥으로 이어서 묻기 
   ] };
 }
 let aiNoteFilter = 'all';   // all | star | hl
+const aiOpenGroups = new Set();   // 펼쳐 둔 묶음 (앱을 다시 열면 초기화)
+function aiWhen(t){ const d = Math.floor((Date.now() - t) / 86400000);
+  return d <= 0 ? '오늘' : d === 1 ? '어제' : d < 7 ? `${d}일 전` : new Date(t).toLocaleDateString(undefined, { month:'numeric', day:'numeric' }); }
+let aiNoteKind = 'all';     // all | w(단어) | s(문장) | g(문법) | p(읽기) | e(표현·사전) | t(회화) | f(자유)
+const AI_KINDS = [['w','단어'],['s','문장'],['g','문법'],['p','읽기'],['e','표현'],['t','회화'],['f','자유']];
+function aiNoteKindOf(key){ const c = key[0]; return c === 'x' ? 'e' : (AI_KINDS.some(k => k[0] === c) ? c : 'f'); }   // x(보조 사전)는 표현으로 묶음
 function aiTouch(n){ n.u = Date.now(); store.set('zh.ai_notes', AI_NOTES); }
 // 답변 본문에 형광펜(hl: 사용자가 고른 문구들)을 <mark> 로 입힘
 /* ── AI 노트 형광펜 ──
@@ -3120,12 +3130,23 @@ function renderAiNotes(){
   const q = ($('aiNoteQ').value || '').trim().toLowerCase();
   // 검색 대상: 질문 대상(제목 줄 — 한자·병음·한국어 뜻·문장·문법 이름) + 질문 글 + 답변 본문 + 내 메모
   const keep = (n, head) => !n.del && (aiNoteFilter === 'all' || (aiNoteFilter === 'star' && n.star) || (aiNoteFilter === 'hl' && (aiHlTexts(n).length || n.memo))) && (!q || (head + ' ' + n.q + n.a + (n.memo||'')).toLowerCase().includes(q));
-  const groups = Object.entries(AI_NOTES).map(([k, arr]) => { const lb = aiNoteLabel(k); const head = lb ? (lb.label + ' ' + (lb.sub || '')) : ''; return { k, arr: arr.filter(n => keep(n, head)) }; }).filter(g => g.arr.length);
+  const groups = Object.entries(AI_NOTES).filter(([k]) => aiNoteKind === 'all' || aiNoteKindOf(k) === aiNoteKind).map(([k, arr]) => { const lb = aiNoteLabel(k); const head = lb ? (lb.label + ' ' + (lb.sub || '')) : ''; return { k, arr: arr.filter(n => keep(n, head)) }; }).filter(g => g.arr.length);
   groups.sort((a, b) => Math.max(...b.arr.map(n => n.t)) - Math.max(...a.arr.map(n => n.t)));
   const total = Object.values(AI_NOTES).flat().filter(n => !n.del).length, stars = Object.values(AI_NOTES).flat().filter(n => !n.del && n.star).length;
   $('aiNoteFilters').innerHTML = [['all',`전체 ${total}`],['star',`★ 중요 ${stars}`],['hl','형광펜·메모']].map(([k,l]) => `<button data-nf="${k}" aria-selected="${aiNoteFilter===k}">${l}</button>`).join('');
-  $('aiNoteList').innerHTML = groups.map(g => { const lb = aiNoteLabel(g.k); if (!lb) return ''; return `<div class="nctx"><div class="nctx-t"><b><span class="mq">${lb.label}</span></b>${lb.sub ? `<div class="nctx-sub"><span class="mq">${lb.sub}</span></div>` : ''}</div><button class="btn small" data-nopen="${g.k}"><i class="ic-ai"></i> 이어서 묻기</button></div>` +
-    g.arr.slice().sort((a, b) => a.t - b.t).map(n => `<div class="n ${n.star?'star':''}" data-nk="${g.k}" data-nt="${n.t}">
+  // 종류 칩: 노트가 하나라도 있는 종류만 (개수와 함께)
+  const cnt = {};
+  for (const [k, arr] of Object.entries(AI_NOTES)){ const live = arr.filter(n => !n.del).length; if (live) cnt[aiNoteKindOf(k)] = (cnt[aiNoteKindOf(k)] || 0) + live; }
+  const kinds = AI_KINDS.filter(([c]) => cnt[c]);
+  $('aiNoteKinds').innerHTML = kinds.length > 1
+    ? `<button data-nk2="all" aria-pressed="${aiNoteKind==='all'}">전체</button>` + kinds.map(([c, name]) => `<button data-nk2="${c}" aria-pressed="${aiNoteKind===c}">${name} ${cnt[c]}</button>`).join('')
+    : '';
+  $('aiNoteList').innerHTML = groups.map(g => { const lb = aiNoteLabel(g.k); if (!lb) return '';
+    // 회화처럼 문답이 많이 쌓이는 묶음은 접어 두고 제목을 눌러 펼친다 (검색 중에는 찾은 것이 보이도록 항상 펼침)
+    const foldable = aiNoteKindOf(g.k) === 't' || g.arr.length >= 6;
+    const open = !foldable || q || aiOpenGroups.has(g.k);
+    return `<div class="nctx${foldable ? ' fold' : ''}"${foldable ? ` data-nfold="${g.k}" role="button" tabindex="0"` : ''}><div class="nctx-t"><b><span class="mq">${foldable ? `<span class="caret">${open ? '▾' : '▸'}</span> ` : ''}${lb.label}</span></b>${lb.sub ? `<div class="nctx-sub"><span class="mq">${lb.sub}${foldable && !open && aiNoteKindOf(g.k) !== 't' ? ` · 문답 ${g.arr.length}` : ''}</span></div>` : ''}</div><span class="nctx-when">${aiWhen(Math.max(...g.arr.map(n => n.t)))}</span><button class="btn small" data-nopen="${g.k}"><i class="ic-ai"></i> 이어서 묻기</button></div>` +
+    (open ? g.arr.slice().sort((a, b) => a.t - b.t).map(n => `<div class="n ${n.star?'star':''}" data-nk="${g.k}" data-nt="${n.t}">
       <div class="q">${aiFmt(n.q)}</div>
       <div class="a ${aiNoteFilter === 'hl' && aiHlTexts(n).length ? 'only' : ''}">${aiFmtHl(n, aiNoteFilter === 'hl' && aiHlTexts(n).length > 0)}</div>
       ${n.memo ? `<div class="memo"><i class="ic-edit"></i> ${aiFmt(n.memo)}</div>` : ''}
@@ -3134,8 +3155,9 @@ function renderAiNotes(){
         <button data-nhl="1" title="형광펜 모드 켜기/끄기 — 켜진 동안 단어를 탭하면 칠해지고, 다시 탭하면 지워져요">🖍 형광펜</button>
         <button data-nmemo="1" title="내 메모"><i class="ic-edit"></i> 메모</button>
         <button data-ncopy="1">복사</button>
-        <button class="del" data-ndel="1">${aiNoteFilter === 'hl' ? '표시 지우기' : '삭제'}</button></div></div>`).join(''); }).join('')
-    || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q || aiNoteFilter!=='all' ? '해당하는 노트가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 묻기 버튼을 누르거나, 위 ＋ 새 질문으로 아무거나 물어보세요.'}</p>`;
+        <button data-nkeep="1" title="이 답변에서 형광펜으로 칠한 단어·문장을 내 단어장·내 문장에 담기">＋ 담기</button>
+        <button class="del" data-ndel="1">${aiNoteFilter === 'hl' ? '표시 지우기' : '삭제'}</button></div></div>`).join('') : ''); }).join('')
+    || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q || aiNoteFilter!=='all' || aiNoteKind!=='all' ? '해당하는 노트가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 묻기 버튼을 누르거나, 위 ＋ 새 질문으로 아무거나 물어보세요.'}</p>`;
   mqFit($('aiNoteList'));
 }
 function mqFit(root){   // 제목이 칸보다 길면 좌우로 천천히 흐르게 (짧으면 그대로 둠)
@@ -3149,11 +3171,30 @@ function mqFit(root){   // 제목이 칸보다 길면 좌우로 천천히 흐르
 }
 $('aiNoteQ').oninput = renderAiNotes;
 $('aiNoteFilters').addEventListener('click', e => { const b = e.target.closest('[data-nf]'); if (b){ aiNoteFilter = b.dataset.nf; renderAiNotes(); } });
+$('aiNoteKinds').addEventListener('click', e => { const b = e.target.closest('[data-nk2]'); if (b){ aiNoteKind = b.dataset.nk2; renderAiNotes(); } });
+$('aiNoteList').addEventListener('click', e => {   // 묶음 제목 누르면 펼치기/접기 ('이어서 묻기' 버튼은 제외)
+  const h = e.target.closest('[data-nfold]'); if (!h || e.target.closest('[data-nopen]')) return;
+  const k = h.dataset.nfold; aiOpenGroups.has(k) ? aiOpenGroups.delete(k) : aiOpenGroups.add(k); renderAiNotes();
+});
 function noteOf(el){ const arr = AI_NOTES[el.dataset.nk] || []; return arr.find(x => String(x.t) === el.dataset.nt); }
 function aiRedraw(n, it){ const a = n.querySelector('.a'); a.innerHTML = aiFmtHl(it, a.classList.contains('only')); }
 $('aiNoteList').addEventListener('click', e => {
   const o = e.target.closest('[data-nopen]'); if (o){ const lb = aiNoteLabel(o.dataset.nopen); if (lb) aiOpen(lb.ctx()); return; }
   const n = e.target.closest('.n'); if (!n) return; const it = noteOf(n);
+  if (e.target.closest('[data-nkeep]')){
+    if (!it) return;
+    const picks = aiHlTexts(it).filter(t => /[\u4e00-\u9fff]/.test(t)).map(t => t.replace(/^[^\u4e00-\u9fff]+|[^\u4e00-\u9fff。！？]+$/g, '').trim()).filter(Boolean);
+    if (!picks.length){ showToast('먼저 🖍 형광펜으로 담을 단어·문장을 칠해 주세요'); return; }
+    let nw = 0, ns = 0;
+    for (const t of picks){
+      const w = BY_S.get(t);
+      if (w){ if (!isFav(w.id)){ toggleFav(w.id); nw++; } }          // 우리 단어에 있으면 내 단어장으로
+      else if (!hasCustomSent(t)){ addCustomSent(t, '', ''); ns++; }  // 아니면 내 문장으로 (병음은 자동)
+    }
+    showToast(nw || ns ? `내 단어장 ${nw}개 · 내 문장 ${ns}개를 담았어요` : '이미 다 담겨 있어요');
+    if (nw) renderMine(); if (ns) renderMineSents();
+    return;
+  }
   if (e.target.closest('[data-nhl]')){ if (!it) return; const on = n.classList.toggle('hlmode'); n.classList.add('open'); e.target.closest('[data-nhl]').classList.toggle('on', on);   // 버튼 글자는 안 바꿈(폭이 변하면 옆 버튼이 손가락 밑에 들어옴)
     if (on){ const a = n.querySelector('.a'); if (a.classList.contains('only')){ a.classList.remove('only'); aiRedraw(n, it); } showToast('탭하거나 드래그해서 칠하고, 칠한 곳을 탭하면 지워져요'); } return; }
   if (e.target.closest('[data-nstar]')){ if (it){ it.star = it.star ? 0 : 1; aiTouch(it); } renderAiNotes(); return; }
@@ -3210,7 +3251,7 @@ $('aiNoteList').addEventListener('pointerup', hlDragEnd);
 $('aiNoteList').addEventListener('pointercancel', hlDragEnd);
 function aiNotesText(){
   const lines = [`# AI 선생님 문답 노트 (${new Date().toLocaleDateString()})`, ''];
-  for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label}${lb.sub ? ' — ' + lb.sub : ''}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${aiHlTexts(n).length ? '\n  형광펜: ' + aiHlTexts(n).join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
+  for (const [k, arr] of Object.entries(AI_NOTES)){ if (aiNoteKind !== 'all' && aiNoteKindOf(k) !== aiNoteKind) continue; const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label}${lb.sub ? ' — ' + lb.sub : ''}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${aiHlTexts(n).length ? '\n  형광펜: ' + aiHlTexts(n).join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
   return lines.join('\n');
 }
 $('btnAiNoteCopy').onclick = async () => { const text = aiNotesText(); try{ await navigator.clipboard.writeText(text); showToast('복사했어요 — 메모 앱 등에 붙여넣기'); }catch(e){ $('io').value = text; showToast('더보기 → 설정 → 데이터 칸에 넣어 뒀어요'); } };
