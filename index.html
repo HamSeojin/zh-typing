@@ -428,6 +428,36 @@ body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   .koedit{display:none}#quizCard.show-ko .koedit{display:flex;margin-top:8px;padding-top:8px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* 회화 롤플레이 · 작문 연습 */
+.tk{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--card)}
+.tk.me{background:var(--good-bg);border-color:color-mix(in srgb,var(--accent) 35%,var(--line));margin-left:auto;max-width:86%}
+.tk.ai{margin-right:auto;max-width:92%}
+.tk .tz{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.tk .zt{font-family:var(--hanzi);font-size:20px;line-height:1.5}
+.tk .tp{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:3px}
+.tk .tko{font-size:14px;color:var(--ink-2);margin-top:2px}
+.tfix{font-size:13px;margin:-2px 0 8px;padding:7px 10px;border-radius:10px;background:var(--paper);border:1px dashed var(--line)}
+.tfix.ok{color:var(--good);border-style:solid;border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
+.talk-in{display:flex;gap:6px;align-items:center;margin-top:4px}
+.talk-in input{flex:1;min-width:0;font:inherit;font-family:var(--hanzi);font-size:18px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+.talk-in input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.talk-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.sitgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sitgrid button{font:inherit;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);cursor:pointer}
+.sitgrid button b{display:block;font-size:15px}
+.sitgrid button small{display:block;font-size:11.5px;color:var(--ink-2);margin-top:2px}
+.sitgrid button[aria-pressed="true"]{border-color:var(--accent);background:var(--good-bg)}
+.wr-ko{font-size:19px;line-height:1.5;margin:6px 0 2px}
+.wr-in{width:100%;box-sizing:border-box;font:inherit;font-family:var(--hanzi);font-size:20px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:64px}
+.wr-in:focus{outline:2px solid var(--accent);outline-offset:1px}
+.wr-res{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.wr-badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;margin-bottom:6px}
+.wr-badge.good{background:var(--good-bg);color:var(--good)}
+.wr-badge.soso{background:#fdf3d8;color:#8a6d1f}
+.wr-badge.bad{background:var(--bad-bg);color:var(--bad)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .wr-badge.soso{background:#3a3420;color:#e2c766}}
+:root[data-theme=dark] .wr-badge.soso{background:#3a3420;color:#e2c766}
+@media (max-width:480px){.sitgrid{grid-template-columns:1fr}.tk .zt{font-size:19px}}
 .loading{position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;z-index:999}
 .loading-box{text-align:center;color:var(--ink-2);font-size:14px}
 .loading-hz{font-family:'Noto Serif SC',serif;font-size:56px;color:var(--accent);margin-bottom:8px}
@@ -926,7 +956,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.1422</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2022</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -976,6 +1006,8 @@ details.more summary::-webkit-details-marker{display:none}
     <button class="mcard" data-go="phrase"><span class="mi">话</span><b>회화 표현</b><small>자막 표현 1,100 · 듣고 뜻 고르기</small></button>
     <button class="mcard" data-go="idiom"><span class="mi">成</span><b>성어</b><small>자주 쓰는 600 · 뜻·예문 · 퀴즈</small></button>
     <button class="mcard" data-go="typing"><span class="mi">打</span><b>타자 연습</b><small>학습한 단어로 타자 드릴</small></button>
+    <button class="mcard" data-go="talk"><span class="mi">说</span><b>회화 롤플레이</b><small>AI가 상대역 · 말하기·교정</small></button>
+    <button class="mcard" data-go="write"><span class="mi">写</span><b>작문 연습</b><small>한국어 → 중국어 · AI 첨삭</small></button>
   </div></div>
 </section>
 
@@ -1110,7 +1142,6 @@ details.more summary::-webkit-details-marker{display:none}
     <label class="row"><span>테마</span><select id="optTheme"><option value="">시스템</option><option value="light">밝게</option><option value="dark">어둡게</option></select></label>
     <h3>발음</h3>
     <label class="row"><span>문제가 나올 때 자동 재생</span><input type="checkbox" id="optAutoSpeak"></label>
-    <label class="row"><span>미리 만든 음성(mp3) 우선<small id="mp3State">있으면 브라우저 음성보다 먼저 재생</small></span><input type="checkbox" id="optMp3"></label>
     <label class="row"><span>브라우저 음성<small id="ttsState"></small></span><select id="optVoice"></select></label>
     <label class="row"><span>속도 <span id="rateVal">0.9</span></span><input type="range" id="optRate" min="0.5" max="1.3" step="0.1" value="0.9"></label>
     <h3>학습</h3>
@@ -1321,6 +1352,24 @@ details.more summary::-webkit-details-marker{display:none}
 </section>
 
 <!-- ═══════════ 읽기 ═══════════ -->
+<section class="screen pushed" data-screen="talk" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">회화 롤플레이</b><span class="tb-right" id="talkTop"></span></div>
+  <div id="talkSetup"></div>
+  <div id="talkPlay" hidden>
+    <div id="talkLog"></div>
+    <div class="card" style="padding:10px 12px">
+      <div class="talk-in"><input id="talkQ" placeholder="중국어로 답해 보세요"><button class="btn icon" id="btnTalkMic" title="말해서 답하기"><i class="ic-mic"></i></button><button class="btn primary" id="btnTalkSend">보내기</button></div>
+      <div class="talk-acts"><button class="btn small" id="btnTalkHint">힌트</button><button class="btn small" id="btnTalkEnd">끝내고 총평</button><button class="btn small" id="btnTalkNew">다른 상황</button></div>
+      <p class="hint" style="font-size:11.5px;color:var(--ink-2);margin:8px 0 0">한국어로 물어도 돼요 ("이거 어떻게 말해?"). 상대 말의 한자를 누르면 뜻이 떠요.</p>
+    </div>
+  </div>
+</section>
+
+<section class="screen pushed" data-screen="write" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">작문 연습</b><span class="tb-right" id="wrTop"></span></div>
+  <div id="wrBox"></div>
+</section>
+
 <section class="screen pushed" data-screen="read" data-parent="learn" hidden>
   <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">읽기</b></div>
   <div id="readList">
@@ -1571,7 +1620,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes','zh.write']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
@@ -1609,7 +1658,7 @@ function mineWords(){ return [...Object.keys(FAV).filter(k => FAV[k] > 0).map(k 
 const PROGRESS = store.get('zh.progress', {});  // { "12": {box:2, due:<ms>, c:3, w:1} }
 const SETTINGS = Object.assign({
   mode:'hanzi', showHanzi:false, showPinyin:false, showKo:true, showEn:true, showTrad:false,
-  autoSpeak:false, voice:'', rate:0.9, mp3:true, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
+  autoSpeak:false, voice:'', rate:0.9, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
 }, store.get('zh.settings', {}));
 // 날짜 열쇠는 '기기의 현지 날짜'. (전에는 toISOString → 세계 표준시(UTC) 날짜라 한국에서는 아침 9시에 하루가 바뀌어 오늘 숫자가 0으로 돌아갔음)
 function localDay(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
@@ -1821,58 +1870,9 @@ function loadVoices(){
   if (SETTINGS.voice && voices.some(v=>v.name===SETTINGS.voice)) optVoice.value = SETTINGS.voice;
   ttsState.textContent = voices.length ? `중국어 음성 ${voices.length}개` : '⚠ 중국어 음성 없음 — OS 언어팩 설치 필요';
 }
-/* ── 미리 만든 발음 mp3 (make_audio.py 로 생성한 audio/ 폴더) ──
-   audio/index.json: { w: { 단어id: [파일번호, 시작초, 길이초] }, s: { 단어id(예문): [...] } }
-   한 파일에 150개가 이어 붙어 있어(스프라이트) 해당 구간만 재생한다. 파일이 없거나(claude.ai 게시본 등) 재생이 막히면 브라우저 TTS 로 넘어감 */
-let AUDIO = null, audioTried = false, clip = null; const audioEls = {}; let SENT_ID_BY_ZH = null;
-function loadAudioIndex(){
-  if (audioTried) return; audioTried = true;
-  if (!/^https?:/.test(location.protocol) || location.hostname.endsWith('claude.ai')) return;
-  fetch('audio/index.json').then(r => r.ok ? r.json() : null).then(j => { AUDIO = j; updateMp3State(); }).catch(() => {});
-}
-function updateMp3State(){ const n = AUDIO ? Object.keys(AUDIO.w||{}).length : 0, m = AUDIO ? Object.keys(AUDIO.s||{}).length : 0; if (n) $('mp3State').textContent = `🎵 단어 ${n.toLocaleString()}개${m?` · 문장 ${m.toLocaleString()}개`:''} 준비됨 (${AUDIO.voice||'edge-tts'})`; }
-function clipFor(text){
-  if (!AUDIO || SETTINGS.mp3 === false) return null;
-  const w = BY_S.get(text); if (w && AUDIO.w && AUDIO.w[w.id]) return ['w', w.id];
-  if (AUDIO.s){ if (!SENT_ID_BY_ZH){ SENT_ID_BY_ZH = new Map(); for (const [id, st] of Object.entries(SENTS)) SENT_ID_BY_ZH.set(st.zh, id); } const sid = SENT_ID_BY_ZH.get(text); if (sid && AUDIO.s[sid]) return ['s', sid]; }
-  return null;
-}
-function stopClip(){ if (clip){ clip.a.pause(); clearTimeout(clip.timer); clip.a.removeEventListener('timeupdate', clip.onT); clip = null; } }
-function playClip(kind, id, fallback){
-  const [no, start, len] = AUDIO[kind][id]; const src = `audio/${kind}-${String(no).padStart(3,'0')}.mp3`;
-  let a = audioEls[src]; if (!a){ a = new Audio(src); a.preload = 'auto'; audioEls[src] = a; }
-  stopClip(); if ('speechSynthesis' in window) speechSynthesis.cancel();
-  window.__lastClip = { src, start, len };   // 디버그용
-  const rate = Math.max(0.5, Math.min(2, SETTINGS.rate || 1));
-  const go = () => {
-    try{ a.currentTime = start; }catch(e){ fallback(); return; }
-    a.playbackRate = rate;
-    const stopAt = start + len - 0.03;
-    const onT = () => { if (a.currentTime >= stopAt) stopClip(); };
-    clip = { a, onT, timer: setTimeout(stopClip, len / rate * 1000 + 60) };
-    a.addEventListener('timeupdate', onT);
-    const p = a.play(); if (p && p.catch) p.catch(() => { stopClip(); fallback(); });
-  };
-  if (a.readyState >= 1) go();
-  else {
-    // mp3 를 못 받아오는 경우(느린 망·서버 문제)에도 가만히 있지 않게 — 3초 안에 준비 안 되면 브라우저 음성으로 넘어감
-    let done = false;
-    const bail = () => { if (done) return; done = true; stopClip(); fallback(); };
-    const t = setTimeout(bail, 3000);
-    a.addEventListener('loadedmetadata', () => { if (done) return; done = true; clearTimeout(t); go(); }, { once: true });
-    a.addEventListener('error', () => { clearTimeout(t); bail(); }, { once: true });
-    a.load();
-  }
-}
-function speak(text){
-  if (!text) return;
-  const c = clipFor(text);
-  if (c){ playClip(c[0], c[1], () => ttsSpeak(text)); return; }
-  ttsSpeak(text);
-}
+function speak(text){ if (text) ttsSpeak(text); }
 function ttsSpeak(text){
   if (!('speechSynthesis' in window) || !text) return;
-  stopClip();
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'zh-CN'; u.rate = SETTINGS.rate;
@@ -2468,6 +2468,8 @@ function go(name){
   if (name === 'phrase') loadExt('phrases').then(() => { renderPhrList(); if (phrOpenQ){ const q = phrOpenQ; phrOpenQ = ''; phrTag = '전체'; $('phrSeg').querySelector('[data-seg=phlist]').click(); const inp = $('phrList').querySelector('.qsearch'); if (inp){ inp.value = q; inp.oninput(); } } renderPhrQuiz(); });
   if (name === 'idiom') loadExt('idioms').then(() => { renderIdiList(); renderIdiMine(); if (idiOpenQ){ const q = idiOpenQ; idiOpenQ = ''; $('idiSeg').querySelector('[data-seg=idlist]').click(); const inp = $('idiList').querySelector('.qsearch'); if (inp){ inp.value = q; inp.oninput(); } } renderIdiQuiz(); });
   if (name === 'hanzi') loadExt('hanzi').then(() => { renderHzRad(); renderHzMea(); renderHzDec(); });   // 시트/홈에서 만들어져 아직 안 들려준 카드는 세션 화면에 들어올 때 들려줌
+  if (name === 'talk') renderTalk();
+  if (name === 'write') renderWrite();
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); requestAnimationFrame(() => mqFit($('aiNoteList'))); }
   if (name === 'more') renderStats();
@@ -2549,7 +2551,7 @@ function bindOpt(id, key, evt='change'){
   });
 }
 ['optShowKo:showKo','optShowEn:showEn','optShowTrad:showTrad',
- 'optAutoSpeak:autoSpeak','optMp3:mp3','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
+ 'optAutoSpeak:autoSpeak','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
 bindOpt('optRate','rate','input'); $('rateVal').textContent = SETTINGS.rate;
 function applyZoom(){ document.documentElement.style.setProperty('--zoom', SETTINGS.zoom || 1); }
 applyZoom();
@@ -3479,7 +3481,7 @@ $('idiSeg').addEventListener('click', e => { const b = e.target.closest('[data-s
 
 /* ═══════════ 발음 기초 (성모·운모 표, 헷갈리는 소리 듣기, 성조 듣기) ═══════════
    데이터 pinyin.json (build_pinyin.py): initials/finals 설명, pairs(헷갈리는 짝), syl(음절+성조 → 대표 한자), table(음절 → [성모, 운모]).
-   소리는 대표 한자를 TTS/mp3 로 읽혀서 냄 — 병음 글자 자체는 TTS 가 못 읽으므로. 화면에 들어올 때 처음 한 번만 데이터를 받음 */
+   소리는 대표 한자를 TTS 로 읽혀서 냄 — 병음 글자 자체는 TTS 가 못 읽으므로. 화면에 들어올 때 처음 한 번만 데이터를 받음 */
 let PY = null, pyPromise = null;
 function loadPron(){ return pyPromise || (pyPromise = loadJson('pinyin', null).then(j => (PY = j))); }
 const TONE_MARK = { a:'āáǎàa', e:'ēéěèe', i:'īíǐìi', o:'ōóǒòo', u:'ūúǔùu', 'ü':'ǖǘǚǜü' };
@@ -4403,8 +4405,203 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 window.addEventListener('pagehide', () => { if (backend && syncTimer){ clearTimeout(syncTimer); syncNow('leave'); } });
 initSync();
 
+
+/* ═══════════ 회화 롤플레이 (AI 가 상대역) ═══════════
+   상황을 고르면 AI 가 그 상황의 상대(점원·친구 등)가 되어 중국어로 한 마디씩 건네고,
+   내가 답한 중국어를 고쳐 준다. 답은 정해진 칸 형식([상대]/[병음]/[뜻]/[교정]/[힌트])으로 받아서 화면에 나눠 보여 준다. */
+const TALK_SITS = [
+  ['자기소개', '이름·나라·직업·나이를 주고받기'],
+  ['인사·안부', '오랜만에 만난 사람과 안부 묻기'],
+  ['식당에서', '자리·주문·맛·계산'],
+  ['물건 사기', '가격 묻기·크기·색·계산'],
+  ['길 묻기', '역·화장실·가는 방법 묻기'],
+  ['택시·교통', '목적지 말하기·시간 묻기'],
+  ['호텔 체크인', '예약 확인·방·조식 시간'],
+  ['병원·약국', '아픈 곳 말하기·약 사기'],
+  ['약속 잡기', '전화로 시간·장소 정하기'],
+  ['자유 대화', '주제 없이 편하게'],
+];
+let talk = null, talkRec = null;
+function talkLv(){ const ls = (SETTINGS.levels || []).map(Number).filter(Boolean); return ls.length ? Math.min(...ls) : 1; }
+function renderTalk(){
+  if (talk){ $('talkSetup').hidden = true; $('talkPlay').hidden = false; return; }
+  $('talkPlay').hidden = true; $('talkSetup').hidden = false; $('talkTop').textContent = '';
+  $('talkSetup').innerHTML = `<div class="card">
+    <h3 class="sk-h">상황 고르기 <small>HSK ${talkLv()}급 수준으로 말해 줘요 (학습 급수 설정을 따름)</small></h3>
+    <div class="sitgrid">${TALK_SITS.map((x, i) => `<button data-sit="${i}"><b>${x[0]}</b><small>${x[1]}</small></button>`).join('')}</div>
+    <p class="hint" style="font-size:12px;color:var(--ink-2);margin:10px 0 0">${AI.key ? 'AI 선생님과 같은 키를 씁니다 — 한 마디당 1~2원쯤 들어요.' : '설정 탭 → AI 선생님에서 API 키를 먼저 넣어 주세요.'}</p>
+  </div>`;
+}
+$('talkSetup').addEventListener('click', e => {
+  const b = e.target.closest('[data-sit]'); if (!b) return;
+  if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
+  const sit = TALK_SITS[+b.dataset.sit];
+  talk = { sit: sit[0], desc: sit[1], lv: talkLv(), hist: [], hint: '', n: 0 };
+  $('talkLog').innerHTML = ''; renderTalk(); $('talkTop').textContent = `${talk.sit} · ${talk.lv}급`;
+  talkSend('', true);
+});
+function talkSystem(){
+  return `너는 지금 중국어 회화 연습의 상대역이다. 상황: ${talk.sit} (${talk.desc}). 학습자 수준: HSK ${talk.lv}급.
+- 그 급수 안의 쉬운 단어로, 한 번에 한 마디(1~2문장)만 말한다.
+- 학습자가 한국어로 물으면 [교정] 칸에서 한국어로 답해 주고, [상대] 칸은 대화를 이어 간다.
+- 아래 다섯 칸 형식으로만 답한다. 다른 말·인사·설명 금지.
+[상대] (중국어 한 마디)
+[병음] (그 한 마디의 병음)
+[뜻] (한국어 번역)
+[교정] (학습자가 방금 한 중국어에 대한 지적. 고칠 데가 없으면 정확히 "좋아요". 한 가지만 짧게. 첫 마디에는 "-")
+[힌트] (학습자가 다음에 할 만한 대답 예시 하나: 중국어 — 한국어 뜻)`;
+}
+function talkParse(t){
+  const g = k => { const m = String(t).match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
+  return { zh: g('상대'), py: g('병음'), ko: g('뜻'), fix: g('교정'), hint: g('힌트'), raw: String(t) };
+}
+function talkAddMe(text){ $('talkLog').insertAdjacentHTML('beforeend', `<div class="tk me"><span class="zt">${tapHtml(text)}</span></div>`); $('app').scrollTo({ top: $('app').scrollHeight }); }
+function talkAiHtml(o){
+  return `<div class="tk ai"><div class="tz"><span class="zt">${tapHtml(o.zh || o.raw)}</span><button class="btn icon" data-tsay="${(o.zh || '').replace(/"/g, '&quot;')}" title="듣기"><i class="ic-spk"></i></button></div>
+    <div class="tp" hidden>${o.py || ''}</div><div class="tko" hidden>${o.ko || ''}</div>
+    ${o.py || o.ko ? `<button class="btn small" data-treveal="1" style="margin-top:6px">병음·뜻 보기</button>` : ''}</div>`;
+}
+function talkAddAi(o, thinking){
+  $('talkLog').insertAdjacentHTML('beforeend', thinking ? `<div class="tk ai"><span class="thinking">생각 중</span></div>` : talkAiHtml(o));
+  $('app').scrollTo({ top: $('app').scrollHeight });
+  return $('talkLog').lastElementChild;
+}
+async function talkSend(text, kick){
+  if (!talk) return;
+  if (!kick){ if (!text.trim()) return; talkAddMe(text); }
+  const el = talkAddAi(null, true); $('btnTalkSend').disabled = true;
+  try{
+    const user = kick ? '대화를 시작해 줘. 네가 먼저 한 마디 건네.' : text;
+    const a = await aiCall(user, talkSystem(), talk.hist.slice(-3));
+    const o = talkParse(a);
+    talk.hist.push({ q: user, a }); talk.hint = o.hint || ''; talk.n++;
+    let fixHtml = '';
+    if (!kick && o.fix && o.fix !== '-'){
+      const ok = /^좋아요/.test(o.fix);
+      fixHtml = `<div class="tfix ${ok ? 'ok' : ''}">${ok ? '✓ 좋아요' : '✎ ' + aiFmtRaw(o.fix)}</div>`;
+    }
+    el.outerHTML = fixHtml + talkAiHtml(o);   // '생각 중' 자리를 교정 + 상대 말로 교체
+    if (o.zh) speak(o.zh);
+  }catch(err){ el.innerHTML = `<div class="a err" style="color:var(--bad);font-size:13px">${err.message}</div>`; }
+  $('btnTalkSend').disabled = false; $('app').scrollTo({ top: $('app').scrollHeight });
+}
+$('btnTalkSend').onclick = () => { const v = $('talkQ').value; $('talkQ').value = ''; talkSend(v); };
+$('talkQ').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('btnTalkSend').click(); } });
+$('btnTalkHint').onclick = () => { if (!talk || !talk.hint){ showToast('아직 힌트가 없어요'); return; } $('talkLog').insertAdjacentHTML('beforeend', `<div class="tfix">💡 ${aiFmtRaw(talk.hint)}</div>`); $('app').scrollTo({ top: $('app').scrollHeight }); };
+$('btnTalkNew').onclick = () => { talk = null; renderTalk(); };
+$('btnTalkEnd').onclick = async () => {
+  if (!talk || !talk.n){ talk = null; renderTalk(); return; }
+  const el = talkAddAi(null, true);
+  try{
+    const a = await aiCall('대화를 여기서 끝내자. 지금까지 내가 한 중국어에서 고칠 점과 잘한 점을 정리해 줘. 형식 칸 없이 한국어로, 6줄 이내.', `너는 중국어 선생님이다. 학습자 수준 HSK ${talk.lv}급.`, talk.hist.slice(-4));
+    el.innerHTML = `<div style="font-size:14px">${aiFmtRaw(a)}</div>`;
+  }catch(err){ el.innerHTML = `<div style="color:var(--bad);font-size:13px">${err.message}</div>`; }
+  talk = null; $('talkTop').textContent = '';
+};
+$('btnTalkMic').onclick = () => {
+  if (!SR){ showToast('이 브라우저는 음성 인식을 지원하지 않아요'); return; }
+  if (talkRec){ try{ talkRec.abort(); }catch(e){} talkRec = null; $('btnTalkMic').setAttribute('aria-pressed', 'false'); return; }
+  const r = talkRec = new SR(); r.lang = 'zh-CN'; r.interimResults = true; let heard = '';
+  $('btnTalkMic').setAttribute('aria-pressed', 'true'); $('talkQ').placeholder = '● 듣는 중… 말해 보세요';
+  const done = () => { if (talkRec !== r) return; talkRec = null; clearTimeout(tm); $('btnTalkMic').setAttribute('aria-pressed', 'false'); $('talkQ').placeholder = '중국어로 답해 보세요'; if (heard) $('talkQ').value = heard; };
+  r.onresult = e => { heard = e.results[e.results.length - 1][0].transcript; };
+  r.onend = done; r.onerror = done;
+  const tm = setTimeout(() => { try{ r.abort(); }catch(e){} done(); }, 10000);
+  try{ r.start(); }catch(e){ talkRec = null; showToast('마이크를 시작하지 못했어요'); }
+};
+$('talkLog').addEventListener('click', e => {
+  const sy = e.target.closest('[data-tsay]'); if (sy){ speak(sy.dataset.tsay); return; }
+  const rv = e.target.closest('[data-treveal]'); if (rv){ const c = rv.closest('.tk'); c.querySelector('.tp').hidden = false; c.querySelector('.tko').hidden = false; rv.remove(); return; }
+  const tk = e.target.closest('.tok'); if (tk) showLookup(tk);
+});
+
+/* ═══════════ 작문 연습 (한국어 → 중국어, AI 첨삭) ═══════════
+   우리 예문 데이터의 한국어 뜻을 문제로 내고, 내가 쓴 중국어를 먼저 참고 답안과 글자 단위로 견준 뒤(공짜),
+   원하면 AI 에게 첨삭을 받는다(토큰 씀). 참고 답안과 달라도 맞을 수 있으므로 판정은 AI 쪽이 기준. */
+const WRITE_ST = Object.assign({ n: 0, ok: 0, recent: [] }, store.get('zh.write', {}));
+let wr = null;
+function wrSave(){ store.set('zh.write', WRITE_ST); }
+function wrNorm(t){ return String(t).replace(/[\s。，、！？：；""''（）()。.,!?:;]/g, ''); }
+function wrPick(){
+  const lvs = (SETTINGS.levels || []).map(Number).filter(Boolean); const set = new Set(lvs.length ? lvs : [1]);
+  const pool = Object.keys(SENTS).filter(id => { const w = BY_ID.get(+id); return w && set.has(w.lv) && SENTS[id].ko; });
+  if (!pool.length) return null;
+  const recent = new Set((WRITE_ST.recent || []).map(r => r.id));
+  const fresh = pool.filter(id => !recent.has(+id));
+  const id = +(fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length ? fresh.length : pool.length))];
+  return { id, st: SENTS[String(id)], w: BY_ID.get(id) };
+}
+function renderWrite(){
+  const pct = WRITE_ST.n ? Math.round(WRITE_ST.ok / WRITE_ST.n * 100) : 0;
+  $('wrTop').textContent = WRITE_ST.n ? `${WRITE_ST.n}문장 · ${pct}%` : '';
+  if (!wr) wr = wrPick();
+  if (!wr){ $('wrBox').innerHTML = '<div class="card"><p style="color:var(--ink-2)">이 급수에는 예문이 아직 없어요. 설정에서 다른 급수를 골라 주세요.</p></div>'; return; }
+  $('wrBox').innerHTML = `<div class="card">
+    <div class="sh-label">이 뜻이 되도록 중국어로 써 보세요 <small style="font-weight:400">· HSK ${wr.w.lv}급</small></div>
+    <div class="wr-ko">${wr.st.ko}</div>
+    <div style="font-size:12px;color:var(--ink-2);margin-bottom:8px">핵심 단어: <b style="font-family:var(--hanzi);font-size:16px">${wr.w.s}</b> <span style="font-family:var(--mono)">${wr.w.py}</span></div>
+    <textarea class="wr-in" id="wrIn" placeholder="중국어로 입력 (한자)" autocapitalize="off" autocorrect="off">${wr.mine || ''}</textarea>
+    <div class="dataops" style="margin-top:10px">
+      <button class="btn primary" id="btnWrSubmit" style="flex:1">제출</button>
+      <button class="btn" id="btnWrSkip">다른 문제</button>
+    </div>
+    <div class="wr-res" id="wrRes" hidden></div>
+  </div>
+  ${(WRITE_ST.recent || []).length ? `<div class="card" style="margin-top:12px"><h3 class="sk-h">최근 쓴 문장</h3>${WRITE_ST.recent.slice(-8).reverse().map(r => `<div style="padding:7px 2px;border-top:1px solid var(--line);font-size:13px"><span class="wr-badge ${r.v === '맞음' ? 'good' : r.v === '어색함' ? 'soso' : 'bad'}">${r.v}</span> <span style="color:var(--ink-2)">${r.ko}</span><div style="font-family:var(--hanzi);font-size:16px">${tapHtml(r.mine)}</div></div>`).join('')}</div>` : ''}`;
+}
+$('wrBox').addEventListener('click', async e => {
+  if (e.target.closest('#btnWrSkip')){ wr = wrPick(); renderWrite(); return; }
+  if (e.target.closest('#btnWrNext')){ wr = wrPick(); renderWrite(); return; }
+  const tk = e.target.closest('.tok'); if (tk && !e.target.closest('#wrIn')){ showLookup(tk); return; }
+  if (e.target.closest('#btnWrSay')){ speak(wr.st.zh); return; }
+  if (e.target.closest('#btnWrSubmit')){
+    const mine = $('wrIn').value.trim(); if (!mine){ showToast('중국어로 한 문장 써 보세요'); return; }
+    wr.mine = mine;
+    const same = wrNorm(mine) === wrNorm(wr.st.zh);
+    const box = $('wrRes'); box.hidden = false;
+    box.innerHTML = `<span class="wr-badge ${same ? 'good' : 'soso'}">${same ? '참고 답안과 같음' : '참고 답안과 다름 — 그래도 맞을 수 있어요'}</span>
+      <div style="font-size:13px;color:var(--ink-2);margin-top:4px">참고 답안</div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--hanzi);font-size:19px">${tapHtml(wr.st.zh)}</span><button class="btn icon" id="btnWrSay" title="듣기"><i class="ic-spk"></i></button></div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${wr.st.py || ''}</div>
+      <div class="dataops" style="margin-top:10px"><button class="btn primary" id="btnWrAi" style="flex:1"><i class="ic-ai"></i><span>AI 첨삭 받기</span></button><button class="btn" id="btnWrNext">다음 문제 ›</button></div>
+      <div id="wrAiRes" style="margin-top:10px"></div>`;
+    if (same && !wr.counted){ wr.counted = true; wrRecordKeep('맞음'); }
+    return;
+  }
+  if (e.target.closest('#btnWrAi')){
+    if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
+    const out = $('wrAiRes'); out.innerHTML = '<span class="thinking">생각 중</span>';
+    try{
+      const a = await aiCall(`[한국어 뜻] ${wr.st.ko}\n[학습자가 쓴 중국어] ${wr.mine}\n[참고 답안] ${wr.st.zh}`,
+        `너는 중국어 작문 첨삭 선생님이다. 학습자 수준 HSK ${wr.w.lv}급.
+아래 네 칸 형식으로만 답한다. 다른 말 금지.
+[판정] 맞음 / 어색함 / 틀림 중 하나
+[고친 문장] (학습자 문장을 최소한만 고친 자연스러운 중국어. 고칠 게 없으면 학습자 문장 그대로)
+[이유] 무엇이 왜 문제인지 한국어로 1~3문장. 맞았으면 왜 좋은지 한 문장.
+[참고 답안과 차이] 학습자 문장과 참고 답안이 다르면 뉘앙스 차이를 한 문장. 사실상 같으면 "같음".`);
+      const g = k => { const m = a.match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
+      const v = /맞음/.test(g('판정')) ? '맞음' : /어색/.test(g('판정')) ? '어색함' : '틀림';
+      const fixed = g('고친 문장');
+      out.innerHTML = `<span class="wr-badge ${v === '맞음' ? 'good' : v === '어색함' ? 'soso' : 'bad'}">${v}</span>
+        ${fixed ? `<div style="font-family:var(--hanzi);font-size:19px">${tapHtml(fixed)}</div>` : ''}
+        <div style="font-size:14px;margin-top:6px">${aiFmtRaw(g('이유'))}</div>
+        ${g('참고 답안과 차이') && g('참고 답안과 차이') !== '같음' ? `<div style="font-size:13px;color:var(--ink-2);margin-top:4px">${aiFmtRaw(g('참고 답안과 차이'))}</div>` : ''}`;
+      if (!wr.counted){ wr.counted = true; wrRecordKeep(v, out.innerHTML); }
+    }catch(err){ out.innerHTML = `<span style="color:var(--bad);font-size:13px">${err.message}</span>`; }
+  }
+});
+// 첨삭 결과를 남긴 채로 기록만 올림 (화면을 다시 그리지 않음)
+function wrRecordKeep(verdict){
+  WRITE_ST.n++; if (verdict === '맞음') WRITE_ST.ok++;
+  (WRITE_ST.recent = WRITE_ST.recent || []).push({ id: wr.id, ko: wr.st.ko, mine: wr.mine, v: verdict, t: Date.now() });
+  if (WRITE_ST.recent.length > 30) WRITE_ST.recent.shift();
+  wrSave();
+  const pct = WRITE_ST.n ? Math.round(WRITE_ST.ok / WRITE_ST.n * 100) : 0;
+  $('wrTop').textContent = `${WRITE_ST.n}문장 · ${pct}%`;
+}
+
 /* ═══════════ 시작 ═══════════ */
-loadVoices(); loadAudioIndex();
+loadVoices();
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
 startUnit(currentUnitIndex());
 if (onScreen('home')) renderHome();   // 첫 화면(홈)의 오늘 목표·복습 수 등을 채움 — 전에는 다른 탭에 갔다 와야 채워졌음
