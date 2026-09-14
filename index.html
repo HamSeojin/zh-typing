@@ -926,7 +926,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.1422</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.1436</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1110,7 +1110,6 @@ details.more summary::-webkit-details-marker{display:none}
     <label class="row"><span>테마</span><select id="optTheme"><option value="">시스템</option><option value="light">밝게</option><option value="dark">어둡게</option></select></label>
     <h3>발음</h3>
     <label class="row"><span>문제가 나올 때 자동 재생</span><input type="checkbox" id="optAutoSpeak"></label>
-    <label class="row"><span>미리 만든 음성(mp3) 우선<small id="mp3State">있으면 브라우저 음성보다 먼저 재생</small></span><input type="checkbox" id="optMp3"></label>
     <label class="row"><span>브라우저 음성<small id="ttsState"></small></span><select id="optVoice"></select></label>
     <label class="row"><span>속도 <span id="rateVal">0.9</span></span><input type="range" id="optRate" min="0.5" max="1.3" step="0.1" value="0.9"></label>
     <h3>학습</h3>
@@ -1609,7 +1608,7 @@ function mineWords(){ return [...Object.keys(FAV).filter(k => FAV[k] > 0).map(k 
 const PROGRESS = store.get('zh.progress', {});  // { "12": {box:2, due:<ms>, c:3, w:1} }
 const SETTINGS = Object.assign({
   mode:'hanzi', showHanzi:false, showPinyin:false, showKo:true, showEn:true, showTrad:false,
-  autoSpeak:false, voice:'', rate:0.9, mp3:true, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
+  autoSpeak:false, voice:'', rate:0.9, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
 }, store.get('zh.settings', {}));
 // 날짜 열쇠는 '기기의 현지 날짜'. (전에는 toISOString → 세계 표준시(UTC) 날짜라 한국에서는 아침 9시에 하루가 바뀌어 오늘 숫자가 0으로 돌아갔음)
 function localDay(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
@@ -1821,58 +1820,9 @@ function loadVoices(){
   if (SETTINGS.voice && voices.some(v=>v.name===SETTINGS.voice)) optVoice.value = SETTINGS.voice;
   ttsState.textContent = voices.length ? `중국어 음성 ${voices.length}개` : '⚠ 중국어 음성 없음 — OS 언어팩 설치 필요';
 }
-/* ── 미리 만든 발음 mp3 (make_audio.py 로 생성한 audio/ 폴더) ──
-   audio/index.json: { w: { 단어id: [파일번호, 시작초, 길이초] }, s: { 단어id(예문): [...] } }
-   한 파일에 150개가 이어 붙어 있어(스프라이트) 해당 구간만 재생한다. 파일이 없거나(claude.ai 게시본 등) 재생이 막히면 브라우저 TTS 로 넘어감 */
-let AUDIO = null, audioTried = false, clip = null; const audioEls = {}; let SENT_ID_BY_ZH = null;
-function loadAudioIndex(){
-  if (audioTried) return; audioTried = true;
-  if (!/^https?:/.test(location.protocol) || location.hostname.endsWith('claude.ai')) return;
-  fetch('audio/index.json').then(r => r.ok ? r.json() : null).then(j => { AUDIO = j; updateMp3State(); }).catch(() => {});
-}
-function updateMp3State(){ const n = AUDIO ? Object.keys(AUDIO.w||{}).length : 0, m = AUDIO ? Object.keys(AUDIO.s||{}).length : 0; if (n) $('mp3State').textContent = `🎵 단어 ${n.toLocaleString()}개${m?` · 문장 ${m.toLocaleString()}개`:''} 준비됨 (${AUDIO.voice||'edge-tts'})`; }
-function clipFor(text){
-  if (!AUDIO || SETTINGS.mp3 === false) return null;
-  const w = BY_S.get(text); if (w && AUDIO.w && AUDIO.w[w.id]) return ['w', w.id];
-  if (AUDIO.s){ if (!SENT_ID_BY_ZH){ SENT_ID_BY_ZH = new Map(); for (const [id, st] of Object.entries(SENTS)) SENT_ID_BY_ZH.set(st.zh, id); } const sid = SENT_ID_BY_ZH.get(text); if (sid && AUDIO.s[sid]) return ['s', sid]; }
-  return null;
-}
-function stopClip(){ if (clip){ clip.a.pause(); clearTimeout(clip.timer); clip.a.removeEventListener('timeupdate', clip.onT); clip = null; } }
-function playClip(kind, id, fallback){
-  const [no, start, len] = AUDIO[kind][id]; const src = `audio/${kind}-${String(no).padStart(3,'0')}.mp3`;
-  let a = audioEls[src]; if (!a){ a = new Audio(src); a.preload = 'auto'; audioEls[src] = a; }
-  stopClip(); if ('speechSynthesis' in window) speechSynthesis.cancel();
-  window.__lastClip = { src, start, len };   // 디버그용
-  const rate = Math.max(0.5, Math.min(2, SETTINGS.rate || 1));
-  const go = () => {
-    try{ a.currentTime = start; }catch(e){ fallback(); return; }
-    a.playbackRate = rate;
-    const stopAt = start + len - 0.03;
-    const onT = () => { if (a.currentTime >= stopAt) stopClip(); };
-    clip = { a, onT, timer: setTimeout(stopClip, len / rate * 1000 + 60) };
-    a.addEventListener('timeupdate', onT);
-    const p = a.play(); if (p && p.catch) p.catch(() => { stopClip(); fallback(); });
-  };
-  if (a.readyState >= 1) go();
-  else {
-    // mp3 를 못 받아오는 경우(느린 망·서버 문제)에도 가만히 있지 않게 — 3초 안에 준비 안 되면 브라우저 음성으로 넘어감
-    let done = false;
-    const bail = () => { if (done) return; done = true; stopClip(); fallback(); };
-    const t = setTimeout(bail, 3000);
-    a.addEventListener('loadedmetadata', () => { if (done) return; done = true; clearTimeout(t); go(); }, { once: true });
-    a.addEventListener('error', () => { clearTimeout(t); bail(); }, { once: true });
-    a.load();
-  }
-}
-function speak(text){
-  if (!text) return;
-  const c = clipFor(text);
-  if (c){ playClip(c[0], c[1], () => ttsSpeak(text)); return; }
-  ttsSpeak(text);
-}
+function speak(text){ if (text) ttsSpeak(text); }
 function ttsSpeak(text){
   if (!('speechSynthesis' in window) || !text) return;
-  stopClip();
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'zh-CN'; u.rate = SETTINGS.rate;
@@ -2549,7 +2499,7 @@ function bindOpt(id, key, evt='change'){
   });
 }
 ['optShowKo:showKo','optShowEn:showEn','optShowTrad:showTrad',
- 'optAutoSpeak:autoSpeak','optMp3:mp3','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
+ 'optAutoSpeak:autoSpeak','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
 bindOpt('optRate','rate','input'); $('rateVal').textContent = SETTINGS.rate;
 function applyZoom(){ document.documentElement.style.setProperty('--zoom', SETTINGS.zoom || 1); }
 applyZoom();
@@ -3479,7 +3429,7 @@ $('idiSeg').addEventListener('click', e => { const b = e.target.closest('[data-s
 
 /* ═══════════ 발음 기초 (성모·운모 표, 헷갈리는 소리 듣기, 성조 듣기) ═══════════
    데이터 pinyin.json (build_pinyin.py): initials/finals 설명, pairs(헷갈리는 짝), syl(음절+성조 → 대표 한자), table(음절 → [성모, 운모]).
-   소리는 대표 한자를 TTS/mp3 로 읽혀서 냄 — 병음 글자 자체는 TTS 가 못 읽으므로. 화면에 들어올 때 처음 한 번만 데이터를 받음 */
+   소리는 대표 한자를 TTS 로 읽혀서 냄 — 병음 글자 자체는 TTS 가 못 읽으므로. 화면에 들어올 때 처음 한 번만 데이터를 받음 */
 let PY = null, pyPromise = null;
 function loadPron(){ return pyPromise || (pyPromise = loadJson('pinyin', null).then(j => (PY = j))); }
 const TONE_MARK = { a:'āáǎàa', e:'ēéěèe', i:'īíǐìi', o:'ōóǒòo', u:'ūúǔùu', 'ü':'ǖǘǚǜü' };
@@ -4404,7 +4354,7 @@ window.addEventListener('pagehide', () => { if (backend && syncTimer){ clearTime
 initSync();
 
 /* ═══════════ 시작 ═══════════ */
-loadVoices(); loadAudioIndex();
+loadVoices();
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
 startUnit(currentUnitIndex());
 if (onScreen('home')) renderHome();   // 첫 화면(홈)의 오늘 목표·복습 수 등을 채움 — 전에는 다른 탭에 갔다 와야 채워졌음

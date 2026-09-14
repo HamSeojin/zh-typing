@@ -8,9 +8,8 @@ self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Pr
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;   // GitHub API, CDN 등 외부 요청은 건드리지 않음
-  // 음성 mp3 는 손대지 않는다 — 오디오 재생기는 파일을 조각(Range)으로 나눠 달라고 요청하는데,
-  // 서비스 워커가 통째로 된 응답을 돌려주면 재생기가 기다리기만 하고 소리가 안 난다
-  if (/\/audio\//.test(url.pathname) || e.request.headers.has('range') || e.request.destination === 'audio') return;
+  // 소리·영상처럼 조각(Range)으로 나눠 받는 요청은 손대지 않는다 — 서비스 워커가 통째로 된 응답을 주면 재생기가 멈춘다
+  if (e.request.headers.has('range') || e.request.destination === 'audio' || e.request.destination === 'video') return;
   // data/ 아래 파일은 이름에 내용 해시가 붙어 있어 내용이 바뀌면 이름도 바뀜 → 한 번 받으면 캐시에서 바로 꺼내 씀(캐시 우선)
   if (/\/data\//.test(url.pathname) && !url.pathname.endsWith('index.json')){
     e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(res => { if (res && res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone())); return res; })));
