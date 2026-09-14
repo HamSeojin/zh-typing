@@ -926,7 +926,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.1239</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.1422</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1853,7 +1853,16 @@ function playClip(kind, id, fallback){
     a.addEventListener('timeupdate', onT);
     const p = a.play(); if (p && p.catch) p.catch(() => { stopClip(); fallback(); });
   };
-  if (a.readyState >= 1) go(); else { a.addEventListener('loadedmetadata', go, { once: true }); a.addEventListener('error', () => { stopClip(); fallback(); }, { once: true }); a.load(); }
+  if (a.readyState >= 1) go();
+  else {
+    // mp3 를 못 받아오는 경우(느린 망·서버 문제)에도 가만히 있지 않게 — 3초 안에 준비 안 되면 브라우저 음성으로 넘어감
+    let done = false;
+    const bail = () => { if (done) return; done = true; stopClip(); fallback(); };
+    const t = setTimeout(bail, 3000);
+    a.addEventListener('loadedmetadata', () => { if (done) return; done = true; clearTimeout(t); go(); }, { once: true });
+    a.addEventListener('error', () => { clearTimeout(t); bail(); }, { once: true });
+    a.load();
+  }
 }
 function speak(text){
   if (!text) return;
