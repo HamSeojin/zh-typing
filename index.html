@@ -309,11 +309,15 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .toneArea{margin-top:10px;display:flex;flex-direction:column;gap:8px;align-items:center}
 .tone-syl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
 .tone-syl .syl{font-family:var(--mono);font-size:20px;min-width:64px;text-align:right}
-.btn i.ic-spk + *,.btn i.ic-mic + *{margin-left:6px}
-.btn i.ic-spk,.btn i.ic-mic,.btn i.ic-trash,.btn i.ic-edit,.btn i.ic-ai,.pitem .acts button i,.acts button i{vertical-align:0}   /* flex 로 가운데 맞추므로 글자 기준선 보정은 끔 */
+.btn i.ic-spk + *,.btn i.ic-mic + *,.btn i.ic-pen + *{margin-left:6px}
+.btn i.ic-spk,.btn i.ic-mic,.btn i.ic-trash,.btn i.ic-edit,.btn i.ic-ai,.btn i.ic-pen,.btn i.ic-slow,.btn i.ic-yg,.pitem .acts button i,.acts button i{vertical-align:0}   /* flex 로 가운데 맞추므로 글자 기준선 보정은 끔 */
 .btn i.ic-spk,.btn i.ic-mic,.btn i.ic-trash{flex:0 0 auto}
 .ic-spk{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.15em;background:currentColor;
   -webkit-mask:var(--spk) center/contain no-repeat;mask:var(--spk) center/contain no-repeat}
+.ic-pen{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.15em;background:currentColor;
+  -webkit-mask:var(--pen) center/contain no-repeat;mask:var(--pen) center/contain no-repeat}
+.ic-slow{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.15em;background:currentColor;
+  -webkit-mask:var(--slow) center/contain no-repeat;mask:var(--slow) center/contain no-repeat}
 .ic-yg{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.15em;background:currentColor;
   -webkit-mask:var(--yg) center/contain no-repeat;mask:var(--yg) center/contain no-repeat}
 .ic-ai{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.15em;background:currentColor;
@@ -324,7 +328,7 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
   -webkit-mask:var(--mic) center/contain no-repeat;mask:var(--mic) center/contain no-repeat}
 .ic-trash{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.15em;background:currentColor;
   -webkit-mask:var(--trash) center/contain no-repeat;mask:var(--trash) center/contain no-repeat}
-:root{--yg:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3.6' y='5' width='16.8' height='14' rx='3.2' fill='none' stroke='%23000' stroke-width='1.6'/><path d='M10 8.8l4.9 3.2-4.9 3.2z'/></svg>");--ai:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20.6 11.6c0 3.9-3.85 7-8.6 7-1 0-1.96-.14-2.85-.4L5.2 19.6l1.2-2.85C4.85 15.5 3.4 13.7 3.4 11.6c0-3.9 3.85-7 8.6-7s8.6 3.1 8.6 7z' fill='none' stroke='%23000' stroke-width='1.8' stroke-linejoin='round'/><path d='M12 7.9l.85 2.25 2.25.85-2.25.85-.85 2.25-.85-2.25-2.25-.85 2.25-.85z'/></svg>");--edit:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M4 20h4.2L19 9.2a2.1 2.1 0 0 0 0-3L18 5.2a2.1 2.1 0 0 0-3 0L4.2 16z' fill='none' stroke='%23000' stroke-width='1.8' stroke-linejoin='round'/><path d='M13.8 6.6l3.6 3.6' fill='none' stroke='%23000' stroke-width='1.8'/></svg>");--mic:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='9' y='2.6' width='6' height='11' rx='3'/><path d='M5.5 11.4a6.5 6.5 0 0 0 13 0M12 17.9V21M9 21h6' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/></svg>");--trash:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 3.8h6M4.5 6.6h15M6.6 6.6l.8 12.1a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.8-12.1M10 10.2v6.3M14 10.2v6.3' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round'/></svg>");--spk:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 9.2h3.6L11.8 5v14L6.6 14.8H3z'/><path d='M15.4 9.1a4.2 4.2 0 0 1 0 5.8M18.3 6.6a8 8 0 0 1 0 10.8' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/></svg>")}
+:root{--pen:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6.5 15.5c1.6-5.2 4-8.6 7.4-10.6M4.4 20c1-.2 2.2-.8 3.1-1.7M17 3.6l2.6 2.6-6.2 6.2-3.4.8.8-3.4z' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>");--slow:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12.4' r='7.6' fill='none' stroke='%23000' stroke-width='1.7'/><path d='M12 8.2v4.4l3 1.8' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round'/><path d='M4.6 4.8l2.6 2M19.4 4.8l-2.6 2' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/></svg>");--yg:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='3.6' y='5' width='16.8' height='14' rx='3.2' fill='none' stroke='%23000' stroke-width='1.6'/><path d='M10 8.8l4.9 3.2-4.9 3.2z'/></svg>");--ai:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20.6 11.6c0 3.9-3.85 7-8.6 7-1 0-1.96-.14-2.85-.4L5.2 19.6l1.2-2.85C4.85 15.5 3.4 13.7 3.4 11.6c0-3.9 3.85-7 8.6-7s8.6 3.1 8.6 7z' fill='none' stroke='%23000' stroke-width='1.8' stroke-linejoin='round'/><path d='M12 7.9l.85 2.25 2.25.85-2.25.85-.85 2.25-.85-2.25-2.25-.85 2.25-.85z'/></svg>");--edit:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M4 20h4.2L19 9.2a2.1 2.1 0 0 0 0-3L18 5.2a2.1 2.1 0 0 0-3 0L4.2 16z' fill='none' stroke='%23000' stroke-width='1.8' stroke-linejoin='round'/><path d='M13.8 6.6l3.6 3.6' fill='none' stroke='%23000' stroke-width='1.8'/></svg>");--mic:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='9' y='2.6' width='6' height='11' rx='3'/><path d='M5.5 11.4a6.5 6.5 0 0 0 13 0M12 17.9V21M9 21h6' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/></svg>");--trash:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M9 3.8h6M4.5 6.6h15M6.6 6.6l.8 12.1a1.6 1.6 0 0 0 1.6 1.5h6a1.6 1.6 0 0 0 1.6-1.5l.8-12.1M10 10.2v6.3M14 10.2v6.3' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round'/></svg>");--spk:url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 9.2h3.6L11.8 5v14L6.6 14.8H3z'/><path d='M15.4 9.1a4.2 4.2 0 0 1 0 5.8M18.3 6.6a8 8 0 0 1 0 10.8' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/></svg>")}
 button{color:var(--ink)}   /* iOS 사파리가 버튼 글자를 파란색으로 칠하는 것 막기 (각 버튼이 색을 따로 정하면 그쪽이 이김) */
 button,label,[role=button]{touch-action:manipulation}   /* 연타해도 iOS 가 '두 번 탭 확대'로 해석하지 않게 */
 html{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* 손가락 두 개로 벌리거나 두 번 탭해도 확대되지 않게 (스크롤은 그대로) */
@@ -620,7 +624,8 @@ body{word-break:keep-all;overflow-wrap:break-word}
 .ai-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line)}
 .ai-ctx{font-size:12px;color:var(--ink-2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--hanzi)}
 .ai-x{background:none;border:0;font-size:16px;cursor:pointer;color:var(--ink-2);padding:4px 6px}
-#btnAiNew{display:inline-flex;align-items:center;justify-content:center;min-height:28px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+#btnAiNew,#btnAiRules{display:inline-flex;align-items:center;justify-content:center;min-height:28px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+#btnAiRules{margin-right:6px}
 .ai-quick{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px 0}
 .ai-quick button{display:inline-flex;align-items:center;justify-content:center;min-height:28px;font:inherit;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--paper);color:var(--ink);cursor:pointer}
 .ai-quick button:hover{border-color:var(--accent)}
@@ -864,13 +869,39 @@ details.more summary::-webkit-details-marker{display:none}
 
 /* 툴바처럼 글자 버튼과 한 줄에 섞이는 자리에서는 아이콘 버튼도 테두리 유지 */
 .unitbar .btn.icon,.toolbar .btn.icon,.dataops .btn.icon,.answer .btn.icon,.sayArea .btn.icon,.res-modes .btn.icon{border:1px solid var(--line);background:var(--card)}
+
+/* AI 시트 요구사항 칸 */
+.ai-rules{padding:10px 14px;border-bottom:1px solid var(--line);background:var(--paper)}
+.ai-rules p{margin:0 0 6px;font-size:12px;color:var(--ink-2);line-height:1.5}
+.ai-rules textarea{width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.ai-rules .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.ai-rules .acts button{width:100%;min-height:34px}
+/* 설정 안의 버튼 줄은 같은 크기로 */
+#aiBox .dataops{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#aiBox .dataops button{width:100%;min-height:40px;padding:0 10px}
+#aiBox .dataops button:last-child:nth-child(odd){grid-column:1/-1}
+
+.ai-log .sadd{font:inherit;font-size:15px;line-height:1;background:none;border:0;color:var(--ink-2);cursor:pointer;padding:0 5px 0 0;vertical-align:1px}
+.ai-log .sadd:active{color:var(--accent)}
+.ai-log .zh .tok{cursor:pointer;border-bottom:1px dotted var(--line)}
+.ai-log .zh .tok.sel{background:var(--good-bg)}
+.pnote{margin:10px 0 6px;font-size:12px;color:var(--ink-2);line-height:1.5}
+.ptext{width:100%;box-sizing:border-box;font:inherit;font-size:13px;line-height:1.5;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+
+/* 정답 줄·툴바 안에서는 아이콘 버튼 높이를 옆 버튼과 맞춤 */
+.answer .btn,.answer .btn.icon{height:40px;min-height:40px}
+.unitbar .btn.icon,.toolbar .btn.icon{height:auto;min-height:36px}
+
+/* ☆ 글자는 아이콘보다 작아 보여서 조금 키움 */
+#btnStar{font-size:20px}
+.wc-acts [data-fav],.rowacts [data-fav],.idcard [data-fav-i],.srow .star{font-size:19px}
 </style>
 
 <div class="wrap" id="app">
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0913.2302</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.0401</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1091,6 +1122,15 @@ details.more summary::-webkit-details-marker{display:none}
       <label class="row" id="aiModelCustomRow" hidden><span>모델 이름 직접 입력</span><input id="aiModel" placeholder="모델 id"></label>
       <label class="row"><span>API 키<small id="aiKeyHint"></small></span><input id="aiKey" type="password" placeholder="API 키 붙여넣기" autocomplete="off"></label>
       <label class="row"><span>답변 길이</span><select id="aiLen"><option value="short">짧게 (3~5문장)</option><option value="normal" selected>보통</option><option value="long">자세히</option></select></label>
+      <details class="more" id="aiPromptBox"><summary>답변 방식(프롬프트) 직접 고치기</summary>
+        <p class="pnote">① 핵심 규칙 — 답변 형식이에요. 예문 형식([중국어 — 병음 — 뜻])을 바꾸면 AI 답변에서 ☆로 문장을 담을 때 병음·뜻이 안 들어올 수 있어요.</p>
+        <textarea id="aiCore" rows="6" class="ptext"></textarea>
+        <div class="dataops"><button class="btn" id="btnCoreSave">핵심 규칙 저장</button><button class="btn" id="btnCoreReset">기본값으로</button></div>
+        <p class="pnote">② 말투·분량 — 마음대로 바꿔도 되는 부분이에요. 답변 길이는 위 설정이 자동으로 덧붙습니다.</p>
+        <textarea id="aiPrompt" rows="6" class="ptext"></textarea>
+        <div class="dataops"><button class="btn" id="btnPromptSave">말투 저장</button><button class="btn" id="btnPromptReset">기본값으로</button></div>
+        <p class="pnote">③ 그때그때 부탁할 것은 묻기 화면의 <b>요구사항</b> 버튼에서 — 위 두 가지보다 우선합니다.</p>
+      </details>
       <div class="dataops"><button class="btn primary" id="btnAiSave">저장</button><button class="btn" id="btnAiTest">연결 테스트</button><button class="btn" id="btnAiOff">이 서비스 키 지우기</button></div>
       <p id="aiStatus" style="margin:6px 0 0;font-size:13px;color:var(--ink-2)"></p>
       <p id="aiUsage" style="margin:2px 0 0;font-size:12px;color:var(--ink-2)"></p>
@@ -1173,7 +1213,7 @@ details.more summary::-webkit-details-marker{display:none}
       <div style="display:flex;gap:8px">
         <button class="btn" id="btnHint">힌트</button>
         <button class="btn" id="btnSkip">건너뛰기</button>
-        <button class="btn" id="btnStrokes" title="획순 애니메이션 보기">✍ 획순</button>
+        <button class="btn" id="btnStrokes" title="획순 애니메이션 보기"><i class="ic-pen"></i> 획순</button>
         <button class="btn" id="btnAsk" title="AI 선생님에게 이 단어·문장에 대해 묻기"><i class="ic-ai"></i> 묻기</button>
         <button class="btn" id="btnKoToggle">뜻 수정</button>
       </div>
@@ -1348,7 +1388,7 @@ details.more summary::-webkit-details-marker{display:none}
     <div class="card" id="lisCard" style="margin-top:12px">
       <div id="lisBody" class="exam-body"></div>
       <div class="dataops" style="margin-top:14px;justify-content:space-between">
-        <span style="display:flex;gap:8px"><button class="btn" id="btnLisSpeak" title="다시 듣기"><i class="ic-spk"></i> 다시 듣기</button><button class="btn icon" id="btnLisSlow" title="느리게 (0.75배)" aria-pressed="false">🐢</button></span>
+        <span style="display:flex;gap:8px"><button class="btn" id="btnLisSpeak" title="다시 듣기"><i class="ic-spk"></i> 다시 듣기</button><button class="btn icon" id="btnLisSlow" title="느리게 (0.75배)" aria-pressed="false"><i class="ic-slow"></i></button></span>
         <button class="btn primary" id="btnLisNext" hidden>다음 →</button>
       </div>
     </div>
@@ -1414,7 +1454,12 @@ details.more summary::-webkit-details-marker{display:none}
 <div class="popup" id="popup" hidden></div>
 <!-- AI 선생님 패널 (화면 아래에서 올라오는 시트) -->
 <div class="ai-sheet" id="aiSheet" hidden>
-  <div class="ai-head"><b><i class="ic-ai"></i> AI 선생님</b><span id="aiCtx" class="ai-ctx"></span><button class="ai-x" id="btnAiNew" title="이전 문답을 참고하지 않고 새로 시작 (노트에는 그대로 남아요)">새 대화</button><button class="ai-x" id="btnAiClose" aria-label="닫기">✕</button></div>
+  <div class="ai-head"><b><i class="ic-ai"></i> AI 선생님</b><span id="aiCtx" class="ai-ctx"></span><button class="ai-x" id="btnAiRules" title="답변에 매번 반영할 내 요구사항">요구사항</button><button class="ai-x" id="btnAiNew" title="이전 문답을 참고하지 않고 새로 시작 (노트에는 그대로 남아요)">새 대화</button><button class="ai-x" id="btnAiClose" aria-label="닫기">✕</button></div>
+  <div class="ai-rules" id="aiRulesBox" hidden>
+    <p>이 앱의 AI 답변에 매번 함께 보낼 요구사항이에요. 예) 반말로 답해 줘 · 예문은 꼭 3개 · 한국어 비교 설명 많이</p>
+    <textarea id="aiRules" rows="3" placeholder="요구사항을 한 줄씩 적어 주세요"></textarea>
+    <div class="acts"><button class="btn small primary" id="btnAiRulesSave">저장</button><button class="btn small" id="btnAiRulesClear">비우기</button></div>
+  </div>
   <div class="ai-quick" id="aiQuick"></div>
   <div class="ai-log" id="aiLog"></div>
   <form class="ai-form" id="aiForm"><input id="aiQ" placeholder="질문을 입력하세요 (예: 时间이랑 时候 차이?)" autocomplete="off"><button class="btn primary" type="submit" id="btnAiSend">보내기</button></form>
@@ -1499,7 +1544,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
@@ -1511,7 +1556,9 @@ const KO       = store.get('zh.ko', {});        // { "你好": "안녕하세요"
 // 내 단어장: 별표(FAV)로 담은 HSK 단어 + 직접 추가한 단어(CUSTOM). 직접 추가한 단어는 id 100000 부터
 const FAV    = store.get('zh.fav', {});           // { id: 담은 시각 }
 const FAV_I  = store.get('zh.fav_i', {});
-const SUB_FIX = store.get('zh.sub_fix', {});   // 자막 번역 고쳐 쓴 것 { 중국어 줄: 내가 고친 한국어 } · 빈 문자열이면 그 줄 숨김         // 성어 단어장: { 성어 번호: 담은 시각 }, 음수 = 뺀 시각
+const SUB_FIX = store.get('zh.sub_fix', {});
+const SENT_CUSTOM = store.get('zh.sent_custom', []);   // AI 답변 등에서 담은 문장 [{id, zh, py, ko, t}] (동기화됨)
+const AI_TXT = Object.assign({ prompt:'', rules:'', t:0 }, store.get('zh.ai_prompt', {}));   // AI 지시문·요구사항 (기기 간 동기화됨 — 키는 여기 안 들어감)   // 자막 번역 고쳐 쓴 것 { 중국어 줄: 내가 고친 한국어 } · 빈 문자열이면 그 줄 숨김         // 성어 단어장: { 성어 번호: 담은 시각 }, 음수 = 뺀 시각
 const isFavI = n => (FAV_I[n] || 0) > 0;
 function toggleFavI(n){ FAV_I[n] = isFavI(n) ? -Date.now() : Date.now(); store.set('zh.fav_i', FAV_I); return isFavI(n); }
 const GRAM_DONE = store.get('zh.gram_done', {});    // 문법 학습함: { 항목 id: 시각 } 음수 = 해제
@@ -1814,7 +1861,7 @@ function renderQuestion(){
   cur = pickNext();
   answered = false; hintUsed = false; hintLevel = 0;
   const M = mode(); $('quizCard').classList.remove('answered'); $('popup').hidden = true;
-  ans.value = ''; ans.className = M.input==='pinyin' ? 'pymode' : ''; fb.textContent=''; fb.className='feedback'; $('ext').hidden = true; $('gramRel').innerHTML = ''; $('wordRel').innerHTML = ''; $('moreBox').hidden = true;
+  ans.value = ''; ans.className = M.input==='pinyin' ? 'pymode' : ''; fb.textContent=''; fb.className='feedback'; $('ext').hidden = true; $('gramRel').innerHTML = ''; $('wordRel').innerHTML = ''; $('moreBox').hidden = true; $('moreBox').open = false;
   if (!cur){ qHanzi.textContent='—'; qKo.textContent='과를 골라 시작하세요'; qEn.textContent=''; return; }
   const p = PROGRESS[cur.id];
   qBox.textContent = (session.wrong.has(cur.id) ? '다시 · ' : '') + (p ? `상자 ${p.box} · ${p.c}○ ${p.w}✕${p.h?` ${p.h}힌트`:''}` : '새 단어');
@@ -2182,7 +2229,7 @@ function showExt(w){
   $('lnkYouglish').textContent = st ? '▶ 유튜브에서 이 문장 (YouGlish)' : '▶ 유튜브 예문 (YouGlish)';
   $('lnkForvo').href = `https://forvo.com/word/${s}/#zh`;
   $('lnkDict').href = `https://zh.dict.naver.com/#/search?query=${s}`;
-  $('ext').hidden = false; $('moreBox').hidden = false; if (!('open' in $('moreBox').dataset)){ $('moreBox').open = window.innerWidth > 700; $('moreBox').dataset.open = '1'; }   // 폰에서는 접어 두고, 넓은 화면에서는 펼침 (한 번 사용자가 열고 닫으면 그 상태 유지)
+  $('ext').hidden = false; $('moreBox').hidden = false;   // 문제마다 접힌 상태로 시작 (펼침은 그 문제에서만)
 }
 function altText(w){ return (w.alt&&w.alt.length) ? '다른 읽기: ' + w.alt.map(a=>`${a.py} (${a.en})`).join(' · ') : ''; }
 function reveal(){
@@ -2370,6 +2417,7 @@ $('btnResWrong').onclick = () => { const ws = [...session.wrong].map(id => BY_ID
    pushed 화면에서는 하단 탭을 숨기고 위에 ‹ 뒤로 줄을 둔다. */
 let curScreen = 'home';
 function go(name){
+  if (['home','learn','words','more'].includes(name)) for (const k in BACK_TO) BACK_TO[k] = '';
   const sc = document.querySelector(`.screen[data-screen="${name}"]`); if (!sc) return;
   document.querySelectorAll('.screen').forEach(x => x.hidden = x !== sc);
   const pushed = sc.classList.contains('pushed');
@@ -2394,16 +2442,18 @@ function go(name){
   if (name === 'session'){ renderUnitBar(); if (!['order','write','tone','say','initial'].includes(SETTINGS.study) && window.innerWidth > 700) ans.focus(); }
 }
 function onScreen(name){ return curScreen === name; }
+const BACK_TO = {};   // 화면별 '되돌아갈 곳' (학습 중 문법·표현·성어로 건너뛰었을 때)
 document.addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g){ if (g.dataset.go === 'exam'){ const lis = g.dataset.focus === 'lis'; $('examHome').dataset.mode = lis ? 'lis' : 'exam'; $('examTop').querySelector('.title').textContent = lis ? '듣기 대화' : '모의고사'; } go(g.dataset.go); return; }
   const bk = e.target.closest('[data-back]'); if (bk){ const sc = bk.closest('.screen'); const n = sc.dataset.screen;
     // 세부 화면(글 본문·문법 상세·시험 진행)에서는 먼저 그 목록으로, 목록에서는 학습 메뉴로
     if (n === 'read' && !$('reader').hidden){ renderReadList(); return; }
-    if (n === 'gram' && !$('gramView').hidden){ renderGramList(); return; }
+    if (n === 'gram' && !$('gramView').hidden){ if (BACK_TO.gram){ const f = BACK_TO.gram; BACK_TO.gram = ''; go(f); return; } renderGramList(); return; }
     if (n === 'exam' && !$('examRun').hidden){ $('btnExamQuit').click(); return; }
     if (n === 'exam' && !$('lisRun').hidden){ $('btnLisQuit').click(); return; }
     if (n === 'exam' && !$('examResult').hidden){ renderExamHome(); return; }
     if (n === 'typing' && !$('typRun').hidden){ $('btnTypStop').click(); return; }
+    if (BACK_TO[n]){ const f = BACK_TO[n]; BACK_TO[n] = ''; go(f); return; }   // 다른 화면에서 건너온 경우 그리로 되돌림
     go(sc.dataset.parent || 'learn'); }
 });
 // 세그먼트(단어장·더보기 안의 작은 탭)
@@ -2482,7 +2532,7 @@ $('btnImport').onclick = () => {
     const d = JSON.parse($('io').value);
     if (!d || typeof d !== 'object' || !(d.progress || d.ko || d.ai_notes)) throw new Error('shape');
     // 새 형식(전체 스냅샷)이든 옛 형식(뜻·기록만)이든 지금 기록과 항목별로 합침 (더 최근 것이 이김)
-    applyState(mergeState(snapshot(), Object.assign({ progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, fav_s:{}, fav_i:{}, sub_fix:{}, idi_done:{}, idi_stat:{}, gram_done:{}, custom:[], custom_del:{}, stats:null, read:{}, exams:[], exam_wrong:{}, typing:[], ai_notes:{}, updatedAt:0 }, d)));
+    applyState(mergeState(snapshot(), Object.assign({ progress:{}, ko:{}, ko_t:{}, units:{}, history:{}, fav:{}, fav_s:{}, fav_i:{}, sub_fix:{}, ai_prompt:{}, sent_custom:[], idi_done:{}, idi_stat:{}, gram_done:{}, custom:[], custom_del:{}, stats:null, read:{}, exams:[], exam_wrong:{}, typing:[], ai_notes:{}, updatedAt:0 }, d)));
     showToast(`가져와서 합쳤어요: 뜻 ${Object.keys(d.ko||{}).length}개, 기록 ${Object.keys(d.progress||{}).length}개, AI 노트 ${Object.keys(d.ai_notes||{}).length}개`); updateStats(); renderHome();
   }catch(e){ showToast('JSON 형식이 아니거나 이 앱의 백업이 아니에요'); }
 };
@@ -2661,12 +2711,59 @@ $('btnAiSave').onclick = () => { aiReadForm(); aiFormHints(); showToast('저장�
 $('btnAiOff').onclick = () => { const svc = $('aiService').value; delete AI.keys[svc]; if (svc === AI.service) AI.key = ''; store.set('zh.ai', AI); $('aiKey').value = ''; aiFormHints(); showToast(`${svc} 키를 지웠어요`); };
 $('btnAiTest').onclick = async () => { aiReadForm(); if (!AI.model){ $('aiStatus').textContent = '모델 이름을 고르거나 입력해 주세요'; return; } $('aiStatus').textContent = '연결 중…'; try{ const a = await aiCall('연결 테스트입니다. "你好" 의 병음과 뜻을 한 줄로 답하세요.', '짧게 답하세요.'); $('aiStatus').textContent = '✓ 연결 성공 · ' + a.slice(0, 60); }catch(e){ $('aiStatus').textContent = '✕ ' + e.message + (/(Failed to fetch|NetworkError)/i.test(e.message) ? ' — 브라우저에서 직접 호출이 막힌 서버(CORS)이거나 인터넷 문제예요' : ''); } };
 aiFormFill(); aiUsageLine();
-function aiSystem(){
-  const len = AI.len==='short' ? '3~5문장으로 짧게' : AI.len==='long' ? '필요하면 자세히(600자 이내)' : '핵심만 400자 이내로';
-  return `너는 한국인 학습자를 가르치는 친절한 중국어(보통화) 선생님이다. HSK 3.0 학습 앱 '汉习' 안에서 질문을 받는다.
-규칙: 한국어로 답한다. 중국어는 간체로 쓰고 처음 나올 때 병음(성조 부호)을 괄호로 붙인다. 예문은 짧게 1~3개. ${len}. 마크다운 제목·표는 쓰지 말고, 강조는 **굵게** 정도만. 단락 사이는 빈 줄로 띄우고, 항목을 나열할 때는 한 줄에 하나씩("- " 로 시작) 쓴다. 확실하지 않으면 그렇다고 말한다.
+const AI_PROMPT_CORE = `너는 한국인 학습자를 가르치는 중국어(보통화) 선생님이다. HSK 3.0 학습 앱 '汉习' 안에서 질문을 받는다.
+한국어로 답한다. 중국어는 간체로 쓰고, 처음 나올 때 병음(성조 부호)을 붙인다.
+예문을 보여줄 때는 반드시 한 줄에 하나씩, [중국어 문장。 — 병음 — 한국어 뜻] 형식으로 쓴다 (긴 대시 — 로 구분). 이 형식이어야 앱에서 문장을 그대로 담을 수 있다.
+마크다운 제목·표는 쓰지 말고, 강조는 **굵게** 정도만. 단락 사이는 빈 줄로 띄우고, 항목을 나열할 때는 한 줄에 하나씩("- " 로 시작) 쓴다.`;
+const AI_PROMPT_STYLE = `예문은 짧게 1~3개. 확실하지 않으면 그렇다고 말한다.
 첫 문장부터 바로 본론으로 들어간다. "좋은 질문이에요", "예리하시네요", "물론이죠" 같은 칭찬·인사·쿠션어, 질문을 되풀이하는 도입부, "도움이 되셨길 바라요" 같은 맺음말은 절대 쓰지 않는다.`;
+function sentTail(rest){   // 문장 뒤에 붙은 "— 병음 — 한국어 뜻" 에서 병음·뜻을 나눠 뽑음 ((뜻), : 뜻 형식도 받음)
+  let t = String(rest || '').trim().replace(/^[—\-–:：·]+\s*/, '');
+  const par = t.match(/^\(([^)]*)\)/); if (par) t = par[1];
+  const parts = t.split(/\s*[—–]\s*|\s{2,}/).map(x => x.replace(/^\(|\)$/g, '').trim()).filter(Boolean);
+  const ko = (parts.find(x => /[가-힣]/.test(x)) || '').split(/[。！？\n]/)[0].trim().slice(0, 60);
+  const py = (parts.find(x => !/[가-힣\u4e00-\u9fff]/.test(x) && /[a-zāáǎàēéěèīíǐìōóǒòūúǔùüǖǘǚǜ]/i.test(x)) || '').trim().slice(0, 80);
+  return { ko, py };
 }
+function hasCustomSent(zh){ return SENT_CUSTOM.some(x => x.zh === zh && !x.del); }
+function addCustomSent(zh, ko, py){   // AI 답변 등에서 문장 담기 (병음은 자동, 뜻은 답변에 있으면 같이)
+  zh = String(zh || '').trim(); if (!zh) return false;
+  const i = SENT_CUSTOM.findIndex(x => x.zh === zh);
+  if (i >= 0 && !SENT_CUSTOM[i].del){ SENT_CUSTOM[i].del = 1; SENT_CUSTOM[i].t = Date.now(); store.set('zh.sent_custom', SENT_CUSTOM); showToast('내 문장에서 뺐어요'); renderMineSents(); return false; }
+  if (i >= 0) SENT_CUSTOM.splice(i, 1);
+  SENT_CUSTOM.unshift({ zh, py: (py || '').trim() || zhPinyin(zh), ko: (ko || '').trim(), t: Date.now() });   // 답변에 병음이 있으면 그걸 쓰고(다음자 정확), 없으면 자동 생성
+  store.set('zh.sent_custom', SENT_CUSTOM); showToast('내 문장에 담았어요'); renderMineSents(); return true;
+}
+$('aiLog').addEventListener('click', e => {
+  const b = e.target.closest('[data-sadd]'); if (b){ b.textContent = addCustomSent(b.dataset.sadd, b.dataset.sko, b.dataset.spy) ? '★' : '☆'; return; }
+  const tk = e.target.closest('.tok'); if (tk) showLookup(tk);   // 답변 속 단어를 눌러 뜻 보기
+});
+function aiSystem(){   // 핵심 규칙 + 말투 + 답변 길이 + 내 요구사항
+  const len = AI.len==='short' ? '3~5문장으로 짧게' : AI.len==='long' ? '필요하면 자세히(600자 이내)' : '핵심만 400자 이내로';
+  const core  = (AI_TXT.core  || '').trim() || AI_PROMPT_CORE;
+  const style = (AI_TXT.style || AI_TXT.prompt || '').trim() || AI_PROMPT_STYLE;   // prompt 는 예전 버전에서 쓰던 이름
+  const rules = (AI_TXT.rules || '').trim();
+  return `${core}\n${style}\n답변 길이: ${len}.` + (rules ? `\n사용자가 따로 부탁한 것(가장 우선):\n${rules}` : '');
+}
+
+$('btnAiRules').onclick = () => { const b = $('aiRulesBox'); b.hidden = !b.hidden; if (!b.hidden){ $('aiRules').value = AI_TXT.rules || ''; $('aiRules').focus(); } };
+$('btnAiRulesSave').onclick = () => { const v = $('aiRules').value.trim(); AI_TXT.rules = v; aiTxtSave(); $('aiRulesBox').hidden = true; showToast(v ? '요구사항을 저장했어요 — 다음 답변부터 적용' : '요구사항을 지웠어요'); };
+$('btnAiRulesClear').onclick = () => { $('aiRules').value = ''; };
+if (AI.prompt || AI.rules){ AI_TXT.prompt = AI_TXT.prompt || AI.prompt || ''; AI_TXT.rules = AI_TXT.rules || AI.rules || ''; AI_TXT.t = Date.now(); delete AI.prompt; delete AI.rules; store.set('zh.ai', AI); store.set('zh.ai_prompt', AI_TXT); }   // 예전에 기기에만 저장했던 것 옮기기
+function aiTxtSave(){ AI_TXT.t = Date.now(); store.set('zh.ai_prompt', AI_TXT); }
+$('aiCore').value   = (AI_TXT.core  || '').trim() || AI_PROMPT_CORE;
+$('aiPrompt').value = (AI_TXT.style || AI_TXT.prompt || '').trim() || AI_PROMPT_STYLE;
+function promptSave(key, el, def, name){
+  const v = el.value.trim();
+  AI_TXT[key] = (!v || v === def.trim()) ? '' : v;
+  if (!AI_TXT[key]) el.value = def;
+  if (key === 'style') delete AI_TXT.prompt;
+  aiTxtSave(); showToast(AI_TXT[key] ? `${name}을 저장했어요 — 다음 질문부터 적용` : `${name}을 기본값으로 되돌렸어요`);
+}
+$('btnCoreSave').onclick   = () => promptSave('core',  $('aiCore'),   AI_PROMPT_CORE,  '핵심 규칙');
+$('btnCoreReset').onclick  = () => { AI_TXT.core = '';  aiTxtSave(); $('aiCore').value   = AI_PROMPT_CORE;  showToast('기본값으로 되돌렸어요'); };
+$('btnPromptSave').onclick = () => promptSave('style', $('aiPrompt'), AI_PROMPT_STYLE, '말투');
+$('btnPromptReset').onclick = () => { AI_TXT.style = ''; delete AI_TXT.prompt; aiTxtSave(); $('aiPrompt').value = AI_PROMPT_STYLE; showToast('기본값으로 되돌렸어요'); };
 // 서버 오류를 알아듣기 쉬운 한국어로. (각 회사가 주는 코드·문구가 달라서 공통 패턴으로 잡음)
 function aiFriendlyError(status, msg){
   const m = String(msg || ''); const svc = AI.service;
@@ -2763,8 +2860,19 @@ function aiOpen(ctx){
   if (!log.innerHTML) log.innerHTML = AI.key ? '<div class="thinking" style="animation:none">위 버튼을 누르거나 아래에 질문을 쓰세요. 답을 받은 뒤 이어서 물어봐도 돼요 (최근 3번의 문답을 기억)</div>' : '<div class="a err">설정 탭 → AI 선생님에서 API 키를 넣어야 쓸 수 있어요</div>';
   log.scrollTop = log.scrollHeight; if (window.innerWidth > 700) $('aiQ').focus();
 }
-function aiFmt(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^#+\s*/gm, '').replace(/^[ \t]*(?)[*\-•][ \t]+/gm, '$1• ').replace(/\n{3,}/g, '\n\n').replace(/([\u4e00-\u9fff]{1,20})/g, '<span class="zh">$1</span>'); }
-function aiAppend(q, a, cls){ const log = $('aiLog'); const ph = log.querySelector('.thinking[style]'); if (ph) ph.remove(); log.insertAdjacentHTML('beforeend', `<div class="q">${aiFmt(q)}</div><div class="a ${cls||''}">${a === null ? '<span class="thinking">생각 중</span>' : aiFmt(a)}</div>`); log.scrollTop = log.scrollHeight; return log.lastElementChild; }
+function aiFmt(t, stars){   // stars=true 면 중국어 문장 끝마다 '내 문장에 담기' ☆ 를 붙임 (AI 시트 전용)
+  let src = String(t);
+  const found = [];
+  if (stars) src = src.replace(/[\u4e00-\u9fff][^\n]{2,60}?[。！？]/g, (m, off, full) => {
+    found.push(Object.assign({ zh: m.trim() }, sentTail(full.slice(off + m.length).split('\n')[0])));
+    return '\u0001' + (found.length - 1) + '\u0001' + m;   // 별은 문장 앞에
+  });
+  let html = aiFmtRaw(src);
+  if (stars) html = html.replace(/\u0001(\d+)\u0001/g, (_, i) => { const it = found[+i]; return `<button class="sadd" data-sadd="${it.zh.replace(/"/g,'&quot;')}" data-sko="${(it.ko||'').replace(/"/g,'&quot;')}" data-spy="${(it.py||'').replace(/"/g,'&quot;')}" title="내 문장에 담기">${hasCustomSent(it.zh) ? '★' : '☆'}</button>`; });
+  return html;
+}
+function aiFmtRaw(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^#+\s*/gm, '').replace(/^[ \t]*(?)[*\-•][ \t]+/gm, '$1• ').replace(/\n{3,}/g, '\n\n').replace(/([\u4e00-\u9fff]{1,20})/g, (m) => `<span class="zh">${tapHtml(m)}</span>`); }   // 한자는 단어로 끊어 눌러서 뜻을 볼 수 있게
+function aiAppend(q, a, cls){ const log = $('aiLog'); const ph = log.querySelector('.thinking[style]'); if (ph) ph.remove(); log.insertAdjacentHTML('beforeend', `<div class="q">${aiFmt(q)}</div><div class="a ${cls||''}">${a === null ? '<span class="thinking">생각 중</span>' : aiFmt(a, true)}</div>`); log.scrollTop = log.scrollHeight; return log.lastElementChild; }
 async function aiAsk(q){
   if (!q.trim() || !aiCtx) return;
   if (!AI.key){ showToast('설정 탭에서 API 키를 넣어 주세요'); return; }
@@ -2773,7 +2881,7 @@ async function aiAsk(q){
     // 이어서 질문: 같은 문맥에서 나눈 최근 3번의 문답을 같이 보냄. 문맥 설명은 첫 질문 앞에만 붙임
     const hist = (AI_NOTES[aiCtx.key] || []).filter(h => !h.del && h.t > (AI_FRESH[aiCtx.key] || 0)).slice(-3).map((h, i, arr) => ({ q: i === 0 ? `${aiCtx.text}\n\n[질문] ${h.q}` : h.q, a: h.a }));
     const a = await aiCall(hist.length ? q : `${aiCtx.text}\n\n[질문] ${q}`, '', hist);
-    el.innerHTML = aiFmt(a);
+    el.innerHTML = aiFmt(a, true);
     (AI_NOTES[aiCtx.key] = AI_NOTES[aiCtx.key] || []).push({ q, a, t: Date.now() }); if (AI_NOTES[aiCtx.key].length > 30) AI_NOTES[aiCtx.key].shift(); store.set('zh.ai_notes', AI_NOTES);
   }catch(e){ el.className = 'a err'; el.textContent = /(Failed to fetch|NetworkError|Load failed)/i.test(e.message) ? '서버에 연결하지 못했어요. 인터넷을 확인하거나, 이 서비스가 브라우저 직접 호출을 막는 경우(CORS)일 수 있어요.' : e.message; }
   $('btnAiSend').disabled = false; $('aiLog').scrollTop = $('aiLog').scrollHeight;
@@ -3107,8 +3215,8 @@ $('homeGoalCard').addEventListener('click', () => { go('more'); const b = $('mor
 $('homeDaily').addEventListener('click', e => {
   const sh = e.target.closest('[data-shuffle]'); if (sh){ if (sh.dataset.shuffle === 'p') dailyShiftP++; else dailyShiftI++; renderDaily(); return; }
   const sb = e.target.closest('[data-say]'); if (sb){ speak(sb.dataset.say); return; }
-  const ph = e.target.closest('[data-open-phrase]'); if (ph){ phrOpenQ = ph.dataset.openPhrase.replace(/[，。！？…、：]/g, ''); go('phrase'); return; }
-  const id = e.target.closest('[data-open-idiom]'); if (id){ idiOpenQ = id.dataset.openIdiom; go('idiom'); return; }
+  const ph = e.target.closest('[data-open-phrase]'); if (ph){ BACK_TO.phrase = curScreen; phrOpenQ = ph.dataset.openPhrase.replace(/[，。！？…、：]/g, ''); go('phrase'); return; }
+  const id = e.target.closest('[data-open-idiom]'); if (id){ BACK_TO.idiom = curScreen; idiOpenQ = id.dataset.openIdiom; go('idiom'); return; }
 });
 // 표현·자막 문장·성어를 AI 선생님에게 묻는 문맥 (노트는 'e'+문장 아래에 쌓임)
 function aiExprCtx(zh, ko, kind){
@@ -3699,7 +3807,7 @@ function gramChips(st, lv){
   const gs = gramFor(st, Math.min(7, lv + 1)); if (!gs.length) return '';
   return `<div class="gchips" style="margin-top:6px"><span style="font-size:12px;color:var(--ink-2);align-self:center">관련 문법</span>${gs.map(g => `<button data-gopen="${g.id}">${g.title_ko}</button>`).join('')}</div>`;
 }
-document.addEventListener('click', e => { const b = e.target.closest('[data-gopen]'); if (b){ go('gram'); openGram(b.dataset.gopen); } });
+document.addEventListener('click', e => { const b = e.target.closest('[data-gopen]'); if (b){ BACK_TO.gram = curScreen; go('gram'); openGram(b.dataset.gopen); } });   // 학습 중에 들어왔으면 뒤로가기로 학습으로 복귀
 
 /* ═══════════ 모의고사 ═══════════
    구성(40문항): 듣기 판단 8 · 대화 듣기 8 · 독해 빈칸 8 · 문장 순서 4 · 글 읽기 4(2편×2문) · 쓰기 어순 8. 30분.
@@ -3920,15 +4028,19 @@ function renderStats(){
 /* ═══════════ 내 단어장 ═══════════ */
 function mineChunks(){ const ws = mineWords(), n = unitSize(), out = []; for (let i=0;i<ws.length;i+=n) out.push(ws.slice(i,i+n)); return out; }
 function renderMineSents(){
-  const ws = mineSents();
-  $('mineSentCount').textContent = ws.length;
-  $('mineSents').innerHTML = ws.map(w => { const st = sentOf(w); return `<div class="srow"><button class="star on" data-favs="${w.id}" title="내 문장에서 빼기">★</button>
+  const ws = mineSents(), mine = SENT_CUSTOM.filter(x => !x.del);
+  $('mineSentCount').textContent = ws.length + mine.length;
+  $('mineSents').innerHTML = mine.map(x => `<div class="srow"><button class="star on" data-sdel="${x.zh.replace(/"/g,'&quot;')}" title="내 문장에서 빼기">★</button>
+    <div><div class="szh">${tapHtml(x.zh)} <small style="font-family:inherit;font-size:11px;color:var(--ink-2)">직접</small></div><div class="spy">${x.py || ''}</div><div class="sko">${x.ko || ''}</div></div>
+    <button class="btn icon" data-say="${x.zh.replace(/"/g,'&quot;')}" title="문장 듣기"><i class="ic-spk"></i></button></div>`).join('')
+    + ws.map(w => { const st = sentOf(w); return `<div class="srow"><button class="star on" data-favs="${w.id}" title="내 문장에서 빼기">★</button>
     <div><div class="szh">${sentTokensHtml(st, w.s)}</div><div class="spy">${st.py}</div><div class="sko">${st.ko}</div></div>
     <button class="btn icon" data-say="${st.zh}" title="문장 듣기"><i class="ic-spk"></i></button></div>`; }).join('') || '<p class="hint" style="padding:12px 4px;margin:0;font-size:13px;color:var(--ink-2)">아직 없어요.<br>문장 연습에서 ☆를 누르면 담겨요.</p>';
 }
 $('mineSents').addEventListener('click', e => {
   const b = e.target.closest('[data-say]'); if (b) speak(b.dataset.say);
   const f = e.target.closest('[data-favs]'); if (f){ toggleFavS(+f.dataset.favs); if (cur && cur.id===+f.dataset.favs) updateStar(); renderMineSents(); }
+  const d = e.target.closest('[data-sdel]'); if (d){ if (!confirm('이 문장을 내 문장에서 뺄까요?')) return; addCustomSent(d.dataset.sdel); }
 });
 $('btnMineSentStudy').onclick = () => {
   const ws = mineSents(); if (!ws.length){ showToast('담은 문장이 없어요'); return; }
@@ -4113,7 +4225,7 @@ $('pgNext').onclick = () => { page++; renderList(); };
 const SYNC_DOC = 'zh-typing-sync.json';
 let backend = null, syncTimer = null, syncing = false, lastSyncAt = 0;
 function setSyncStatus(msg){ const el = $('syncStatus'); if (el) el.textContent = msg; }
-function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, fav_i: FAV_I, sub_fix: SUB_FIX, idi_done: IDI_DONE, idi_stat: IDI_STAT, gram_done: GRAM_DONE, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, exams: EXAMS, exam_wrong: EXAM_WRONG, typing: TYPING, ai_notes: AI_NOTES, updatedAt: Date.now() }; }
+function snapshot(){ return { progress: PROGRESS, ko: KO, ko_t: KO_T, units: UNITS_DONE, history: HISTORY, fav: FAV, fav_s: FAV_S, fav_i: FAV_I, sub_fix: SUB_FIX, ai_prompt: AI_TXT, sent_custom: SENT_CUSTOM, idi_done: IDI_DONE, idi_stat: IDI_STAT, gram_done: GRAM_DONE, custom: CUSTOM, custom_del: CUSTOM_DEL, stats: STATS, read: READ_DONE, exams: EXAMS, exam_wrong: EXAM_WRONG, typing: TYPING, ai_notes: AI_NOTES, updatedAt: Date.now() }; }
 // 통계 기록 병합: 횟수는 큰 쪽을 취함 (두 기기가 각자 센 값 중 더 많이 센 쪽)
 function mergeStats(a, b){
   a = a || {mode:{},tone:{},confuse:{}}; b = b || {mode:{},tone:{},confuse:{}};
@@ -4140,6 +4252,8 @@ function mergeState(a, b){
   out.ai_notes = {}; for (const k of keys(a.ai_notes, b.ai_notes)){ const m = new Map(); for (const n of [...(a.ai_notes?.[k]||[]), ...(b.ai_notes?.[k]||[])]){ const o = m.get(n.t); m.set(n.t, (o && (o.u||0) >= (n.u||0)) ? o : n); } const arr = [...m.values()].sort((x,y)=>x.t-y.t).slice(-30); if (arr.length) out.ai_notes[k] = arr; }
   out.fav_s = {}; for (const k of keys(a.fav_s, b.fav_s)){ const p=a.fav_s?.[k]||0, q=b.fav_s?.[k]||0; out.fav_s[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   out.fav_i = {}; for (const k of keys(a.fav_i, b.fav_i)){ const p=a.fav_i?.[k]||0, q=b.fav_i?.[k]||0; out.fav_i[k] = Math.abs(q) > Math.abs(p) ? q : p; }
+  out.sent_custom = (() => { const m = new Map(); for (const x of [...(a.sent_custom||[]), ...(b.sent_custom||[])]) if (!m.has(x.zh) || (x.t||0) > (m.get(x.zh).t||0)) m.set(x.zh, x); return [...m.values()].filter(x => !x.del).sort((p,q)=>(q.t||0)-(p.t||0)); })();
+  out.ai_prompt = ((b.ai_prompt||{}).t||0) >= ((a.ai_prompt||{}).t||0) ? (b.ai_prompt||{}) : (a.ai_prompt||{});   // 나중에 고친 쪽
   out.sub_fix = Object.assign({}, a.sub_fix, b.sub_fix);   // 자막 번역 고침: 나중에 쓴 쪽(뒤에 합쳐지는 쪽)이 남음
   out.idi_done = {}; for (const k of keys(a.idi_done, b.idi_done)){ const p=a.idi_done?.[k]||0, q=b.idi_done?.[k]||0; out.idi_done[k] = Math.abs(q) > Math.abs(p) ? q : p; }
   out.gram_done = {}; for (const k of keys(a.gram_done, b.gram_done)){ const p=a.gram_done?.[k]||0, q=b.gram_done?.[k]||0; out.gram_done[k] = Math.abs(q) > Math.abs(p) ? q : p; }
@@ -4153,14 +4267,14 @@ function mergeState(a, b){
 }
 function applyState(s){   // 병합 결과를 앱의 메모리·localStorage 에 반영 (참조는 유지)
   const swap = (obj, src) => { for (const k in obj) delete obj[k]; Object.assign(obj, src||{}); };
-  swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(FAV_S, s.fav_s); swap(FAV_I, s.fav_i); swap(SUB_FIX, s.sub_fix); swap(IDI_DONE, s.idi_done); swap(IDI_STAT, s.idi_stat); swap(GRAM_DONE, s.gram_done); swap(EXAM_WRONG, s.exam_wrong); swap(CUSTOM_DEL, s.custom_del);
+  swap(PROGRESS, s.progress); swap(KO, s.ko); swap(KO_T, s.ko_t); swap(UNITS_DONE, s.units); swap(HISTORY, s.history); swap(FAV, s.fav); swap(FAV_S, s.fav_s); swap(FAV_I, s.fav_i); swap(SUB_FIX, s.sub_fix); swap(AI_TXT, s.ai_prompt); SENT_CUSTOM.length = 0; SENT_CUSTOM.push(...(s.sent_custom||[])); swap(IDI_DONE, s.idi_done); swap(IDI_STAT, s.idi_stat); swap(GRAM_DONE, s.gram_done); swap(EXAM_WRONG, s.exam_wrong); swap(CUSTOM_DEL, s.custom_del);
   if (s.stats){ STATS.mode = s.stats.mode||{}; STATS.tone = s.stats.tone||{}; STATS.initial = s.stats.initial||{}; STATS.confuse = s.stats.confuse||{}; }
   swap(READ_DONE, s.read);
   EXAMS.length = 0; for (const x of (s.exams||[])) EXAMS.push(x);
   TYPING.length = 0; for (const x of (s.typing||[])) TYPING.push(x);
   for (const k of Object.keys(AI_NOTES)) delete AI_NOTES[k]; Object.assign(AI_NOTES, s.ai_notes || {});
   CUSTOM.length = 0; for (const w of s.custom||[]) { CUSTOM.push(w); BY_ID.set(w.id, w); }
-  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.fav_i':FAV_I,'zh.sub_fix':SUB_FIX,'zh.idi_done':IDI_DONE,'zh.idi_stat':IDI_STAT,'zh.gram_done':GRAM_DONE,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE,'zh.exams':EXAMS,'zh.exam_wrong':EXAM_WRONG,'zh.typing':TYPING,'zh.ai_notes':AI_NOTES }[k])); }catch(e){} };
+  const silent = k => { try{ localStorage.setItem(k, JSON.stringify({ 'zh.progress':PROGRESS,'zh.ko':KO,'zh.ko_t':KO_T,'zh.units':UNITS_DONE,'zh.history':HISTORY,'zh.fav':FAV,'zh.fav_s':FAV_S,'zh.fav_i':FAV_I,'zh.sub_fix':SUB_FIX,'zh.ai_prompt':AI_TXT,'zh.sent_custom':SENT_CUSTOM,'zh.idi_done':IDI_DONE,'zh.idi_stat':IDI_STAT,'zh.gram_done':GRAM_DONE,'zh.custom':CUSTOM,'zh.custom_del':CUSTOM_DEL,'zh.stats':STATS,'zh.read':READ_DONE,'zh.exams':EXAMS,'zh.exam_wrong':EXAM_WRONG,'zh.typing':TYPING,'zh.ai_notes':AI_NOTES }[k])); }catch(e){} };
   for (const k of SYNC_KEYS) silent(k);
 }
 // ── 백엔드 1: claude.ai 계정 저장소 (db). 문서 하나가 256KB 제한이라 진도는 1,000단어씩 쪼갬
@@ -4178,8 +4292,8 @@ function claudeBackend(db){
       const shards = {}; for (const id in s.progress){ (shards[shard(id)] ||= {})[id] = s.progress[id]; }
       const prevShards = {}; for (const id in (prev?.progress||{})){ (prevShards[shard(id)] ||= {})[id] = prev.progress[id]; }
       for (const k in shards) if (JSON.stringify(shards[k]) !== JSON.stringify(prevShards[k]||{})) await db.doc('zhsync/'+k).set({ progress: shards[k] });
-      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, fav_i:s.fav_i, sub_fix:s.sub_fix, idi_done:s.idi_done, idi_stat:s.idi_stat, gram_done:s.gram_done, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, exams:s.exams, exam_wrong:s.exam_wrong, typing:s.typing, updatedAt:s.updatedAt };
-      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, fav_i:prev.fav_i, sub_fix:prev.sub_fix, idi_done:prev.idi_done, idi_stat:prev.idi_stat, gram_done:prev.gram_done, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read, exams:prev.exams, exam_wrong:prev.exam_wrong, typing:prev.typing } : null;
+      const misc = { ko:s.ko, ko_t:s.ko_t, units:s.units, history:s.history, fav:s.fav, fav_s:s.fav_s, fav_i:s.fav_i, sub_fix:s.sub_fix, ai_prompt:s.ai_prompt, sent_custom:s.sent_custom, idi_done:s.idi_done, idi_stat:s.idi_stat, gram_done:s.gram_done, custom:s.custom, custom_del:s.custom_del, stats:s.stats, read:s.read, exams:s.exams, exam_wrong:s.exam_wrong, typing:s.typing, updatedAt:s.updatedAt };
+      const prevMisc = prev ? { ko:prev.ko, ko_t:prev.ko_t, units:prev.units, history:prev.history, fav:prev.fav, fav_s:prev.fav_s, fav_i:prev.fav_i, sub_fix:prev.sub_fix, ai_prompt:prev.ai_prompt, sent_custom:prev.sent_custom, idi_done:prev.idi_done, idi_stat:prev.idi_stat, gram_done:prev.gram_done, custom:prev.custom, custom_del:prev.custom_del, stats:prev.stats, read:prev.read, exams:prev.exams, exam_wrong:prev.exam_wrong, typing:prev.typing } : null;
       if (!prev || JSON.stringify({...misc, updatedAt:0}) !== JSON.stringify({...prevMisc, updatedAt:0})) await db.doc('zhsync/misc').set(misc);
       if (!prev || JSON.stringify(s.ai_notes||{}) !== JSON.stringify(prev.ai_notes||{})) await db.doc('zhsync/ainotes').set({ notes: s.ai_notes || {} });   // 문답 노트는 커질 수 있어 따로 저장
     }
