@@ -450,6 +450,12 @@ body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .wr-ko{font-size:19px;line-height:1.5;margin:6px 0 2px}
 .wr-in{width:100%;box-sizing:border-box;font:inherit;font-family:var(--hanzi);font-size:20px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:64px}
 .wr-in:focus{outline:2px solid var(--accent);outline-offset:1px}
+.wr-log{padding:9px 2px;border-top:1px solid var(--line);font-size:13px;cursor:pointer}
+.wr-log-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.wr-mine{font-family:var(--hanzi);font-size:16px;margin-top:2px}
+.wr-mine.off{color:var(--ink-2);text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:1px}
+.wr-fix{font-family:var(--hanzi);font-size:17px;color:var(--good);margin-top:2px}
+.wr-why{margin-top:8px;padding:8px 10px;border-radius:9px;background:var(--paper);cursor:auto}
 .wr-res{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
 .wr-badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;margin-bottom:6px}
 .wr-badge.good{background:var(--good-bg);color:var(--good)}
@@ -959,7 +965,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2240</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2329</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1624,7 +1630,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes','zh.write','zh.talk_lv']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes','zh.write','zh.talk_lv','zh.write_lv','zh.write_mode']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
@@ -3054,8 +3060,19 @@ function aiNoteLabel(key){   // 노트 묶음 제목: label(진한 줄) + sub(�
     return { label: t, sub: '자유 질문', ctx: () => aiFreeCtx(key) }; }
   if (key[0] === 't'){ const arr = (AI_NOTES[key] || []).filter(n => !n.del); const f = arr[0];
     return { label: `회화 · ${f && f.sit ? f.sit : '롤플레이'}`, sub: `${f && f.lv ? f.lv + '급 · ' : ''}주고받은 말 ${arr.length}`, ctx: () => aiTalkCtx(key) }; }
+  if (key[0] === 'c'){ const arr = (AI_NOTES[key] || []).filter(n => !n.del), f = arr[0];
+    return { label: `작문 · ${f ? String(f.q).replace(/^작문:\s*/, '') : ''}`, sub: `첨삭 ${arr.length}`, ctx: () => aiWriteCtx(key) }; }
   if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: pg.title, sub: '읽기', ctx: () => aiPassageCtx(pg) } : null; }
   return null;
+}
+function aiWriteCtx(key){   // 작문 첨삭 노트를 문맥으로 이어서 묻기
+  const arr = (AI_NOTES[key] || []).filter(n => !n.del), f = arr[0] || {};
+  const script = arr.slice(-6).map(n => `${n.q}\n${(n.a || '')}`).join('\n\n');
+  return { key, label: `작문 · ${String(f.q || '').replace(/^작문:\s*/, '')}`, text: `[지난 작문 첨삭]\n${script}`, quick: [
+    { label: '왜 틀렸는지 더 자세히', q: '내가 왜 이렇게 틀렸는지, 같은 실수를 안 하려면 무엇을 기억해야 하는지 설명해 줘.' },
+    { label: '비슷한 문장 3개', q: '같은 문법을 쓰는 비슷한 한국어 문장 3개를 내 줘. 답은 아래에 따로 적어 줘.' },
+    { label: '다르게 말하는 법', q: '같은 뜻을 다른 표현으로 말하는 방법을 병음·뜻과 함께 알려 줘.' },
+  ] };
 }
 function aiTalkCtx(key){   // 저장된 회화를 문맥으로 이어서 묻기 (다시 대화하는 게 아니라 그 대화에 대해 질문)
   const arr = (AI_NOTES[key] || []).filter(n => !n.del), f = arr[0] || {};
@@ -3071,7 +3088,7 @@ const aiOpenGroups = new Set();   // 펼쳐 둔 묶음 (앱을 다시 열면 초
 function aiWhen(t){ const d = Math.floor((Date.now() - t) / 86400000);
   return d <= 0 ? '오늘' : d === 1 ? '어제' : d < 7 ? `${d}일 전` : new Date(t).toLocaleDateString(undefined, { month:'numeric', day:'numeric' }); }
 let aiNoteKind = 'all';     // all | w(단어) | s(문장) | g(문법) | p(읽기) | e(표현·사전) | t(회화) | f(자유)
-const AI_KINDS = [['w','단어'],['s','문장'],['g','문법'],['p','읽기'],['e','표현'],['t','회화'],['f','자유']];
+const AI_KINDS = [['w','단어'],['s','문장'],['g','문법'],['p','읽기'],['e','표현'],['t','회화'],['c','작문'],['f','자유']];
 function aiNoteKindOf(key){ const c = key[0]; return c === 'x' ? 'e' : (AI_KINDS.some(k => k[0] === c) ? c : 'f'); }   // x(보조 사전)는 표현으로 묶음
 function aiTouch(n){ n.u = Date.now(); store.set('zh.ai_notes', AI_NOTES); }
 // 답변 본문에 형광펜(hl: 사용자가 고른 문구들)을 <mark> 로 입힘
@@ -4607,53 +4624,152 @@ $('talkLog').addEventListener('click', e => {
 });
 
 /* ═══════════ 작문 연습 (한국어 → 중국어, AI 첨삭) ═══════════
-   우리 예문 데이터의 한국어 뜻을 문제로 내고, 내가 쓴 중국어를 먼저 참고 답안과 글자 단위로 견준 뒤(공짜),
-   원하면 AI 에게 첨삭을 받는다(토큰 씀). 참고 답안과 달라도 맞을 수 있으므로 판정은 AI 쪽이 기준. */
-const WRITE_ST = Object.assign({ n: 0, ok: 0, recent: [] }, store.get('zh.write', {}));
-let wr = null;
+   우리 예문 데이터의 한국어 뜻(또는 AI 가 새로 지은 한국어 문장)을 문제로 내고,
+   내가 쓴 중국어를 먼저 참고 답안과 글자 단위로 견준 뒤(공짜), 원하면 AI 에게 첨삭을 받는다(토큰 씀).
+   틀리거나 어색했던 문장은 복습 큐(WRITE_ST.rev)에 들어가 며칠 뒤 다시 나온다 — 간격은 WR_GAP.
+   기록에는 내가 쓴 문장뿐 아니라 고친 문장·이유까지 남긴다(틀린 문장만 다시 보면 틀린 형태가 굳으므로). */
+const WRITE_ST = Object.assign({ n: 0, ok: 0, recent: [], rev: {} }, store.get('zh.write', {}));
+if (!WRITE_ST.rev) WRITE_ST.rev = {};
+let wr = null, wrBusy = false;
+let WR_LV = +store.get('zh.write_lv', 0) || 0;      // 0 = 학습 급수를 따라감
+let WR_MODE = store.get('zh.write_mode', 'sent');   // 'sent' = 예문에서, 'ai' = AI 가 새 문장을 냄
+const WR_GAP = [2, 4, 7, 14, 30];                   // 틀린 횟수별 복습 간격(일)
 function wrSave(){ store.set('zh.write', WRITE_ST); }
 function wrNorm(t){ return String(t).replace(/[\s。，、！？：；""''（）()。.,!?:;]/g, ''); }
+function wrStudyLv(){ const ls = (SETTINGS.levels || []).map(Number).filter(Boolean); return ls.length ? Math.min(...ls) : 1; }
+function wrLv(){ return WR_LV || wrStudyLv(); }
+function wrDueList(){ const now = Date.now(); return Object.entries(WRITE_ST.rev).filter(([, r]) => (r.due || 0) <= now).sort((a, b) => (a[1].due || 0) - (b[1].due || 0)); }
+
+/* 다음 문제 고르기 — 복습할 게 있으면 그것부터, 없으면 급수 안에서 새로 */
 function wrPick(){
-  const lvs = (SETTINGS.levels || []).map(Number).filter(Boolean); const set = new Set(lvs.length ? lvs : [1]);
+  const due = wrDueList();
+  if (due.length){ const [key, r] = due[0]; return { key, ko: r.ko, zh: r.zh, py: r.py || '', lv: r.lv || wrLv(), word: r.word || null, rev: true, n: r.n || 1 }; }
+  const lvs = WR_LV ? [WR_LV] : (SETTINGS.levels || []).map(Number).filter(Boolean);
+  const set = new Set(lvs.length ? lvs : [1]);
   const pool = Object.keys(SENTS).filter(id => { const w = BY_ID.get(+id); return w && set.has(w.lv) && SENTS[id].ko; });
   if (!pool.length) return null;
-  const recent = new Set((WRITE_ST.recent || []).map(r => r.id));
-  const fresh = pool.filter(id => !recent.has(+id));
-  const id = +(fresh.length ? fresh : pool)[Math.floor(Math.random() * (fresh.length ? fresh.length : pool.length))];
-  return { id, st: SENTS[String(id)], w: BY_ID.get(id) };
+  const recent = new Set((WRITE_ST.recent || []).map(r => String(r.key || r.id)));
+  const fresh = pool.filter(id => !recent.has(id));
+  const from = fresh.length ? fresh : pool;
+  const id = from[Math.floor(Math.random() * from.length)];
+  const st = SENTS[id], w = BY_ID.get(+id);
+  return { key: String(id), ko: st.ko, zh: st.zh, py: st.py || '', lv: w.lv, word: { s: w.s, py: w.py } };
+}
+
+/* AI 가 그 급수 단어로 새 한국어 문장을 지어 준다 — 기존 예문의 뜻이 아니라 진짜 작문이 되도록 */
+async function wrMakeAi(){
+  const lv = wrLv();
+  const seen = (WRITE_ST.recent || []).slice(-10).map(r => r.ko).filter(Boolean);
+  const a = await aiCall(`HSK ${lv}급 수준의 작문 문제 하나를 내 줘.`,
+    `너는 중국어 작문 문제 출제자다. 학습자 수준 HSK ${lv}급.
+그 급수까지의 단어만 써서, 일상에서 실제로 쓸 법한 한국어 문장 하나를 만들고 모범 중국어 번역을 붙여라.
+아래 네 칸 형식으로만 답한다. 다른 말 금지.
+[한국어] (10~25자 정도의 자연스러운 한국어 문장 한 개)
+[중국어] (모범 번역)
+[병음] (성조 기호 포함)
+[핵심단어] (그 문장에서 가장 중요한 단어 하나, 한자만)` +
+    (seen.length ? `\n\n[최근에 낸 문장 — 비슷한 것을 또 내지 말 것]\n${seen.join('\n')}` : ''));
+  const g = k => { const m = a.match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
+  const ko = g('한국어'), zh = g('중국어');
+  if (!ko || !zh) throw new Error('문제를 만들지 못했어요. 다시 눌러 주세요.');
+  const key = 'x' + wrNorm(ko).slice(0, 14);
+  return { key, ko, zh, py: g('병음'), lv, word: g('핵심단어') ? { s: g('핵심단어'), py: '' } : null, ai: true };
+}
+
+function wrHead(){
+  const pct = WRITE_ST.n ? Math.round(WRITE_ST.ok / WRITE_ST.n * 100) : 0;
+  const due = wrDueList().length;
+  $('wrTop').textContent = (WRITE_ST.n ? `${WRITE_ST.n}문장 · ${pct}%` : '') + (due ? `${WRITE_ST.n ? ' · ' : ''}복습 ${due}` : '');
+}
+function wrLogRow(r, i){
+  const cls = r.v === '맞음' ? 'good' : r.v === '어색함' ? 'soso' : 'bad';
+  const better = (r.v !== '맞음') ? (r.fix || r.zh || '') : '';
+  return `<div class="wr-log" data-wrlog="${i}">
+    <div class="wr-log-h"><span class="wr-badge ${cls}">${r.v}</span> <span style="color:var(--ink-2)">${r.ko}</span></div>
+    <div class="wr-mine${r.v === '맞음' ? '' : ' off'}">${tapHtml(r.mine || '')}</div>
+    ${better ? `<div class="wr-fix">→ ${tapHtml(better)}</div>` : ''}
+    <div class="wr-why" hidden>
+      ${r.why ? `<div style="font-size:13px;margin-bottom:6px">${aiFmtRaw(r.why)}</div>` : '<div style="font-size:13px;color:var(--ink-2);margin-bottom:6px">AI 첨삭을 받지 않은 문장이에요.</div>'}
+      ${r.zh && r.zh !== better ? `<div style="font-size:12px;color:var(--ink-2)">참고 답안</div><div style="font-family:var(--hanzi);font-size:16px">${tapHtml(r.zh)}</div>` : ''}
+      ${r.py ? `<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${r.py}</div>` : ''}
+      <div class="dataops" style="margin-top:8px"><button class="btn small" data-wragain="${i}">이 문장 다시 쓰기</button><button class="btn small" data-wrsay="${i}"><i class="ic-spk"></i><span>듣기</span></button></div>
+    </div>
+  </div>`;
 }
 function renderWrite(){
-  const pct = WRITE_ST.n ? Math.round(WRITE_ST.ok / WRITE_ST.n * 100) : 0;
-  $('wrTop').textContent = WRITE_ST.n ? `${WRITE_ST.n}문장 · ${pct}%` : '';
-  if (!wr) wr = wrPick();
-  if (!wr){ $('wrBox').innerHTML = '<div class="card"><p style="color:var(--ink-2)">이 급수에는 예문이 아직 없어요. 설정에서 다른 급수를 골라 주세요.</p></div>'; return; }
-  $('wrBox').innerHTML = `<div class="card">
-    <div class="sh-label">이 뜻이 되도록 중국어로 써 보세요 <small style="font-weight:400">· HSK ${wr.w.lv}급</small></div>
-    <div class="wr-ko">${wr.st.ko}</div>
-    <div style="font-size:12px;color:var(--ink-2);margin-bottom:8px">핵심 단어: <b style="font-family:var(--hanzi);font-size:16px">${wr.w.s}</b> <span style="font-family:var(--mono)">${wr.w.py}</span></div>
+  wrHead();
+  if (!wr && WR_MODE === 'sent') wr = wrPick();
+  const logs = (WRITE_ST.recent || []).slice(-8).reverse();
+  const setup = `<div class="card">
+    <h3 class="sk-h">작문 수준 <small>이 화면에서만 쓰는 급수예요</small></h3>
+    <div class="lvbar wrap" id="wrLvBar">
+      <label><input type="radio" name="wlv" value="0"${WR_LV ? '' : ' checked'}>학습 급수 (${wrStudyLv()}급)</label>
+      ${[1,2,3,4,5,6,7,8,9].map(n => `<label><input type="radio" name="wlv" value="${n}"${WR_LV === n ? ' checked' : ''}>${n}급</label>`).join('')}
+    </div>
+    <div class="dataops" style="margin-top:10px">
+      <button class="btn small${WR_MODE === 'sent' ? ' primary' : ''}" data-wrmode="sent" style="flex:1">예문에서 출제</button>
+      <button class="btn small${WR_MODE === 'ai' ? ' primary' : ''}" data-wrmode="ai" style="flex:1"><i class="ic-ai"></i><span>AI 새 문장</span></button>
+    </div>
+    <p class="hint" style="font-size:11.5px;color:var(--ink-2);margin:8px 0 0">${WR_MODE === 'ai' ? 'AI 가 그 급수 단어로 새 한국어 문장을 지어 줘요 — 암기가 아니라 진짜 작문 연습이 돼요.' : '외운 예문의 뜻이 문제로 나와요.'}</p>
+  </div>`;
+  let box;
+  if (wrBusy) box = '<div class="card"><span class="thinking">문제 만드는 중</span></div>';
+  else if (!wr && WR_MODE === 'ai') box = `<div class="card"><p style="color:var(--ink-2);margin:0 0 10px">${AI.key ? 'AI 가 낼 새 문장으로 시작해요.' : '설정 탭 → AI 선생님에서 API 키를 먼저 넣어 주세요.'}</p><button class="btn primary" id="btnWrSkip" style="width:100%">문제 받기</button></div>`;
+  else if (!wr) box = '<div class="card"><p style="color:var(--ink-2)">이 급수에는 예문이 아직 없어요. 위에서 다른 급수를 골라 주세요.</p></div>';
+  else box = `<div class="card">
+    <div class="sh-label">이 뜻이 되도록 중국어로 써 보세요 <small style="font-weight:400">· ${wr.rev ? `복습 ${wr.n}번째 · ` : ''}HSK ${wr.lv}급</small></div>
+    <div class="wr-ko">${wr.ko}</div>
+    ${wr.word ? `<div style="font-size:12px;color:var(--ink-2);margin-bottom:8px">핵심 단어: <b style="font-family:var(--hanzi);font-size:16px">${wr.word.s}</b> <span style="font-family:var(--mono)">${wr.word.py || ''}</span></div>` : '<div style="height:6px"></div>'}
     <textarea class="wr-in" id="wrIn" placeholder="중국어로 입력 (한자)" autocapitalize="off" autocorrect="off">${wr.mine || ''}</textarea>
     <div class="dataops" style="margin-top:10px">
       <button class="btn primary" id="btnWrSubmit" style="flex:1">제출</button>
       <button class="btn" id="btnWrSkip">다른 문제</button>
     </div>
     <div class="wr-res" id="wrRes" hidden></div>
-  </div>
-  ${(WRITE_ST.recent || []).length ? `<div class="card" style="margin-top:12px"><h3 class="sk-h">최근 쓴 문장</h3>${WRITE_ST.recent.slice(-8).reverse().map(r => `<div style="padding:7px 2px;border-top:1px solid var(--line);font-size:13px"><span class="wr-badge ${r.v === '맞음' ? 'good' : r.v === '어색함' ? 'soso' : 'bad'}">${r.v}</span> <span style="color:var(--ink-2)">${r.ko}</span><div style="font-family:var(--hanzi);font-size:16px">${tapHtml(r.mine)}</div></div>`).join('')}</div>` : ''}`;
+  </div>`;
+  $('wrBox').innerHTML = setup + box +
+    (logs.length ? `<div class="card" style="margin-top:12px"><h3 class="sk-h">지난 문장 <small>눌러서 이유·참고 답안 보기</small></h3>${logs.map(wrLogRow).join('')}</div>` : '');
 }
+/* 다음 문제로 (AI 모드면 새로 지어 온다) */
+async function wrNext(){
+  if (WR_MODE !== 'ai' || wrDueList().length){ wr = wrPick(); renderWrite(); return; }
+  if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
+  wr = null; wrBusy = true; renderWrite();
+  try{ wr = await wrMakeAi(); }
+  catch(err){ showToast(err.message); }
+  finally{ wrBusy = false; renderWrite(); }
+}
+$('wrBox').addEventListener('change', e => {
+  const r = e.target.closest('input[name="wlv"]'); if (!r) return;
+  WR_LV = +r.value || 0; store.set('zh.write_lv', WR_LV);
+  if (wr && !wr.rev && !wr.mine) wr = null;   // 아직 손대지 않은 문제면 새 급수로 다시 뽑는다
+  renderWrite();
+});
 $('wrBox').addEventListener('click', async e => {
-  if (e.target.closest('#btnWrSkip')){ wr = wrPick(); renderWrite(); return; }
-  if (e.target.closest('#btnWrNext')){ wr = wrPick(); renderWrite(); return; }
+  const md = e.target.closest('[data-wrmode]');
+  if (md){ WR_MODE = md.dataset.wrmode; store.set('zh.write_mode', WR_MODE); if (!wr || !wr.mine) wr = null; renderWrite(); return; }
+  if (e.target.closest('#btnWrSkip') || e.target.closest('#btnWrNext')){ wrNext(); return; }
+  const say = e.target.closest('[data-wrsay]');
+  if (say){ const r = (WRITE_ST.recent || []).slice(-8).reverse()[+say.dataset.wrsay]; if (r) speak(r.fix || r.zh || r.mine); return; }
+  const ag = e.target.closest('[data-wragain]');
+  if (ag){
+    const r = (WRITE_ST.recent || []).slice(-8).reverse()[+ag.dataset.wragain]; if (!r) return;
+    wr = { key: String(r.key || r.id), ko: r.ko, zh: r.zh, py: r.py || '', lv: r.lv || wrLv(), word: r.word || null, rev: true, n: (WRITE_ST.rev[String(r.key || r.id)] || {}).n || 1 };
+    renderWrite(); $('wrIn') && $('wrIn').focus(); return;
+  }
+  const lg = e.target.closest('.wr-log-h, .wr-mine, .wr-fix');
+  if (lg && !e.target.closest('.tok')){ const w = lg.closest('.wr-log').querySelector('.wr-why'); w.hidden = !w.hidden; return; }
   const tk = e.target.closest('.tok'); if (tk && !e.target.closest('#wrIn')){ showLookup(tk); return; }
-  if (e.target.closest('#btnWrSay')){ speak(wr.st.zh); return; }
+  if (e.target.closest('#btnWrSay')){ speak(wr.zh); return; }
   if (e.target.closest('#btnWrSubmit')){
     const mine = $('wrIn').value.trim(); if (!mine){ showToast('중국어로 한 문장 써 보세요'); return; }
     wr.mine = mine;
-    const same = wrNorm(mine) === wrNorm(wr.st.zh);
+    const same = wrNorm(mine) === wrNorm(wr.zh);
     const box = $('wrRes'); box.hidden = false;
     box.innerHTML = `<span class="wr-badge ${same ? 'good' : 'soso'}">${same ? '참고 답안과 같음' : '참고 답안과 다름 — 그래도 맞을 수 있어요'}</span>
       <div style="font-size:13px;color:var(--ink-2);margin-top:4px">참고 답안</div>
-      <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--hanzi);font-size:19px">${tapHtml(wr.st.zh)}</span><button class="btn icon" id="btnWrSay" title="듣기"><i class="ic-spk"></i></button></div>
-      <div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${wr.st.py || ''}</div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--hanzi);font-size:19px">${tapHtml(wr.zh)}</span><button class="btn icon" id="btnWrSay" title="듣기"><i class="ic-spk"></i></button></div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${wr.py || ''}</div>
       <div class="dataops" style="margin-top:10px"><button class="btn primary" id="btnWrAi" style="flex:1"><i class="ic-ai"></i><span>AI 첨삭 받기</span></button><button class="btn" id="btnWrNext">다음 문제 ›</button></div>
       <div id="wrAiRes" style="margin-top:10px"></div>`;
     if (same && !wr.counted){ wr.counted = true; wrRecordKeep('맞음'); }
@@ -4663,8 +4779,8 @@ $('wrBox').addEventListener('click', async e => {
     if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
     const out = $('wrAiRes'); out.innerHTML = '<span class="thinking">생각 중</span>';
     try{
-      const a = await aiCall(`[한국어 뜻] ${wr.st.ko}\n[학습자가 쓴 중국어] ${wr.mine}\n[참고 답안] ${wr.st.zh}`,
-        `너는 중국어 작문 첨삭 선생님이다. 학습자 수준 HSK ${wr.w.lv}급.
+      const a = await aiCall(`[한국어 뜻] ${wr.ko}\n[학습자가 쓴 중국어] ${wr.mine}\n[참고 답안] ${wr.zh}`,
+        `너는 중국어 작문 첨삭 선생님이다. 학습자 수준 HSK ${wr.lv}급.
 아래 네 칸 형식으로만 답한다. 다른 말 금지.
 [판정] 맞음 / 어색함 / 틀림 중 하나
 [고친 문장] (학습자 문장을 최소한만 고친 자연스러운 중국어. 고칠 게 없으면 학습자 문장 그대로)
@@ -4672,23 +4788,46 @@ $('wrBox').addEventListener('click', async e => {
 [참고 답안과 차이] 학습자 문장과 참고 답안이 다르면 뉘앙스 차이를 한 문장. 사실상 같으면 "같음".`);
       const g = k => { const m = a.match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
       const v = /맞음/.test(g('판정')) ? '맞음' : /어색/.test(g('판정')) ? '어색함' : '틀림';
-      const fixed = g('고친 문장');
+      const fixed = g('고친 문장'), why = g('이유'), diff = g('참고 답안과 차이');
       out.innerHTML = `<span class="wr-badge ${v === '맞음' ? 'good' : v === '어색함' ? 'soso' : 'bad'}">${v}</span>
         ${fixed ? `<div style="font-family:var(--hanzi);font-size:19px">${tapHtml(fixed)}</div>` : ''}
-        <div style="font-size:14px;margin-top:6px">${aiFmtRaw(g('이유'))}</div>
-        ${g('참고 답안과 차이') && g('참고 답안과 차이') !== '같음' ? `<div style="font-size:13px;color:var(--ink-2);margin-top:4px">${aiFmtRaw(g('참고 답안과 차이'))}</div>` : ''}`;
-      if (!wr.counted){ wr.counted = true; wrRecordKeep(v, out.innerHTML); }
+        <div style="font-size:14px;margin-top:6px">${aiFmtRaw(why)}</div>
+        ${diff && diff !== '같음' ? `<div style="font-size:13px;color:var(--ink-2);margin-top:4px">${aiFmtRaw(diff)}</div>` : ''}`;
+      const nk = 'c' + wr.key;
+      (AI_NOTES[nk] = AI_NOTES[nk] || []).push({ q: `작문: ${wr.ko}`, a: [`내 문장: ${wr.mine}`, fixed && `고친 문장: ${fixed}`, why, diff && diff !== '같음' && diff].filter(Boolean).join('\n'), t: Date.now() });
+      if (AI_NOTES[nk].length > 20) AI_NOTES[nk].shift();
+      store.set('zh.ai_notes', AI_NOTES);
+      if (wr.counted) wrUpdateLast(v, fixed, why + (diff && diff !== '같음' ? '\n' + diff : ''));
+      else { wr.counted = true; wrRecordKeep(v, fixed, why + (diff && diff !== '같음' ? '\n' + diff : '')); }
     }catch(err){ out.innerHTML = `<span style="color:var(--bad);font-size:13px">${err.message}</span>`; }
   }
 });
-// 첨삭 결과를 남긴 채로 기록만 올림 (화면을 다시 그리지 않음)
-function wrRecordKeep(verdict){
+/* 기록 + 복습 큐 갱신 (첨삭 결과를 남긴 채로 — 화면을 다시 그리지 않는다) */
+function wrRecordKeep(verdict, fixed, why){
   WRITE_ST.n++; if (verdict === '맞음') WRITE_ST.ok++;
-  (WRITE_ST.recent = WRITE_ST.recent || []).push({ id: wr.id, ko: wr.st.ko, mine: wr.mine, v: verdict, t: Date.now() });
+  (WRITE_ST.recent = WRITE_ST.recent || []).push({ key: wr.key, id: +wr.key || 0, ko: wr.ko, zh: wr.zh, py: wr.py || '', lv: wr.lv, word: wr.word || null, mine: wr.mine, fix: fixed || '', why: why || '', v: verdict, t: Date.now() });
   if (WRITE_ST.recent.length > 30) WRITE_ST.recent.shift();
-  wrSave();
-  const pct = WRITE_ST.n ? Math.round(WRITE_ST.ok / WRITE_ST.n * 100) : 0;
-  $('wrTop').textContent = `${WRITE_ST.n}문장 · ${pct}%`;
+  wrSchedule(verdict, fixed, why);
+  wrSave(); wrHead();
+}
+/* 방금 기록한 문장의 판정을 AI 첨삭 결과로 덮어쓴다 (무료 비교로 '맞음'이 먼저 들어간 경우) */
+function wrUpdateLast(verdict, fixed, why){
+  const r = (WRITE_ST.recent || [])[WRITE_ST.recent.length - 1];
+  if (!r || r.key !== wr.key) return;
+  if (r.v === '맞음' && verdict !== '맞음') WRITE_ST.ok = Math.max(0, WRITE_ST.ok - 1);
+  if (r.v !== '맞음' && verdict === '맞음') WRITE_ST.ok++;
+  r.v = verdict; r.fix = fixed || ''; r.why = why || '';
+  wrSchedule(verdict, fixed, why);
+  wrSave(); wrHead();
+}
+/* 틀리거나 어색했으면 복습 큐에 넣고 다음 날짜를 잡는다. 맞으면 큐에서 뺀다. */
+function wrSchedule(verdict, fixed, why){
+  const R = WRITE_ST.rev, k = wr.key;
+  if (verdict === '맞음'){ delete R[k]; return; }
+  const old = R[k] || {}; const n = (old.n || 0) + 1;
+  R[k] = { ko: wr.ko, zh: wr.zh, py: wr.py || '', lv: wr.lv, word: wr.word || null, mine: wr.mine, fix: fixed || old.fix || '', why: why || old.why || '', v: verdict, n, due: Date.now() + WR_GAP[Math.min(n - 1, WR_GAP.length - 1)] * DAY };
+  const keys = Object.keys(R);
+  if (keys.length > 80){ keys.sort((a, b) => (R[a].due || 0) - (R[b].due || 0)); delete R[keys[keys.length - 1]]; }
 }
 
 /* ═══════════ 시작 ═══════════ */
