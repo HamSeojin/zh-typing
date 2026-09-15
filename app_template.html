@@ -2860,7 +2860,12 @@ function aiFriendlyError(status, msg){
   if (status === 429 || /rate.?limit|too many requests|resource.?exhausted|quota/i.test(m)) return svc==='gemini' ? '무료 한도(분당·하루 요청 수)를 넘었어요. 잠시 후 다시 하거나, 내일 다시 써 보세요.' : '요청이 너무 잦아요. 잠시 후 다시 해 보세요.';
   if (status === 404 || /model.*(not found|does not exist|not exist)|no such model|not supported/i.test(m)) return `모델 이름(${AI.model})을 찾을 수 없어요. 설정에서 다른 모델을 고르거나 이름을 확인해 주세요.`;
   if (status === 400 && /max_tokens|max_completion_tokens/.test(m)) return '이 모델은 요청 형식이 조금 달라요 — 설정에서 서비스를 다시 골라 저장한 뒤 시도해 주세요.';
-  if (status >= 500) return '서비스 서버 쪽 문제예요 (일시적). 잠시 후 다시 해 보세요.';
+  if (status === 503 || /overloaded|unavailable|try again later|현재 사용량/i.test(m))
+    return svc === 'gemini'
+      ? '지금 이 모델에 요청이 몰려 있어요 (일시적). 잠시 뒤 다시 하거나, 설정에서 가벼운 모델(예: flash-lite)로 바꿔 보세요.'
+      : '지금 이 모델에 요청이 몰려 있어요 (일시적). 잠시 뒤 다시 해 보세요.';
+  if (status === 504 || /timeout|deadline/i.test(m)) return '응답이 너무 오래 걸려 끊겼어요. 잠시 뒤 다시 하거나, 설정에서 답변 길이를 짧게 해 보세요.';
+  if (status >= 500) return `서비스 서버 쪽 문제예요 (${status}, 일시적). 여러 번 반복되면 설정에서 다른 모델·서비스로 바꿔 보세요.`;
   return `오류 ${status ? status + ' ' : ''}${m}`.trim();
 }
 function aiCountUsage(inText, outText){ AI_USAGE.n++; AI_USAGE.inTok += Math.round(inText.length * 0.9); AI_USAGE.outTok += Math.round(outText.length * 1.1); store.set('zh.ai_usage', AI_USAGE); aiUsageLine(); }
@@ -2872,6 +2877,30 @@ function aiUsageLine(){
   const usd = AI_USAGE.inTok/1e6*price[0] + AI_USAGE.outTok/1e6*price[1];
   el.textContent = `이 기기에서 질문 ${AI_USAGE.n}개 · 대략 ${Math.round(usd*1400).toLocaleString()}원 (추정치 · 실제 금액은 서비스 사용량 페이지에서)`;
 }
+/* 서버 과부하(503)·내부 오류(500)·시간 초과(504)나 순간적인 네트워크 끊김은 잠시 뒤 다시 하면 되는 경우가 대부분이라,
+   사용자에게 오류를 보여 주기 전에 앱이 먼저 두 번까지 다시 시도한다(1초 → 3초). 그래도 안 되면 그때 안내한다.
+   키·잔액·모델 이름 문제(401/402/404)처럼 다시 해도 소용없는 것은 곧바로 알린다. */
+const AI_RETRY_MS = [1000, 3000];
+async function aiFetch(url, opts){
+  let last;
+  for (let i = 0; i <= AI_RETRY_MS.length; i++){
+    try{
+      const res = await fetch(url, opts);
+      if (res.ok || res.status < 500) return res;      // 성공이거나, 다시 해도 같은 결과인 오류
+      last = res;
+    }catch(e){ last = e; }                             // 네트워크 자체가 끊긴 경우
+    if (i < AI_RETRY_MS.length) await new Promise(r => setTimeout(r, AI_RETRY_MS[i]));
+  }
+  if (last instanceof Response) return last;
+  throw last;
+}
+/* 응답은 왔는데 글이 비어 있는 경우 — 왜 비었는지 알려 준다 (그냥 '(빈 응답)' 은 무엇을 해야 할지 알 수 없어서) */
+function aiEmptyMsg(reason){
+  if (/SAFETY|BLOCK|PROHIBITED/i.test(reason || '')) return '이 내용은 서비스의 안전 필터에 걸려 답을 받지 못했어요. 질문을 조금 바꿔서 다시 해 보세요.';
+  if (/MAX_TOKENS|length/i.test(reason || '')) return '답이 길어서 중간에 끊겼어요. 설정에서 답변 길이를 늘리거나, 질문을 나눠서 해 보세요.';
+  return '답이 비어서 왔어요. 잠시 뒤 다시 해 보세요.';
+}
+
 async function aiCall(user, systemExtra, history){   // history: [{q, a}] 앞선 문답 (이어서 질문할 때 함께 보냄)
   if (!AI.key) throw new Error('설정 탭에서 API 키를 먼저 넣어 주세요');
   const system = aiSystem() + (systemExtra ? '\n' + systemExtra : '');
@@ -2879,27 +2908,35 @@ async function aiCall(user, systemExtra, history){   // history: [{q, a}] 앞선
   const maxTok = AI.len==='long' ? 1500 : 900;
   let res, j;
   if (AI.provider === 'gemini'){
-    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI.model)}:generateContent?key=${encodeURIComponent(AI.key)}`, { method:'POST', headers:{ 'Content-Type':'application/json' },
+    res = await aiFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI.model)}:generateContent?key=${encodeURIComponent(AI.key)}`, { method:'POST', headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[...turns.map(t => ({ role: t.role==='assistant' ? 'model' : 'user', parts:[{ text: t.text }] })), { role:'user', parts:[{ text: user }] }], generationConfig:{ maxOutputTokens: maxTok * 2 } }) });
     j = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && j.error.message));
-    { const out = ((j.candidates||[])[0]?.content?.parts||[]).map(p => p.text||'').join('').trim() || '(빈 응답)'; aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
+    { const c = (j.candidates||[])[0];
+      const out = ((c?.content?.parts)||[]).map(p => p.text||'').join('').trim();
+      if (!out) throw new Error(aiEmptyMsg(c?.finishReason || j.promptFeedback?.blockReason));
+      aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
   }
   if (AI.provider === 'claude'){
-    res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key': AI.key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+    res = await aiFetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key': AI.key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
       body: JSON.stringify({ model: AI.model, max_tokens: maxTok, system, messages:[...turns.map(t => ({ role: t.role, content: t.text })), { role:'user', content: user }] }) });
     j = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && j.error.message));
-    { const out = (j.content||[]).filter(c => c.type==='text').map(c => c.text).join('').trim() || '(빈 응답)'; aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
+    { const out = (j.content||[]).filter(c => c.type==='text').map(c => c.text).join('').trim();
+      if (!out) throw new Error(aiEmptyMsg(j.stop_reason));
+      aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
   }
   // OpenAI 호환 (DeepSeek, OpenAI, 기타)
   const base = AI.base || 'https://api.openai.com/v1';
   const body = { model: AI.model, messages:[{ role:'system', content: system }, ...turns.map(t => ({ role: t.role, content: t.text })), { role:'user', content: user }] };
   if (/openai\.com/.test(base)) body.max_completion_tokens = maxTok; else body.max_tokens = maxTok;
-  res = await fetch(`${base}/chat/completions`, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + AI.key }, body: JSON.stringify(body) });
+  res = await aiFetch(`${base}/chat/completions`, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + AI.key }, body: JSON.stringify(body) });
   j = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && (j.error.message || j.error)));
-  { const out = ((j.choices||[])[0]?.message?.content || '').trim() || '(빈 응답)'; aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
+  { const ch = (j.choices||[])[0];
+    const out = (ch?.message?.content || '').trim();
+    if (!out) throw new Error(aiEmptyMsg(ch?.finish_reason));
+    aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
 }
 // 지금 보고 있는 것(단어·문장·문법)을 질문에 같이 보내기 위한 문맥
 let aiCtx = null;   // { key, label, text, quick:[{label, q}] }
