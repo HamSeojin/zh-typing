@@ -450,6 +450,8 @@ body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .wr-ko{font-size:19px;line-height:1.5;margin:6px 0 2px}
 .wr-in{width:100%;box-sizing:border-box;font:inherit;font-family:var(--hanzi);font-size:20px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:64px}
 .wr-in:focus{outline:2px solid var(--accent);outline-offset:1px}
+.wr-day{font-size:12px;color:var(--ink-2);letter-spacing:.04em;margin:10px 0 2px;font-weight:600}
+.wr-day:first-child{margin-top:0}
 .wr-log{padding:9px 2px;border-top:1px solid var(--line);font-size:13px;cursor:pointer}
 .wr-log-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .wr-mine{font-family:var(--hanzi);font-size:16px;margin-top:2px}
@@ -965,7 +967,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0914.2329</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0915.1230</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -1203,6 +1205,11 @@ details.more summary::-webkit-details-marker{display:none}
       <p id="aiStatus" style="margin:6px 0 0;font-size:13px;color:var(--ink-2)"></p>
       <p id="aiUsage" style="margin:2px 0 0;font-size:12px;color:var(--ink-2)"></p>
     </div>
+    <h3>저장 공간</h3>
+    <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">기록은 이 브라우저 안에 저장돼요. 한 사이트가 쓸 수 있는 공간은 보통 5MB 정도이고, 꽉 차면 새 기록이 저장되지 않아요.</p>
+    <div id="storeBox"></div>
+    <div class="dataops"><button class="btn small" id="btnStoreTrim">오래된 기록 정리…</button></div>
+
     <h3>백업 · 복원</h3>
     <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">모든 기록은 이 기기에 저장돼요. 파일로 저장해 두면 기기를 바꿔도 불러올 수 있어요(불러오기는 지금 기록과 합쳐짐).</p>
     <div class="dataops">
@@ -1378,6 +1385,13 @@ details.more summary::-webkit-details-marker{display:none}
 <section class="screen pushed" data-screen="write" data-parent="learn" hidden>
   <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">작문 연습</b><span class="tb-right" id="wrTop"></span></div>
   <div id="wrBox"></div>
+</section>
+
+<section class="screen pushed" data-screen="wrlog" data-parent="write" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">작문 기록</b><span class="tb-right" id="wrLogTop"></span></div>
+  <div class="tagbar" id="wrLogFilters"></div>
+  <div class="search"><input id="wrLogQ" placeholder="뜻·한자로 찾기" autocapitalize="off"></div>
+  <div id="wrLogList"></div>
 </section>
 
 <section class="screen pushed" data-screen="read" data-parent="learn" hidden>
@@ -1626,10 +1640,56 @@ const BY_ID = new Map(WORDS.map(w => [w.id, w]));
 
 /* ── localStorage: 브라우저가 제공하는 작은 저장 공간(키-값). 새로고침해도 남음.
       다만 시크릿 창 등에서는 막힐 수 있어 항상 try/catch 로 감싼다. ── */
+/* 브라우저가 한 사이트에 주는 저장 공간은 보통 5MB 남짓이고, 꽉 차면 localStorage.setItem 이 예외를 던진다.
+   예전에는 그 예외를 그냥 삼켜서 저장이 조용히 실패했다(진도가 안 남는데 아무 표시도 없음).
+   이제는 잡아서 ① 오래된 기록부터 자동으로 줄이고 ② 다시 저장해 보고 ③ 그래도 안 되면 사용자에게 알린다. */
+let storeFull = false;
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
+  set(k, v){
+    const text = JSON.stringify(v);
+    try{ localStorage.setItem(k, text); storeFull = false; }
+    catch(e){
+      const freed = storeTrim();
+      let ok = false;
+      try{ localStorage.setItem(k, text); ok = true; storeFull = false; }catch(e2){}
+      if (ok && freed) showToast(`저장 공간이 부족해 오래된 기록 ${freed}건을 정리했어요`);
+      else if (!storeFull){ storeFull = true; showToast('저장 공간이 꽉 찼어요 — 설정 → 저장 공간에서 정리해 주세요'); }
+    }
+    if (SYNC_KEYS.has(k)) scheduleSync();
+  }
 };
+/* 오래된 것부터 덜어내기 — 학습 진도·단어장처럼 되돌릴 수 없는 것은 건드리지 않고, 다시 만들 수 있는 기록만 줄인다 */
+function storeTrim(){
+  let freed = 0;
+  const half = (arr) => { const cut = Math.max(1, Math.floor(arr.length / 2)); arr.splice(0, cut); freed += cut; };
+  try{
+    const w = store.get('zh.write', null);
+    if (w && (w.recent || []).length > 20){ half(w.recent); localStorage.setItem('zh.write', JSON.stringify(w)); }
+    const t = store.get('zh.typing', null);
+    if (t && t.length > 10){ half(t); localStorage.setItem('zh.typing', JSON.stringify(t)); }
+    const n = store.get('zh.ai_notes', null);
+    if (n){ for (const k of Object.keys(n)){ if ((n[k] || []).length > 6) half(n[k]); } localStorage.setItem('zh.ai_notes', JSON.stringify(n)); }
+  }catch(e){}
+  return freed;
+}
+/* 이 앱이 쓰는 저장 공간 (바이트) — 항목별로 굵직하게 */
+function storeUsage(){
+  const parts = [];
+  let total = 0;
+  for (let i = 0; i < localStorage.length; i++){
+    const k = localStorage.key(i); if (!k || !k.startsWith('zh.')) continue;
+    const size = (k.length + (localStorage.getItem(k) || '').length) * 2;   // UTF-16 기준 대략치
+    total += size; parts.push([k, size]);
+  }
+  parts.sort((a, b) => b[1] - a[1]);
+  return { total, parts };
+}
+const STORE_LABEL = { 'zh.progress':'학습 진도', 'zh.ko':'한국어 뜻', 'zh.ko_t':'뜻 수정 시각', 'zh.ai_notes':'AI 노트', 'zh.write':'작문 기록',
+  'zh.typing':'타자 기록', 'zh.history':'일별 기록', 'zh.stats':'약점 분석', 'zh.exams':'모의고사 결과', 'zh.exam_wrong':'모의고사 오답',
+  'zh.fav':'내 단어장', 'zh.custom':'직접 넣은 단어', 'zh.sent_custom':'내 문장', 'zh.read':'읽기 기록', 'zh.gram_done':'문법 학습',
+  'zh.idi_done':'성어 학습', 'zh.idi_stat':'성어 기록', 'zh.fav_s':'담은 문장', 'zh.fav_i':'담은 성어', 'zh.units':'과 설정', 'zh.settings':'설정' };
+function fmtBytes(n){ return n < 1024 ? n + 'B' : n < 1024 * 1024 ? (n / 1024).toFixed(0) + 'KB' : (n / 1048576).toFixed(1) + 'MB'; }
 const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes','zh.write','zh.talk_lv','zh.write_lv','zh.write_mode']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
@@ -2479,10 +2539,11 @@ function go(name){
   if (name === 'idiom') loadExt('idioms').then(() => { renderIdiList(); renderIdiMine(); if (idiOpenQ){ const q = idiOpenQ; idiOpenQ = ''; $('idiSeg').querySelector('[data-seg=idlist]').click(); const inp = $('idiList').querySelector('.qsearch'); if (inp){ inp.value = q; inp.oninput(); } } renderIdiQuiz(); });
   if (name === 'hanzi') loadExt('hanzi').then(() => { renderHzRad(); renderHzMea(); renderHzDec(); });   // 시트/홈에서 만들어져 아직 안 들려준 카드는 세션 화면에 들어올 때 들려줌
   if (name === 'talk') renderTalk();
-  if (name === 'write') renderWrite();
+  if (name === 'write'){ renderWrite(); wrPrefetch(); }
+  if (name === 'wrlog') renderWrLog();
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); requestAnimationFrame(() => mqFit($('aiNoteList'))); }
-  if (name === 'more') renderStats();
+  if (name === 'more'){ renderStats(); renderStore(); }
   if (name === 'read') renderReadList();
   if (name === 'gram') renderGramList();
   if (name === 'exam') renderExamHome();
@@ -2509,7 +2570,7 @@ document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e
   const b = e.target.closest('[data-seg]'); if (!b) return;
   seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b));
   const scr = seg.closest('.screen'); scr.querySelectorAll('.segpane').forEach(p => p.hidden = p.dataset.pane !== b.dataset.seg);
-  if (b.dataset.seg === 'all') renderList(); if (b.dataset.seg === 'stats') renderStats(); if (b.dataset.seg === 'ai'){ renderAiNotes(); requestAnimationFrame(() => mqFit($('aiNoteList'))); }
+  if (b.dataset.seg === 'all') renderList(); if (b.dataset.seg === 'stats') renderStats(); if (b.dataset.seg === 'settings') renderStore(); if (b.dataset.seg === 'ai'){ renderAiNotes(); requestAnimationFrame(() => mqFit($('aiNoteList'))); }
 }));
 // 학습 시작 시트
 function openStartSheet(kind){
@@ -2567,6 +2628,26 @@ function applyZoom(){ document.documentElement.style.setProperty('--zoom', SETTI
 applyZoom();
 function applyTheme(){ if (SETTINGS.theme) document.documentElement.dataset.theme = SETTINGS.theme; else delete document.documentElement.dataset.theme; }
 applyTheme();
+
+/* ── 저장 공간 표시 ── */
+function renderStore(){
+  const box = $('storeBox'); if (!box) return;
+  const { total, parts } = storeUsage();
+  const LIMIT = 5 * 1024 * 1024;
+  const pct = Math.min(100, Math.round(total / LIMIT * 100));
+  const rows = parts.filter(([, sz]) => sz > 2048).slice(0, 8);
+  box.innerHTML = `<div class="goal-row"><span>쓰는 중</span><b>${fmtBytes(total)} <small style="font-weight:400;color:var(--ink-2)">/ 약 5MB (${pct}%)</small></b></div>
+    <div class="uprog-bar" style="--p:${pct}%;margin-bottom:10px"></div>
+    <div class="lvprog">${rows.map(([k, sz]) => `<div class="row"><span>${STORE_LABEL[k] || k.replace('zh.','')}</span><div class="track"><div class="fill" style="width:${Math.round(sz/total*100)}%"></div></div><span class="num">${fmtBytes(sz)}</span></div>`).join('')}</div>
+    ${pct >= 80 ? '<p style="font-size:12px;color:var(--bad);margin:10px 0 0">공간이 얼마 남지 않았어요. 아래에서 정리하거나, 백업해 두고 학습 기록을 초기화해 주세요.</p>' : ''}`;
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#btnStoreTrim')) return;
+  if (!confirm('AI 노트·작문 기록·타자 기록에서 오래된 것부터 절반을 지웁니다.\n학습 진도와 단어장은 그대로예요. 계속할까요?')) return;
+  const freed = storeTrim();
+  showToast(freed ? `오래된 기록 ${freed}건을 정리했어요` : '정리할 만큼 쌓인 기록이 없어요');
+  renderStore();
+});
 
 // 데이터 내보내기/가져오기 — JSON 텍스트를 칸에 보여주고 복사해 옮기는 방식
 $('btnExport').onclick = () => { $('io').value = JSON.stringify({ ...snapshot(), exported: new Date().toISOString() }); showToast('아래 칸에 표시됨 — 복사해서 보관하세요'); };
@@ -2933,7 +3014,7 @@ async function aiAsk(q){
     const hist = (AI_NOTES[aiCtx.key] || []).filter(h => !h.del && h.t > (AI_FRESH[aiCtx.key] || 0)).slice(-3).map((h, i, arr) => ({ q: i === 0 ? `${aiCtx.text}\n\n[질문] ${h.q}` : h.q, a: h.a }));
     const a = await aiCall(hist.length ? q : `${aiCtx.text}\n\n[질문] ${q}`, '', hist);
     el.innerHTML = aiFmt(a, true);
-    (AI_NOTES[aiCtx.key] = AI_NOTES[aiCtx.key] || []).push({ q, a, t: Date.now() }); if (AI_NOTES[aiCtx.key].length > 30) AI_NOTES[aiCtx.key].shift(); store.set('zh.ai_notes', AI_NOTES);
+    (AI_NOTES[aiCtx.key] = AI_NOTES[aiCtx.key] || []).push({ q, a, t: Date.now() }); if (AI_NOTES[aiCtx.key].length > 200) AI_NOTES[aiCtx.key].shift(); store.set('zh.ai_notes', AI_NOTES);
   }catch(e){ el.className = 'a err'; el.textContent = /(Failed to fetch|NetworkError|Load failed)/i.test(e.message) ? '서버에 연결하지 못했어요. 인터넷을 확인하거나, 이 서비스가 브라우저 직접 호출을 막는 경우(CORS)일 수 있어요.' : e.message; }
   $('btnAiSend').disabled = false; $('aiLog').scrollTop = $('aiLog').scrollHeight;
 }
@@ -3035,7 +3116,7 @@ function typTick(){
 function typFinish(){
   clearInterval(typ.tick);
   const min = Math.max(5/60, Math.min(typ.secs, (Date.now() - typ.start) / 1000) / 60), cpm = Math.round(typ.okChars / min), acc = typ.typed ? Math.round((1 - typ.wrong / Math.max(typ.typed, typ.wrong)) * 100) : 100;
-  TYPING.push({ t: Date.now(), mode: typ.mode, pool: typ.pool, secs: typ.secs, cpm, acc, n: typ.n, hints: typ.hints||0 }); if (TYPING.length > 50) TYPING.shift(); store.set('zh.typing', TYPING);
+  TYPING.push({ t: Date.now(), mode: typ.mode, pool: typ.pool, secs: typ.secs, cpm, acc, n: typ.n, hints: typ.hints||0 }); if (TYPING.length > 300) TYPING.shift(); store.set('zh.typing', TYPING);
   const best = Math.max(...TYPING.filter(r => r.mode === typ.mode).map(r => r.cpm));
   $('typRun').hidden = true; $('typResult').hidden = false;
   $('typResult').innerHTML = `<h2>타자 연습 결과</h2><div class="res-stats"><div><b>${cpm}</b><span>글자/분${cpm >= best ? ' · 최고!' : ` (최고 ${best})`}</span></div><div><b>${acc}%</b><span>정확도</span></div><div><b>${typ.n}</b><span>맞힌 항목</span></div></div>
@@ -3064,6 +3145,22 @@ function aiNoteLabel(key){   // 노트 묶음 제목: label(진한 줄) + sub(�
     return { label: `작문 · ${f ? String(f.q).replace(/^작문:\s*/, '') : ''}`, sub: `첨삭 ${arr.length}`, ctx: () => aiWriteCtx(key) }; }
   if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: pg.title, sub: '읽기', ctx: () => aiPassageCtx(pg) } : null; }
   return null;
+}
+/* 지금 풀고 있는 작문 문제를 문맥으로 AI 에게 묻기 — 첨삭 한 번으로 끝내지 않고 계속 파고들 수 있게 */
+function aiWrNowCtx(){
+  const text = `[작문 문제 — 이 한국어 뜻이 되도록 중국어로 쓰는 중] ${wr.ko}\n[참고 답안] ${wr.zh}${wr.py ? ' (' + wr.py + ')' : ''}\n[학습자 수준] HSK ${wr.lv}급`
+    + (wr.mine ? `\n[학습자가 쓴 중국어] ${wr.mine}` : '\n[학습자는 아직 쓰지 않았다 — 답을 통째로 알려 주지 말고 힌트만 줄 것]')
+    + (wr.fixed ? `\n[방금 받은 첨삭] ${wr.fixed}${wr.why ? ' / ' + wr.why : ''}` : '');
+  return { key: 'c' + wr.key, label: `작문 · ${wr.ko}`, text, quick: wr.mine ? [
+    { label: '왜 이렇게 고쳐?', q: '내 문장을 그렇게 고친 이유를 문법적으로 더 자세히 설명해 줘.' },
+    { label: '내 문장도 되나?', q: '내가 쓴 문장이 실제로 통할지, 통한다면 어떤 어감으로 들릴지 알려 줘.' },
+    { label: '참고 답안과 차이', q: '내 문장과 참고 답안의 차이를 하나씩 짚어 줘.' },
+    { label: '비슷한 문장 3개', q: '같은 문법을 쓰는 비슷한 한국어 문장 3개를 문제로 내 줘. 답은 마지막에 따로 적어 줘.' },
+  ] : [
+    { label: '어떤 문법을 써?', q: '이 뜻을 중국어로 쓰려면 어떤 문형·어순을 써야 하는지, 답은 빼고 방향만 알려 줘.' },
+    { label: '필요한 단어', q: '이 문장을 쓰는 데 필요한 단어들을 병음·뜻과 함께 알려 줘. 문장은 완성해 주지 마.' },
+    { label: '비슷한 예문 보여 줘', q: '이 뜻과 비슷한 상황에서 쓰는 중국어 예문 2개를 병음·뜻과 함께 보여 줘. 이 문제의 답은 알려 주지 마.' },
+  ] };
 }
 function aiWriteCtx(key){   // 작문 첨삭 노트를 문맥으로 이어서 묻기
   const arr = (AI_NOTES[key] || []).filter(n => !n.del), f = arr[0] || {};
@@ -4578,7 +4675,7 @@ async function talkSend(text, kick){
                    (!kick && o.fix && o.fix !== '-') && `${asking ? '답' : '교정'}: ${o.fix}`, o.hint && `힌트: ${o.hint}`].filter(Boolean).join('\n') || a;
     const note = { q: kick ? '(대화 시작)' : text, a: noteA, t: Date.now(), sit: talk.sit, lv: talk.lv };
     (AI_NOTES[talk.key] = AI_NOTES[talk.key] || []).push(note);
-    if (AI_NOTES[talk.key].length > 40) AI_NOTES[talk.key].shift();
+    if (AI_NOTES[talk.key].length > 300) AI_NOTES[talk.key].shift();
     store.set('zh.ai_notes', AI_NOTES);
     let fixHtml = '';
     if (!kick && o.fix && o.fix !== '-'){
@@ -4657,23 +4754,71 @@ function wrPick(){
 }
 
 /* AI 가 그 급수 단어로 새 한국어 문장을 지어 준다 — 기존 예문의 뜻이 아니라 진짜 작문이 되도록 */
-async function wrMakeAi(){
-  const lv = wrLv();
-  const seen = (WRITE_ST.recent || []).slice(-10).map(r => r.ko).filter(Boolean);
-  const a = await aiCall(`HSK ${lv}급 수준의 작문 문제 하나를 내 줘.`,
+/* AI 출제 — 한 번 부를 때 여러 문제를 받아 쌓아 두고, 지금 문제를 푸는 동안 다음 묶음을 미리 받아 둔다.
+   그래서 기다리는 건 사실상 첫 문제뿐이고, 호출 횟수도 1/3로 줄어 비용이 내려간다. */
+const WR_BATCH = 3;           // 한 호출로 받는 문제 수
+let wrQueue = [], wrFetching = null, wrQueueLv = 0;
+function wrParseProblems(a, lv){
+  const out = [];
+  // [한국어]로 시작하는 덩어리마다 하나씩 (모델이 [문제1] 같은 머리말을 붙여도 견딤)
+  for (const chunk of String(a).split(/(?=\[한국어\])/)){
+    const g = k => { const m = chunk.match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
+    const ko = g('한국어'), zh = g('중국어');
+    if (!ko || !zh) continue;
+    const kw = g('핵심단어');
+    const m = kw.match(/^([\u4e00-\u9fff]+)\s*(.*)$/);   // "朋友 péngyou" → 한자 + 병음
+    out.push({ key: 'x' + wrNorm(ko).slice(0, 14), ko, zh, py: g('병음'), lv, word: m ? { s: m[1], py: (m[2] || '').trim() } : null, ai: true });
+  }
+  return out;
+}
+async function wrFetchBatch(lv){
+  const seen = [...(WRITE_ST.recent || []).slice(-10).map(r => r.ko), ...wrQueue.map(x => x.ko)].filter(Boolean);
+  const a = await aiCall(`HSK ${lv}급 수준의 작문 문제 ${WR_BATCH}개를 내 줘.`,
     `너는 중국어 작문 문제 출제자다. 학습자 수준 HSK ${lv}급.
-그 급수까지의 단어만 써서, 일상에서 실제로 쓸 법한 한국어 문장 하나를 만들고 모범 중국어 번역을 붙여라.
-아래 네 칸 형식으로만 답한다. 다른 말 금지.
+그 급수까지의 단어만 써서, 일상에서 실제로 쓸 법한 한국어 문장을 ${WR_BATCH}개 만들고 각각 모범 중국어 번역을 붙여라.
+서로 다른 상황·문형으로 고르게 낸다.
+문제 하나마다 아래 네 줄만 적고, 문제 사이는 빈 줄로 나눈다. 번호나 다른 말은 쓰지 않는다.
 [한국어] (10~25자 정도의 자연스러운 한국어 문장 한 개)
 [중국어] (모범 번역)
 [병음] (성조 기호 포함)
-[핵심단어] (그 문장에서 가장 중요한 단어 하나, 한자만)` +
+[핵심단어] (그 문장에서 가장 중요한 단어 하나 — 한자 다음에 한 칸 띄고 병음. 예: 朋友 péngyou)` +
     (seen.length ? `\n\n[최근에 낸 문장 — 비슷한 것을 또 내지 말 것]\n${seen.join('\n')}` : ''));
-  const g = k => { const m = a.match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
-  const ko = g('한국어'), zh = g('중국어');
-  if (!ko || !zh) throw new Error('문제를 만들지 못했어요. 다시 눌러 주세요.');
-  const key = 'x' + wrNorm(ko).slice(0, 14);
-  return { key, ko, zh, py: g('병음'), lv, word: g('핵심단어') ? { s: g('핵심단어'), py: '' } : null, ai: true };
+  const list = wrParseProblems(a, lv);
+  if (!list.length) throw new Error('문제를 만들지 못했어요. 다시 눌러 주세요.');
+  return list;
+}
+/* 다음에 쓸 문제를 미리 받아 둔다 (기다리지 않음). 이미 받는 중이거나 넉넉하면 아무것도 안 함 */
+function wrPrefetch(){
+  const lv = wrLv();
+  if (wrQueueLv !== lv){ wrQueue = []; wrQueueLv = lv; }   // 급수를 바꾸면 쌓아 둔 것은 버린다
+  if (!AI.key || WR_MODE !== 'ai' || wrFetching || wrQueue.length >= 2) return;
+  wrFetching = wrFetchBatch(lv)
+    .then(list => { if (wrQueueLv === lv) wrQueue.push(...list); })
+    .catch(() => {})                                       // 미리 받기 실패는 조용히 넘긴다 (필요할 때 다시 시도)
+    .finally(() => { wrFetching = null; });
+}
+/* 실제로 한 문제가 필요할 때 — 쌓아 둔 게 있으면 즉시, 없으면 받는 중인 것을 기다린다 */
+async function wrMakeAi(){
+  const lv = wrLv();
+  if (wrQueueLv !== lv){ wrQueue = []; wrQueueLv = lv; }
+  if (!wrQueue.length){
+    if (wrFetching) await wrFetching;                      // 미리 받기가 진행 중이면 그것을 기다림
+    if (!wrQueue.length) wrQueue.push(...await wrFetchBatch(lv));
+  }
+  const next = wrQueue.shift();
+  wrPrefetch();                                            // 다음 것을 미리 받아 둔다
+  return next;
+}
+
+/* 핵심 단어의 병음 채우기: AI 가 적어 준 것 → 우리 단어장(BY_S) → 보조 사전(CC-CEDICT) 순.
+   보조 사전은 처음 쓸 때 한 번 받아 오므로, 늦게 도착하면 화면만 다시 그린다. */
+function wrFillPy(word){
+  if (!word || !word.s || word.py) return;
+  const w = BY_S.get(word.s);
+  if (w && w.py){ word.py = w.py; return; }
+  const d = EXT.dict && EXT.dict[word.s];
+  if (d){ word.py = d[0]; return; }
+  if (!EXT.dict) loadExt('dict').then(() => { const dd = EXT.dict && EXT.dict[word.s]; if (dd && wr && wr.word === word){ word.py = dd[0]; renderWrite(); } }).catch(() => {});
 }
 
 function wrHead(){
@@ -4681,10 +4826,11 @@ function wrHead(){
   const due = wrDueList().length;
   $('wrTop').textContent = (WRITE_ST.n ? `${WRITE_ST.n}문장 · ${pct}%` : '') + (due ? `${WRITE_ST.n ? ' · ' : ''}복습 ${due}` : '');
 }
-function wrLogRow(r, i){
+function wrLogAt(t){ return (WRITE_ST.recent || []).find(x => String(x.t) === String(t)); }
+function wrLogRow(r){
   const cls = r.v === '맞음' ? 'good' : r.v === '어색함' ? 'soso' : 'bad';
   const better = (r.v !== '맞음') ? (r.fix || r.zh || '') : '';
-  return `<div class="wr-log" data-wrlog="${i}">
+  return `<div class="wr-log" data-wrt="${r.t}">
     <div class="wr-log-h"><span class="wr-badge ${cls}">${r.v}</span> <span style="color:var(--ink-2)">${r.ko}</span></div>
     <div class="wr-mine${r.v === '맞음' ? '' : ' off'}">${tapHtml(r.mine || '')}</div>
     ${better ? `<div class="wr-fix">→ ${tapHtml(better)}</div>` : ''}
@@ -4692,12 +4838,13 @@ function wrLogRow(r, i){
       ${r.why ? `<div style="font-size:13px;margin-bottom:6px">${aiFmtRaw(r.why)}</div>` : '<div style="font-size:13px;color:var(--ink-2);margin-bottom:6px">AI 첨삭을 받지 않은 문장이에요.</div>'}
       ${r.zh && r.zh !== better ? `<div style="font-size:12px;color:var(--ink-2)">참고 답안</div><div style="font-family:var(--hanzi);font-size:16px">${tapHtml(r.zh)}</div>` : ''}
       ${r.py ? `<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${r.py}</div>` : ''}
-      <div class="dataops" style="margin-top:8px"><button class="btn small" data-wragain="${i}">이 문장 다시 쓰기</button><button class="btn small" data-wrsay="${i}"><i class="ic-spk"></i><span>듣기</span></button></div>
+      <div class="dataops" style="margin-top:8px"><button class="btn small" data-wragain="${r.t}">이 문장 다시 쓰기</button><button class="btn small" data-wrsay="${r.t}"><i class="ic-spk"></i><span>듣기</span></button></div>
     </div>
   </div>`;
 }
 function renderWrite(){
   wrHead();
+  if (wr && wr.word) wrFillPy(wr.word);
   if (!wr && WR_MODE === 'sent') wr = wrPick();
   const logs = (WRITE_ST.recent || []).slice(-8).reverse();
   const setup = `<div class="card">
@@ -4713,54 +4860,63 @@ function renderWrite(){
     <p class="hint" style="font-size:11.5px;color:var(--ink-2);margin:8px 0 0">${WR_MODE === 'ai' ? 'AI 가 그 급수 단어로 새 한국어 문장을 지어 줘요 — 암기가 아니라 진짜 작문 연습이 돼요.' : '외운 예문의 뜻이 문제로 나와요.'}</p>
   </div>`;
   let box;
-  if (wrBusy) box = '<div class="card"><span class="thinking">문제 만드는 중</span></div>';
+  if (wrBusy) box = '<div class="card"><span class="thinking">문제 만드는 중</span><p style="font-size:12px;color:var(--ink-2);margin:8px 0 0">첫 문제만 기다리면 돼요 — 다음 문제들은 푸는 동안 미리 받아 둡니다.</p></div>';
   else if (!wr && WR_MODE === 'ai') box = `<div class="card"><p style="color:var(--ink-2);margin:0 0 10px">${AI.key ? 'AI 가 낼 새 문장으로 시작해요.' : '설정 탭 → AI 선생님에서 API 키를 먼저 넣어 주세요.'}</p><button class="btn primary" id="btnWrSkip" style="width:100%">문제 받기</button></div>`;
   else if (!wr) box = '<div class="card"><p style="color:var(--ink-2)">이 급수에는 예문이 아직 없어요. 위에서 다른 급수를 골라 주세요.</p></div>';
   else box = `<div class="card">
     <div class="sh-label">이 뜻이 되도록 중국어로 써 보세요 <small style="font-weight:400">· ${wr.rev ? `복습 ${wr.n}번째 · ` : ''}HSK ${wr.lv}급</small></div>
     <div class="wr-ko">${wr.ko}</div>
-    ${wr.word ? `<div style="font-size:12px;color:var(--ink-2);margin-bottom:8px">핵심 단어: <b style="font-family:var(--hanzi);font-size:16px">${wr.word.s}</b> <span style="font-family:var(--mono)">${wr.word.py || ''}</span></div>` : '<div style="height:6px"></div>'}
+    ${wr.word ? `<div style="font-size:12px;color:var(--ink-2);margin-bottom:8px">핵심 단어: <b style="font-family:var(--hanzi);font-size:16px">${tapHtml(wr.word.s)}</b> <span style="font-family:var(--mono)">${wr.word.py || ''}</span> <small style="color:var(--ink-2)">눌러서 뜻 보기</small></div>` : '<div style="height:6px"></div>'}
     <textarea class="wr-in" id="wrIn" placeholder="중국어로 입력 (한자)" autocapitalize="off" autocorrect="off">${wr.mine || ''}</textarea>
     <div class="dataops" style="margin-top:10px">
       <button class="btn primary" id="btnWrSubmit" style="flex:1">제출</button>
+      <button class="btn icon" id="btnWrAsk" title="AI 에게 묻기"><i class="ic-ai"></i></button>
       <button class="btn" id="btnWrSkip">다른 문제</button>
     </div>
     <div class="wr-res" id="wrRes" hidden></div>
   </div>`;
   $('wrBox').innerHTML = setup + box +
-    (logs.length ? `<div class="card" style="margin-top:12px"><h3 class="sk-h">지난 문장 <small>눌러서 이유·참고 답안 보기</small></h3>${logs.map(wrLogRow).join('')}</div>` : '');
+    (logs.length ? `<div class="card" style="margin-top:12px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+        <h3 class="sk-h" style="margin:0 0 8px">지난 문장 <small>눌러서 이유·참고 답안 보기</small></h3>
+        <button class="btn small" data-go="wrlog" style="flex:0 0 auto">전체 기록 ›</button>
+      </div>${logs.map(wrLogRow).join('')}</div>` : '');
 }
 /* 다음 문제로 (AI 모드면 새로 지어 온다) */
 async function wrNext(){
-  if (WR_MODE !== 'ai' || wrDueList().length){ wr = wrPick(); renderWrite(); return; }
+  if (WR_MODE !== 'ai' || wrDueList().length){ wr = wrPick(); renderWrite(); wrPrefetch(); return; }
   if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
-  wr = null; wrBusy = true; renderWrite();
+  wr = null;
+  wrBusy = !wrQueue.length;          // 쌓아 둔 게 있으면 기다림이 없으므로 '만드는 중'을 띄우지 않는다
+  if (wrBusy) renderWrite();
   try{ wr = await wrMakeAi(); }
   catch(err){ showToast(err.message); }
   finally{ wrBusy = false; renderWrite(); }
 }
 $('wrBox').addEventListener('change', e => {
   const r = e.target.closest('input[name="wlv"]'); if (!r) return;
-  WR_LV = +r.value || 0; store.set('zh.write_lv', WR_LV);
+  WR_LV = +r.value || 0; store.set('zh.write_lv', WR_LV); wrQueue = [];   // 급수가 바뀌면 쌓아 둔 문제는 버린다
   if (wr && !wr.rev && !wr.mine) wr = null;   // 아직 손대지 않은 문제면 새 급수로 다시 뽑는다
-  renderWrite();
+  renderWrite(); wrPrefetch();
 });
 $('wrBox').addEventListener('click', async e => {
   const md = e.target.closest('[data-wrmode]');
-  if (md){ WR_MODE = md.dataset.wrmode; store.set('zh.write_mode', WR_MODE); if (!wr || !wr.mine) wr = null; renderWrite(); return; }
+  if (md){ WR_MODE = md.dataset.wrmode; store.set('zh.write_mode', WR_MODE); if (!wr || !wr.mine) wr = null; renderWrite(); wrPrefetch(); return; }
   if (e.target.closest('#btnWrSkip') || e.target.closest('#btnWrNext')){ wrNext(); return; }
   const say = e.target.closest('[data-wrsay]');
-  if (say){ const r = (WRITE_ST.recent || []).slice(-8).reverse()[+say.dataset.wrsay]; if (r) speak(r.fix || r.zh || r.mine); return; }
+  if (say){ const r = wrLogAt(say.dataset.wrsay); if (r) speak(r.fix || r.zh || r.mine); return; }
   const ag = e.target.closest('[data-wragain]');
-  if (ag){
-    const r = (WRITE_ST.recent || []).slice(-8).reverse()[+ag.dataset.wragain]; if (!r) return;
-    wr = { key: String(r.key || r.id), ko: r.ko, zh: r.zh, py: r.py || '', lv: r.lv || wrLv(), word: r.word || null, rev: true, n: (WRITE_ST.rev[String(r.key || r.id)] || {}).n || 1 };
-    renderWrite(); $('wrIn') && $('wrIn').focus(); return;
-  }
+  if (ag){ wrAgain(ag.dataset.wragain); return; }
   const lg = e.target.closest('.wr-log-h, .wr-mine, .wr-fix');
   if (lg && !e.target.closest('.tok')){ const w = lg.closest('.wr-log').querySelector('.wr-why'); w.hidden = !w.hidden; return; }
   const tk = e.target.closest('.tok'); if (tk && !e.target.closest('#wrIn')){ showLookup(tk); return; }
   if (e.target.closest('#btnWrSay')){ speak(wr.zh); return; }
+  if (e.target.closest('#btnWrAsk') || e.target.closest('#btnWrAsk2')){
+    if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
+    if (!wr){ showToast('문제를 먼저 받아 주세요'); return; }
+    const typed = $('wrIn'); if (typed && typed.value.trim()) wr.mine = typed.value.trim();
+    aiOpen(aiWrNowCtx()); return;
+  }
   if (e.target.closest('#btnWrSubmit')){
     const mine = $('wrIn').value.trim(); if (!mine){ showToast('중국어로 한 문장 써 보세요'); return; }
     wr.mine = mine;
@@ -4771,8 +4927,10 @@ $('wrBox').addEventListener('click', async e => {
       <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--hanzi);font-size:19px">${tapHtml(wr.zh)}</span><button class="btn icon" id="btnWrSay" title="듣기"><i class="ic-spk"></i></button></div>
       <div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${wr.py || ''}</div>
       <div class="dataops" style="margin-top:10px"><button class="btn primary" id="btnWrAi" style="flex:1"><i class="ic-ai"></i><span>AI 첨삭 받기</span></button><button class="btn" id="btnWrNext">다음 문제 ›</button></div>
+      <div class="dataops" style="margin-top:6px"><button class="btn small" id="btnWrAsk2" style="flex:1"><i class="ic-ai"></i><span>더 물어보기</span></button></div>
       <div id="wrAiRes" style="margin-top:10px"></div>`;
     if (same && !wr.counted){ wr.counted = true; wrRecordKeep('맞음'); }
+    wrPrefetch();
     return;
   }
   if (e.target.closest('#btnWrAi')){
@@ -4795,18 +4953,66 @@ $('wrBox').addEventListener('click', async e => {
         ${diff && diff !== '같음' ? `<div style="font-size:13px;color:var(--ink-2);margin-top:4px">${aiFmtRaw(diff)}</div>` : ''}`;
       const nk = 'c' + wr.key;
       (AI_NOTES[nk] = AI_NOTES[nk] || []).push({ q: `작문: ${wr.ko}`, a: [`내 문장: ${wr.mine}`, fixed && `고친 문장: ${fixed}`, why, diff && diff !== '같음' && diff].filter(Boolean).join('\n'), t: Date.now() });
-      if (AI_NOTES[nk].length > 20) AI_NOTES[nk].shift();
+      if (AI_NOTES[nk].length > 100) AI_NOTES[nk].shift();
       store.set('zh.ai_notes', AI_NOTES);
+      wr.fixed = fixed; wr.why = why;
       if (wr.counted) wrUpdateLast(v, fixed, why + (diff && diff !== '같음' ? '\n' + diff : ''));
       else { wr.counted = true; wrRecordKeep(v, fixed, why + (diff && diff !== '같음' ? '\n' + diff : '')); }
     }catch(err){ out.innerHTML = `<span style="color:var(--bad);font-size:13px">${err.message}</span>`; }
   }
 });
+/* 기록에 있는 문장을 다시 문제로 꺼낸다 (작문 화면·작문 기록 화면 양쪽에서 씀) */
+function wrAgain(t){
+  const r = wrLogAt(t); if (!r) return;
+  const k = String(r.key || r.id);
+  wr = { key: k, ko: r.ko, zh: r.zh, py: r.py || '', lv: r.lv || wrLv(), word: r.word || null, rev: true, n: (WRITE_ST.rev[k] || {}).n || 1 };
+  go('write'); renderWrite(); const inp = $('wrIn'); if (inp) inp.focus();
+}
+
+/* ── 작문 기록 화면: 푼 문장을 전부 모아 보고, 상태로 거르고, 찾아서 다시 쓴다 ── */
+let wrLogFilter = 'all', wrLogQ = '';
+function renderWrLog(){
+  const all = (WRITE_ST.recent || []).slice().reverse();
+  const cnt = { all: all.length, bad: all.filter(r => r.v !== '맞음').length, due: Object.keys(WRITE_ST.rev).length, good: all.filter(r => r.v === '맞음').length };
+  $('wrLogFilters').innerHTML = [['all',`전체 ${cnt.all}`],['bad',`틀림·어색 ${cnt.bad}`],['good',`맞음 ${cnt.good}`],['due',`복습 대기 ${cnt.due}`]]
+    .map(([k,l]) => `<button data-wf="${k}" aria-selected="${wrLogFilter===k}">${l}</button>`).join('');
+  const q = wrLogQ.trim().toLowerCase();
+  const rows = all.filter(r => {
+    if (wrLogFilter === 'bad' && r.v === '맞음') return false;
+    if (wrLogFilter === 'good' && r.v !== '맞음') return false;
+    if (wrLogFilter === 'due' && !WRITE_ST.rev[String(r.key || r.id)]) return false;
+    if (!q) return true;
+    return [r.ko, r.zh, r.mine, r.fix, r.why].filter(Boolean).join(' ').toLowerCase().includes(q);
+  });
+  const pct = WRITE_ST.n ? Math.round(WRITE_ST.ok / WRITE_ST.n * 100) : 0;
+  $('wrLogTop').textContent = WRITE_ST.n ? `${WRITE_ST.n}문장 · ${pct}%` : '';
+  // 날짜로 묶어 보여 준다 (언제 뭘 틀렸는지가 한눈에 들어오게)
+  let out = '', day = '';
+  for (const r of rows){
+    const d = aiWhen(r.t);
+    if (d !== day){ day = d; out += `<div class="wr-day">${d}</div>`; }
+    out += wrLogRow(r);
+  }
+  $('wrLogList').innerHTML = rows.length
+    ? `<div class="card">${out}</div>`
+    : `<div class="card"><p style="color:var(--ink-2);margin:0">${all.length ? '조건에 맞는 문장이 없어요.' : '아직 쓴 문장이 없어요. 작문 연습에서 한 문장 써 보세요.'}</p></div>`;
+}
+$('wrLogFilters').addEventListener('click', e => { const b = e.target.closest('[data-wf]'); if (!b) return; wrLogFilter = b.dataset.wf; renderWrLog(); });
+$('wrLogQ').addEventListener('input', e => { wrLogQ = e.target.value; renderWrLog(); });
+$('wrLogList').addEventListener('click', e => {
+  const say = e.target.closest('[data-wrsay]');
+  if (say){ const r = wrLogAt(say.dataset.wrsay); if (r) speak(r.fix || r.zh || r.mine); return; }
+  const ag = e.target.closest('[data-wragain]'); if (ag){ wrAgain(ag.dataset.wragain); return; }
+  const tk = e.target.closest('.tok'); if (tk){ showLookup(tk); return; }
+  const lg = e.target.closest('.wr-log-h, .wr-mine, .wr-fix');
+  if (lg){ const w = lg.closest('.wr-log').querySelector('.wr-why'); w.hidden = !w.hidden; }
+});
+
 /* 기록 + 복습 큐 갱신 (첨삭 결과를 남긴 채로 — 화면을 다시 그리지 않는다) */
 function wrRecordKeep(verdict, fixed, why){
   WRITE_ST.n++; if (verdict === '맞음') WRITE_ST.ok++;
   (WRITE_ST.recent = WRITE_ST.recent || []).push({ key: wr.key, id: +wr.key || 0, ko: wr.ko, zh: wr.zh, py: wr.py || '', lv: wr.lv, word: wr.word || null, mine: wr.mine, fix: fixed || '', why: why || '', v: verdict, t: Date.now() });
-  if (WRITE_ST.recent.length > 30) WRITE_ST.recent.shift();
+  if (WRITE_ST.recent.length > 1000) WRITE_ST.recent.shift();   // 넉넉히 — 공간이 정말 모자라면 storeTrim 이 알아서 줄인다
   wrSchedule(verdict, fixed, why);
   wrSave(); wrHead();
 }
