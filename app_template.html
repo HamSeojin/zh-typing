@@ -401,6 +401,42 @@ body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
   .koedit{display:none}#quizCard.show-ko .koedit{display:flex;margin-top:8px;padding-top:8px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* 회화 롤플레이 · 작문 연습 */
+.tkb{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--card)}
+.tkb.me{background:var(--good-bg);border-color:color-mix(in srgb,var(--accent) 35%,var(--line));margin-left:auto;max-width:86%}
+.tkb.ai{margin-right:auto;max-width:92%}
+.tkb .tz{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.tkb .zt{font-family:var(--hanzi);font-size:20px;line-height:1.5}
+.tkb .tp{font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:3px}
+.tkb .tko{font-size:14px;color:var(--ink-2);margin-top:2px}
+.tfix{font-size:13px;margin:-2px 0 8px;padding:7px 10px;border-radius:10px;background:var(--paper);border:1px dashed var(--line)}
+.tfix.ok{color:var(--good);border-style:solid;border-color:color-mix(in srgb,var(--good) 30%,var(--line))}
+.talk-in{display:flex;gap:6px;align-items:center;margin-top:4px}
+.talk-in input{flex:1;min-width:0;font:inherit;font-family:var(--hanzi);font-size:18px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+.talk-in input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.talk-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.sitgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sitgrid button{font:inherit;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);cursor:pointer}
+.sitgrid button b{display:block;font-size:15px}
+.sitgrid button small{display:block;font-size:11.5px;color:var(--ink-2);margin-top:2px}
+.sitgrid button[aria-pressed="true"]{border-color:var(--accent);background:var(--good-bg)}
+.wr-ko{font-size:19px;line-height:1.5;margin:6px 0 2px}
+.wr-in{width:100%;box-sizing:border-box;font:inherit;font-family:var(--hanzi);font-size:20px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:64px}
+.wr-in:focus{outline:2px solid var(--accent);outline-offset:1px}
+.wr-log{padding:9px 2px;border-top:1px solid var(--line);font-size:13px;cursor:pointer}
+.wr-log-h{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.wr-mine{font-family:var(--hanzi);font-size:16px;margin-top:2px}
+.wr-mine.off{color:var(--ink-2);text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:1px}
+.wr-fix{font-family:var(--hanzi);font-size:17px;color:var(--good);margin-top:2px}
+.wr-why{margin-top:8px;padding:8px 10px;border-radius:9px;background:var(--paper);cursor:auto}
+.wr-res{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.wr-badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;margin-bottom:6px}
+.wr-badge.good{background:var(--good-bg);color:var(--good)}
+.wr-badge.soso{background:#fdf3d8;color:#8a6d1f}
+.wr-badge.bad{background:var(--bad-bg);color:var(--bad)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .wr-badge.soso{background:#3a3420;color:#e2c766}}
+:root[data-theme=dark] .wr-badge.soso{background:#3a3420;color:#e2c766}
+@media (max-width:480px){.sitgrid{grid-template-columns:1fr}.tkb .zt{font-size:19px}}
 .loading{position:fixed;inset:0;background:var(--paper);display:flex;align-items:center;justify-content:center;z-index:999}
 .loading-box{text-align:center;color:var(--ink-2);font-size:14px}
 .loading-hz{font-family:'Noto Serif SC',serif;font-size:56px;color:var(--accent);margin-bottom:8px}
@@ -550,6 +586,9 @@ body{word-break:keep-all;overflow-wrap:break-word}
 @keyframes mqslide{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(var(--mqx,0))}}
 @media (prefers-reduced-motion:reduce){.notes .nctx b.scroll .mq,.notes .nctx-sub.scroll .mq{animation:none}.notes .nctx b,.notes .nctx-sub{text-overflow:ellipsis}}
 .notes .nctx button{margin-left:auto;flex:0 0 auto}
+.notes .nctx.fold{cursor:pointer;user-select:none}
+.notes .nctx.fold .caret{font-size:12px;color:var(--ink-2)}
+.notes .nctx-when{flex:0 0 auto;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .notes .n{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--card);cursor:pointer}
 .notes .n.hlmode{cursor:default}
 .notes .n:not(.open) .a::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1.6em;background:linear-gradient(transparent,var(--card))}   /* 접혀 있을 때 아래를 흐리게 — 더 있다는 표시 */
@@ -949,6 +988,8 @@ details.more summary::-webkit-details-marker{display:none}
     <button class="mcard" data-go="phrase"><span class="mi">话</span><b>회화 표현</b><small>자막 표현 1,100 · 듣고 뜻 고르기</small></button>
     <button class="mcard" data-go="idiom"><span class="mi">成</span><b>성어</b><small>자주 쓰는 600 · 뜻·예문 · 퀴즈</small></button>
     <button class="mcard" data-go="typing"><span class="mi">打</span><b>타자 연습</b><small>학습한 단어로 타자 드릴</small></button>
+    <button class="mcard" data-go="talk"><span class="mi">说</span><b>회화 롤플레이</b><small>AI가 상대역 · 말하기·교정</small></button>
+    <button class="mcard" data-go="write"><span class="mi">写</span><b>작문 연습</b><small>한국어 → 중국어 · AI 첨삭</small></button>
   </div></div>
 </section>
 
@@ -1005,6 +1046,7 @@ details.more summary::-webkit-details-marker{display:none}
       <div class="ainote-top"><h3 class="sk-h" style="margin:0">AI 문답 노트</h3><button class="btn primary small" id="btnAiFree">＋ 새 질문</button></div>
       <input id="aiNoteQ" type="search" placeholder="노트 검색 (질문 대상·질문·답변·메모)" class="ainote-q">
       <div class="seg small" id="aiNoteFilters"></div>
+      <div class="tagbar" id="aiNoteKinds"></div>
       <div id="aiNoteList" class="notes"></div>
       <details class="more"><summary>내보내기</summary>
         <div class="dataops"><button class="btn" id="btnAiNoteCopy">전체 복사</button><button class="btn" id="btnAiNoteFile">파일로 저장 (.md)</button></div>
@@ -1083,7 +1125,6 @@ details.more summary::-webkit-details-marker{display:none}
     <label class="row"><span>테마</span><select id="optTheme"><option value="">시스템</option><option value="light">밝게</option><option value="dark">어둡게</option></select></label>
     <h3>발음</h3>
     <label class="row"><span>문제가 나올 때 자동 재생</span><input type="checkbox" id="optAutoSpeak"></label>
-    <label class="row"><span>미리 만든 음성(mp3) 우선<small id="mp3State">있으면 브라우저 음성보다 먼저 재생</small></span><input type="checkbox" id="optMp3"></label>
     <label class="row"><span>브라우저 음성<small id="ttsState"></small></span><select id="optVoice"></select></label>
     <label class="row"><span>속도 <span id="rateVal">0.9</span></span><input type="range" id="optRate" min="0.5" max="1.3" step="0.1" value="0.9"></label>
     <h3>학습</h3>
@@ -1294,6 +1335,24 @@ details.more summary::-webkit-details-marker{display:none}
 </section>
 
 <!-- ═══════════ 읽기 ═══════════ -->
+<section class="screen pushed" data-screen="talk" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">회화 롤플레이</b><span class="tb-right" id="talkTop"></span></div>
+  <div id="talkSetup"></div>
+  <div id="talkPlay" hidden>
+    <div id="talkLog"></div>
+    <div class="card" style="padding:10px 12px">
+      <div class="talk-in"><input id="talkQ" placeholder="중국어로 답해 보세요"><button class="btn icon" id="btnTalkMic" title="말해서 답하기"><i class="ic-mic"></i></button><button class="btn primary" id="btnTalkSend">보내기</button></div>
+      <div class="talk-acts"><button class="btn small" id="btnTalkHint">힌트</button><button class="btn small" id="btnTalkEnd">끝내고 총평</button><button class="btn small" id="btnTalkNew">다른 상황</button></div>
+      <p class="hint" style="font-size:11.5px;color:var(--ink-2);margin:8px 0 0">한국어로 물어도 돼요 ("이거 어떻게 말해?"). 상대 말의 한자를 누르면 뜻이 떠요.</p>
+    </div>
+  </div>
+</section>
+
+<section class="screen pushed" data-screen="write" data-parent="learn" hidden>
+  <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">작문 연습</b><span class="tb-right" id="wrTop"></span></div>
+  <div id="wrBox"></div>
+</section>
+
 <section class="screen pushed" data-screen="read" data-parent="learn" hidden>
   <div class="topbar"><button class="back" data-back aria-label="뒤로">‹</button><b class="title">읽기</b></div>
   <div id="readList">
@@ -1526,7 +1585,7 @@ const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if (SYNC_KEYS.has(k)) scheduleSync(); }
 };
-const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes']);
+const SYNC_KEYS = new Set(['zh.progress','zh.ko','zh.ko_t','zh.units','zh.history','zh.fav','zh.custom','zh.custom_del','zh.stats','zh.read','zh.fav_s','zh.fav_i','zh.sub_fix','zh.ai_prompt','zh.sent_custom','zh.idi_done','zh.idi_stat','zh.gram_done','zh.exams','zh.exam_wrong','zh.typing','zh.ai_notes','zh.write','zh.talk_lv','zh.write_lv','zh.write_mode']);
 // 약점 분석용 기록: 모드별 정답률, 성조별 정답률, 헷갈린 짝(정답 단어 → 대신 입력한 단어 → 횟수)
 const STATS = Object.assign({ mode:{}, tone:{}, confuse:{} }, store.get('zh.stats', {}));
 const READ_DONE = store.get('zh.read', {});   // 읽은 글 { id: {acc, date, t} }
@@ -1564,7 +1623,7 @@ function mineWords(){ return [...Object.keys(FAV).filter(k => FAV[k] > 0).map(k 
 const PROGRESS = store.get('zh.progress', {});  // { "12": {box:2, due:<ms>, c:3, w:1} }
 const SETTINGS = Object.assign({
   mode:'hanzi', showHanzi:false, showPinyin:false, showKo:true, showEn:true, showTrad:false,
-  autoSpeak:false, voice:'', rate:0.9, mp3:true, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
+  autoSpeak:false, voice:'', rate:0.9, order:'freq', theme:'', levels:[1], unitSize:20, unit:null, zoom:'1', study:'test', outline:true, goal:'30'
 }, store.get('zh.settings', {}));
 // 날짜 열쇠는 '기기의 현지 날짜'. (전에는 toISOString → 세계 표준시(UTC) 날짜라 한국에서는 아침 9시에 하루가 바뀌어 오늘 숫자가 0으로 돌아갔음)
 function localDay(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
@@ -1776,49 +1835,9 @@ function loadVoices(){
   if (SETTINGS.voice && voices.some(v=>v.name===SETTINGS.voice)) optVoice.value = SETTINGS.voice;
   ttsState.textContent = voices.length ? `중국어 음성 ${voices.length}개` : '⚠ 중국어 음성 없음 — OS 언어팩 설치 필요';
 }
-/* ── 미리 만든 발음 mp3 (make_audio.py 로 생성한 audio/ 폴더) ──
-   audio/index.json: { w: { 단어id: [파일번호, 시작초, 길이초] }, s: { 단어id(예문): [...] } }
-   한 파일에 150개가 이어 붙어 있어(스프라이트) 해당 구간만 재생한다. 파일이 없거나(claude.ai 게시본 등) 재생이 막히면 브라우저 TTS 로 넘어감 */
-let AUDIO = null, audioTried = false, clip = null; const audioEls = {}; let SENT_ID_BY_ZH = null;
-function loadAudioIndex(){
-  if (audioTried) return; audioTried = true;
-  if (!/^https?:/.test(location.protocol) || location.hostname.endsWith('claude.ai')) return;
-  fetch('audio/index.json').then(r => r.ok ? r.json() : null).then(j => { AUDIO = j; updateMp3State(); }).catch(() => {});
-}
-function updateMp3State(){ const n = AUDIO ? Object.keys(AUDIO.w||{}).length : 0, m = AUDIO ? Object.keys(AUDIO.s||{}).length : 0; if (n) $('mp3State').textContent = `🎵 단어 ${n.toLocaleString()}개${m?` · 문장 ${m.toLocaleString()}개`:''} 준비됨 (${AUDIO.voice||'edge-tts'})`; }
-function clipFor(text){
-  if (!AUDIO || SETTINGS.mp3 === false) return null;
-  const w = BY_S.get(text); if (w && AUDIO.w && AUDIO.w[w.id]) return ['w', w.id];
-  if (AUDIO.s){ if (!SENT_ID_BY_ZH){ SENT_ID_BY_ZH = new Map(); for (const [id, st] of Object.entries(SENTS)) SENT_ID_BY_ZH.set(st.zh, id); } const sid = SENT_ID_BY_ZH.get(text); if (sid && AUDIO.s[sid]) return ['s', sid]; }
-  return null;
-}
-function stopClip(){ if (clip){ clip.a.pause(); clearTimeout(clip.timer); clip.a.removeEventListener('timeupdate', clip.onT); clip = null; } }
-function playClip(kind, id, fallback){
-  const [no, start, len] = AUDIO[kind][id]; const src = `audio/${kind}-${String(no).padStart(3,'0')}.mp3`;
-  let a = audioEls[src]; if (!a){ a = new Audio(src); a.preload = 'auto'; audioEls[src] = a; }
-  stopClip(); if ('speechSynthesis' in window) speechSynthesis.cancel();
-  window.__lastClip = { src, start, len };   // 디버그용
-  const rate = Math.max(0.5, Math.min(2, SETTINGS.rate || 1));
-  const go = () => {
-    try{ a.currentTime = start; }catch(e){ fallback(); return; }
-    a.playbackRate = rate;
-    const stopAt = start + len - 0.03;
-    const onT = () => { if (a.currentTime >= stopAt) stopClip(); };
-    clip = { a, onT, timer: setTimeout(stopClip, len / rate * 1000 + 60) };
-    a.addEventListener('timeupdate', onT);
-    const p = a.play(); if (p && p.catch) p.catch(() => { stopClip(); fallback(); });
-  };
-  if (a.readyState >= 1) go(); else { a.addEventListener('loadedmetadata', go, { once: true }); a.addEventListener('error', () => { stopClip(); fallback(); }, { once: true }); a.load(); }
-}
-function speak(text){
-  if (!text) return;
-  const c = clipFor(text);
-  if (c){ playClip(c[0], c[1], () => ttsSpeak(text)); return; }
-  ttsSpeak(text);
-}
+function speak(text){ if (text) ttsSpeak(text); }
 function ttsSpeak(text){
   if (!('speechSynthesis' in window) || !text) return;
-  stopClip();
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = 'zh-CN'; u.rate = SETTINGS.rate;
@@ -2414,6 +2433,8 @@ function go(name){
   if (name === 'phrase') loadExt('phrases').then(() => { renderPhrList(); if (phrOpenQ){ const q = phrOpenQ; phrOpenQ = ''; phrTag = '전체'; $('phrSeg').querySelector('[data-seg=phlist]').click(); const inp = $('phrList').querySelector('.qsearch'); if (inp){ inp.value = q; inp.oninput(); } } renderPhrQuiz(); });
   if (name === 'idiom') loadExt('idioms').then(() => { renderIdiList(); renderIdiMine(); if (idiOpenQ){ const q = idiOpenQ; idiOpenQ = ''; $('idiSeg').querySelector('[data-seg=idlist]').click(); const inp = $('idiList').querySelector('.qsearch'); if (inp){ inp.value = q; inp.oninput(); } } renderIdiQuiz(); });
   if (name === 'hanzi') loadExt('hanzi').then(() => { renderHzRad(); renderHzMea(); renderHzDec(); });   // 시트/홈에서 만들어져 아직 안 들려준 카드는 세션 화면에 들어올 때 들려줌
+  if (name === 'talk') renderTalk();
+  if (name === 'write') renderWrite();
   if (name === 'home') renderHome();
   if (name === 'words'){ renderMine(); renderList(); renderExamWrong(); renderAiNotes(); requestAnimationFrame(() => mqFit($('aiNoteList'))); }
   if (name === 'more') renderStats();
@@ -2495,7 +2516,7 @@ function bindOpt(id, key, evt='change'){
   });
 }
 ['optShowKo:showKo','optShowEn:showEn','optShowTrad:showTrad',
- 'optAutoSpeak:autoSpeak','optMp3:mp3','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
+ 'optAutoSpeak:autoSpeak','optVoice:voice','optOrder:order','optTheme:theme','optUnitSize:unitSize','optZoom:zoom','optOutline:outline','optGoal:goal'].forEach(s=>{ const [i,k]=s.split(':'); bindOpt(i,k); });
 bindOpt('optRate','rate','input'); $('rateVal').textContent = SETTINGS.rate;
 function applyZoom(){ document.documentElement.style.setProperty('--zoom', SETTINGS.zoom || 1); }
 applyZoom();
@@ -2992,10 +3013,38 @@ function aiNoteLabel(key){   // 노트 묶음 제목: label(진한 줄) + sub(�
   if (key[0] === 'g'){ const g = GRAM.find(x => x.id === key.slice(1)); return g ? { label: g.title_ko, sub: '문법', ctx: () => aiGramCtx(g) } : null; }
   if (key[0] === 'f'){ const first = (AI_NOTES[key] || []).find(n => !n.del); const t = first ? first.q.replace(/\s+/g, ' ').slice(0, 60) + (first.q.length > 60 ? '…' : '') : '자유 질문';
     return { label: t, sub: '자유 질문', ctx: () => aiFreeCtx(key) }; }
+  if (key[0] === 't'){ const arr = (AI_NOTES[key] || []).filter(n => !n.del); const f = arr[0];
+    return { label: `회화 · ${f && f.sit ? f.sit : '롤플레이'}`, sub: `${f && f.lv ? f.lv + '급 · ' : ''}주고받은 말 ${arr.length}`, ctx: () => aiTalkCtx(key) }; }
+  if (key[0] === 'c'){ const arr = (AI_NOTES[key] || []).filter(n => !n.del), f = arr[0];
+    return { label: `작문 · ${f ? String(f.q).replace(/^작문:\s*/, '') : ''}`, sub: `첨삭 ${arr.length}`, ctx: () => aiWriteCtx(key) }; }
   if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: pg.title, sub: '읽기', ctx: () => aiPassageCtx(pg) } : null; }
   return null;
 }
+function aiWriteCtx(key){   // 작문 첨삭 노트를 문맥으로 이어서 묻기
+  const arr = (AI_NOTES[key] || []).filter(n => !n.del), f = arr[0] || {};
+  const script = arr.slice(-6).map(n => `${n.q}\n${(n.a || '')}`).join('\n\n');
+  return { key, label: `작문 · ${String(f.q || '').replace(/^작문:\s*/, '')}`, text: `[지난 작문 첨삭]\n${script}`, quick: [
+    { label: '왜 틀렸는지 더 자세히', q: '내가 왜 이렇게 틀렸는지, 같은 실수를 안 하려면 무엇을 기억해야 하는지 설명해 줘.' },
+    { label: '비슷한 문장 3개', q: '같은 문법을 쓰는 비슷한 한국어 문장 3개를 내 줘. 답은 아래에 따로 적어 줘.' },
+    { label: '다르게 말하는 법', q: '같은 뜻을 다른 표현으로 말하는 방법을 병음·뜻과 함께 알려 줘.' },
+  ] };
+}
+function aiTalkCtx(key){   // 저장된 회화를 문맥으로 이어서 묻기 (다시 대화하는 게 아니라 그 대화에 대해 질문)
+  const arr = (AI_NOTES[key] || []).filter(n => !n.del), f = arr[0] || {};
+  const script = arr.slice(-8).map(n => `나: ${n.q}\n상대/선생님: ${(n.a || '').replace(/\n/g, ' ')}`).join('\n');
+  return { key, label: `회화 · ${f.sit || '롤플레이'}`, text: `[지난 회화 연습] 상황: ${f.sit || ''} · HSK ${f.lv || 1}급\n${script}`, quick: [
+    { label: '내가 틀린 곳 정리', q: '이 대화에서 내가 한 중국어의 틀린 곳·어색한 곳을 모아서 정리해 줘.' },
+    { label: '더 자연스러운 표현', q: '내가 한 말들을 원어민이라면 어떻게 말했을지 바꿔 줘.' },
+    { label: '이 상황 필수 표현', q: '이 상황에서 자주 쓰는 표현 5개를 병음·뜻과 함께 알려 줘.' },
+  ] };
+}
 let aiNoteFilter = 'all';   // all | star | hl
+const aiOpenGroups = new Set();   // 펼쳐 둔 묶음 (앱을 다시 열면 초기화)
+function aiWhen(t){ const d = Math.floor((Date.now() - t) / 86400000);
+  return d <= 0 ? '오늘' : d === 1 ? '어제' : d < 7 ? `${d}일 전` : new Date(t).toLocaleDateString(undefined, { month:'numeric', day:'numeric' }); }
+let aiNoteKind = 'all';     // all | w(단어) | s(문장) | g(문법) | p(읽기) | e(표현·사전) | t(회화) | f(자유)
+const AI_KINDS = [['w','단어'],['s','문장'],['g','문법'],['p','읽기'],['e','표현'],['t','회화'],['c','작문'],['f','자유']];
+function aiNoteKindOf(key){ const c = key[0]; return c === 'x' ? 'e' : (AI_KINDS.some(k => k[0] === c) ? c : 'f'); }   // x(보조 사전)는 표현으로 묶음
 function aiTouch(n){ n.u = Date.now(); store.set('zh.ai_notes', AI_NOTES); }
 // 답변 본문에 형광펜(hl: 사용자가 고른 문구들)을 <mark> 로 입힘
 /* ── AI 노트 형광펜 ──
@@ -3053,12 +3102,23 @@ function renderAiNotes(){
   const q = ($('aiNoteQ').value || '').trim().toLowerCase();
   // 검색 대상: 질문 대상(제목 줄 — 한자·병음·한국어 뜻·문장·문법 이름) + 질문 글 + 답변 본문 + 내 메모
   const keep = (n, head) => !n.del && (aiNoteFilter === 'all' || (aiNoteFilter === 'star' && n.star) || (aiNoteFilter === 'hl' && (aiHlTexts(n).length || n.memo))) && (!q || (head + ' ' + n.q + n.a + (n.memo||'')).toLowerCase().includes(q));
-  const groups = Object.entries(AI_NOTES).map(([k, arr]) => { const lb = aiNoteLabel(k); const head = lb ? (lb.label + ' ' + (lb.sub || '')) : ''; return { k, arr: arr.filter(n => keep(n, head)) }; }).filter(g => g.arr.length);
+  const groups = Object.entries(AI_NOTES).filter(([k]) => aiNoteKind === 'all' || aiNoteKindOf(k) === aiNoteKind).map(([k, arr]) => { const lb = aiNoteLabel(k); const head = lb ? (lb.label + ' ' + (lb.sub || '')) : ''; return { k, arr: arr.filter(n => keep(n, head)) }; }).filter(g => g.arr.length);
   groups.sort((a, b) => Math.max(...b.arr.map(n => n.t)) - Math.max(...a.arr.map(n => n.t)));
   const total = Object.values(AI_NOTES).flat().filter(n => !n.del).length, stars = Object.values(AI_NOTES).flat().filter(n => !n.del && n.star).length;
   $('aiNoteFilters').innerHTML = [['all',`전체 ${total}`],['star',`★ 중요 ${stars}`],['hl','형광펜·메모']].map(([k,l]) => `<button data-nf="${k}" aria-selected="${aiNoteFilter===k}">${l}</button>`).join('');
-  $('aiNoteList').innerHTML = groups.map(g => { const lb = aiNoteLabel(g.k); if (!lb) return ''; return `<div class="nctx"><div class="nctx-t"><b><span class="mq">${lb.label}</span></b>${lb.sub ? `<div class="nctx-sub"><span class="mq">${lb.sub}</span></div>` : ''}</div><button class="btn small" data-nopen="${g.k}"><i class="ic-ai"></i> 이어서 묻기</button></div>` +
-    g.arr.slice().sort((a, b) => a.t - b.t).map(n => `<div class="n ${n.star?'star':''}" data-nk="${g.k}" data-nt="${n.t}">
+  // 종류 칩: 노트가 하나라도 있는 종류만 (개수와 함께)
+  const cnt = {};
+  for (const [k, arr] of Object.entries(AI_NOTES)){ const live = arr.filter(n => !n.del).length; if (live) cnt[aiNoteKindOf(k)] = (cnt[aiNoteKindOf(k)] || 0) + live; }
+  const kinds = AI_KINDS.filter(([c]) => cnt[c]);
+  $('aiNoteKinds').innerHTML = kinds.length > 1
+    ? `<button data-nk2="all" aria-pressed="${aiNoteKind==='all'}">전체</button>` + kinds.map(([c, name]) => `<button data-nk2="${c}" aria-pressed="${aiNoteKind===c}">${name} ${cnt[c]}</button>`).join('')
+    : '';
+  $('aiNoteList').innerHTML = groups.map(g => { const lb = aiNoteLabel(g.k); if (!lb) return '';
+    // 회화처럼 문답이 많이 쌓이는 묶음은 접어 두고 제목을 눌러 펼친다 (검색 중에는 찾은 것이 보이도록 항상 펼침)
+    const foldable = aiNoteKindOf(g.k) === 't' || g.arr.length >= 6;
+    const open = !foldable || q || aiOpenGroups.has(g.k);
+    return `<div class="nctx${foldable ? ' fold' : ''}"${foldable ? ` data-nfold="${g.k}" role="button" tabindex="0"` : ''}><div class="nctx-t"><b><span class="mq">${foldable ? `<span class="caret">${open ? '▾' : '▸'}</span> ` : ''}${lb.label}</span></b>${lb.sub ? `<div class="nctx-sub"><span class="mq">${lb.sub}${foldable && !open && aiNoteKindOf(g.k) !== 't' ? ` · 문답 ${g.arr.length}` : ''}</span></div>` : ''}</div><span class="nctx-when">${aiWhen(Math.max(...g.arr.map(n => n.t)))}</span><button class="btn small" data-nopen="${g.k}"><i class="ic-ai"></i> 이어서 묻기</button></div>` +
+    (open ? g.arr.slice().sort((a, b) => a.t - b.t).map(n => `<div class="n ${n.star?'star':''}" data-nk="${g.k}" data-nt="${n.t}">
       <div class="q">${aiFmt(n.q)}</div>
       <div class="a ${aiNoteFilter === 'hl' && aiHlTexts(n).length ? 'only' : ''}">${aiFmtHl(n, aiNoteFilter === 'hl' && aiHlTexts(n).length > 0)}</div>
       ${n.memo ? `<div class="memo"><i class="ic-edit"></i> ${aiFmt(n.memo)}</div>` : ''}
@@ -3067,8 +3127,9 @@ function renderAiNotes(){
         <button data-nhl="1" title="형광펜 모드 켜기/끄기 — 켜진 동안 단어를 탭하면 칠해지고, 다시 탭하면 지워져요">🖍 형광펜</button>
         <button data-nmemo="1" title="내 메모"><i class="ic-edit"></i> 메모</button>
         <button data-ncopy="1">복사</button>
-        <button class="del" data-ndel="1">${aiNoteFilter === 'hl' ? '표시 지우기' : '삭제'}</button></div></div>`).join(''); }).join('')
-    || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q || aiNoteFilter!=='all' ? '해당하는 노트가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 묻기 버튼을 누르거나, 위 ＋ 새 질문으로 아무거나 물어보세요.'}</p>`;
+        <button data-nkeep="1" title="이 답변에서 형광펜으로 칠한 단어·문장을 내 단어장·내 문장에 담기">＋ 담기</button>
+        <button class="del" data-ndel="1">${aiNoteFilter === 'hl' ? '표시 지우기' : '삭제'}</button></div></div>`).join('') : ''); }).join('')
+    || `<p style="color:var(--ink-2);font-size:13px;margin:0">${q || aiNoteFilter!=='all' || aiNoteKind!=='all' ? '해당하는 노트가 없어요' : '아직 물어본 게 없어요. 학습·문법·읽기 화면의 묻기 버튼을 누르거나, 위 ＋ 새 질문으로 아무거나 물어보세요.'}</p>`;
   mqFit($('aiNoteList'));
 }
 function mqFit(root){   // 제목이 칸보다 길면 좌우로 천천히 흐르게 (짧으면 그대로 둠)
@@ -3082,11 +3143,30 @@ function mqFit(root){   // 제목이 칸보다 길면 좌우로 천천히 흐르
 }
 $('aiNoteQ').oninput = renderAiNotes;
 $('aiNoteFilters').addEventListener('click', e => { const b = e.target.closest('[data-nf]'); if (b){ aiNoteFilter = b.dataset.nf; renderAiNotes(); } });
+$('aiNoteKinds').addEventListener('click', e => { const b = e.target.closest('[data-nk2]'); if (b){ aiNoteKind = b.dataset.nk2; renderAiNotes(); } });
+$('aiNoteList').addEventListener('click', e => {   // 묶음 제목 누르면 펼치기/접기 ('이어서 묻기' 버튼은 제외)
+  const h = e.target.closest('[data-nfold]'); if (!h || e.target.closest('[data-nopen]')) return;
+  const k = h.dataset.nfold; aiOpenGroups.has(k) ? aiOpenGroups.delete(k) : aiOpenGroups.add(k); renderAiNotes();
+});
 function noteOf(el){ const arr = AI_NOTES[el.dataset.nk] || []; return arr.find(x => String(x.t) === el.dataset.nt); }
 function aiRedraw(n, it){ const a = n.querySelector('.a'); a.innerHTML = aiFmtHl(it, a.classList.contains('only')); }
 $('aiNoteList').addEventListener('click', e => {
   const o = e.target.closest('[data-nopen]'); if (o){ const lb = aiNoteLabel(o.dataset.nopen); if (lb) aiOpen(lb.ctx()); return; }
   const n = e.target.closest('.n'); if (!n) return; const it = noteOf(n);
+  if (e.target.closest('[data-nkeep]')){
+    if (!it) return;
+    const picks = aiHlTexts(it).filter(t => /[\u4e00-\u9fff]/.test(t)).map(t => t.replace(/^[^\u4e00-\u9fff]+|[^\u4e00-\u9fff。！？]+$/g, '').trim()).filter(Boolean);
+    if (!picks.length){ showToast('먼저 🖍 형광펜으로 담을 단어·문장을 칠해 주세요'); return; }
+    let nw = 0, ns = 0;
+    for (const t of picks){
+      const w = BY_S.get(t);
+      if (w){ if (!isFav(w.id)){ toggleFav(w.id); nw++; } }          // 우리 단어에 있으면 내 단어장으로
+      else if (!hasCustomSent(t)){ addCustomSent(t, '', ''); ns++; }  // 아니면 내 문장으로 (병음은 자동)
+    }
+    showToast(nw || ns ? `내 단어장 ${nw}개 · 내 문장 ${ns}개를 담았어요` : '이미 다 담겨 있어요');
+    if (nw) renderMine(); if (ns) renderMineSents();
+    return;
+  }
   if (e.target.closest('[data-nhl]')){ if (!it) return; const on = n.classList.toggle('hlmode'); n.classList.add('open'); e.target.closest('[data-nhl]').classList.toggle('on', on);   // 버튼 글자는 안 바꿈(폭이 변하면 옆 버튼이 손가락 밑에 들어옴)
     if (on){ const a = n.querySelector('.a'); if (a.classList.contains('only')){ a.classList.remove('only'); aiRedraw(n, it); } showToast('탭하거나 드래그해서 칠하고, 칠한 곳을 탭하면 지워져요'); } return; }
   if (e.target.closest('[data-nstar]')){ if (it){ it.star = it.star ? 0 : 1; aiTouch(it); } renderAiNotes(); return; }
@@ -3143,7 +3223,7 @@ $('aiNoteList').addEventListener('pointerup', hlDragEnd);
 $('aiNoteList').addEventListener('pointercancel', hlDragEnd);
 function aiNotesText(){
   const lines = [`# AI 선생님 문답 노트 (${new Date().toLocaleDateString()})`, ''];
-  for (const [k, arr] of Object.entries(AI_NOTES)){ const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label}${lb.sub ? ' — ' + lb.sub : ''}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${aiHlTexts(n).length ? '\n  형광펜: ' + aiHlTexts(n).join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
+  for (const [k, arr] of Object.entries(AI_NOTES)){ if (aiNoteKind !== 'all' && aiNoteKindOf(k) !== aiNoteKind) continue; const lb = aiNoteLabel(k); const live = arr.filter(n => !n.del); if (!lb || !live.length) continue; lines.push(`## ${lb.label}${lb.sub ? ' — ' + lb.sub : ''}`); for (const n of live) lines.push(`- ${n.star ? '★ ' : ''}(${new Date(n.t).toLocaleDateString()}) Q: ${n.q}\n  A: ${n.a.replace(/\n/g, '\n  ')}${aiHlTexts(n).length ? '\n  형광펜: ' + aiHlTexts(n).join(' / ') : ''}${n.memo ? '\n  메모: ' + n.memo : ''}`); lines.push(''); }
   return lines.join('\n');
 }
 $('btnAiNoteCopy').onclick = async () => { const text = aiNotesText(); try{ await navigator.clipboard.writeText(text); showToast('복사했어요 — 메모 앱 등에 붙여넣기'); }catch(e){ $('io').value = text; showToast('더보기 → 설정 → 데이터 칸에 넣어 뒀어요'); } };
@@ -3425,7 +3505,7 @@ $('idiSeg').addEventListener('click', e => { const b = e.target.closest('[data-s
 
 /* ═══════════ 발음 기초 (성모·운모 표, 헷갈리는 소리 듣기, 성조 듣기) ═══════════
    데이터 pinyin.json (build_pinyin.py): initials/finals 설명, pairs(헷갈리는 짝), syl(음절+성조 → 대표 한자), table(음절 → [성모, 운모]).
-   소리는 대표 한자를 TTS/mp3 로 읽혀서 냄 — 병음 글자 자체는 TTS 가 못 읽으므로. 화면에 들어올 때 처음 한 번만 데이터를 받음 */
+   소리는 대표 한자를 TTS 로 읽혀서 냄 — 병음 글자 자체는 TTS 가 못 읽으므로. 화면에 들어올 때 처음 한 번만 데이터를 받음 */
 let PY = null, pyPromise = null;
 function loadPron(){ return pyPromise || (pyPromise = loadJson('pinyin', null).then(j => (PY = j))); }
 const TONE_MARK = { a:'āáǎàa', e:'ēéěèe', i:'īíǐìi', o:'ōóǒòo', u:'ūúǔùu', 'ü':'ǖǘǚǜü' };
@@ -4349,8 +4429,364 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 window.addEventListener('pagehide', () => { if (backend && syncTimer){ clearTimeout(syncTimer); syncNow('leave'); } });
 initSync();
 
+
+/* ═══════════ 회화 롤플레이 (AI 가 상대역) ═══════════
+   상황을 고르면 AI 가 그 상황의 상대(점원·친구 등)가 되어 중국어로 한 마디씩 건네고,
+   내가 답한 중국어를 고쳐 준다. 답은 정해진 칸 형식([상대]/[병음]/[뜻]/[교정]/[힌트])으로 받아서 화면에 나눠 보여 준다. */
+const TALK_SITS = [
+  ['자기소개', '이름·나라·직업·나이를 주고받기'],
+  ['인사·안부', '오랜만에 만난 사람과 안부 묻기'],
+  ['식당에서', '자리·주문·맛·계산'],
+  ['물건 사기', '가격 묻기·크기·색·계산'],
+  ['길 묻기', '역·화장실·가는 방법 묻기'],
+  ['택시·교통', '목적지 말하기·시간 묻기'],
+  ['호텔 체크인', '예약 확인·방·조식 시간'],
+  ['병원·약국', '아픈 곳 말하기·약 사기'],
+  ['약속 잡기', '전화로 시간·장소 정하기'],
+  ['자유 대화', '주제 없이 편하게'],
+];
+let talk = null, talkRec = null;
+let TALK_LV = +store.get('zh.talk_lv', 0) || 0;   // 0 = 학습 급수를 따라감. 1~9 = 회화만 그 급수로
+function talkLv(){ if (TALK_LV) return TALK_LV; const ls = (SETTINGS.levels || []).map(Number).filter(Boolean); return ls.length ? Math.min(...ls) : 1; }
+function renderTalk(){
+  if (talk){ $('talkSetup').hidden = true; $('talkPlay').hidden = false; return; }
+  $('talkPlay').hidden = true; $('talkSetup').hidden = false; $('talkTop').textContent = '';
+  const studyLv = (() => { const ls = (SETTINGS.levels || []).map(Number).filter(Boolean); return ls.length ? Math.min(...ls) : 1; })();
+  $('talkSetup').innerHTML = `<div class="card">
+    <h3 class="sk-h">말하기 수준 <small>이 화면에서만 쓰는 급수 — 단어 학습 급수와 따로 둘 수 있어요</small></h3>
+    <div class="lvbar wrap" id="talkLvBar">
+      <label><input type="radio" name="tlv" value="0"${TALK_LV ? '' : ' checked'}>학습 급수 (${studyLv}급)</label>
+      ${[1,2,3,4,5,6,7,8,9].map(n => `<label><input type="radio" name="tlv" value="${n}"${TALK_LV === n ? ' checked' : ''}>${n}급</label>`).join('')}
+    </div>
+    <div class="sh-label" style="margin-top:14px">상황 고르기 <small style="font-weight:400">· HSK ${talkLv()}급 수준으로 말해 줘요</small></div>
+    <div class="sitgrid">${TALK_SITS.map((x, i) => `<button data-sit="${i}"><b>${x[0]}</b><small>${x[1]}</small></button>`).join('')}</div>
+    <p class="hint" style="font-size:12px;color:var(--ink-2);margin:10px 0 0">${AI.key ? 'AI 선생님과 같은 키를 씁니다 — 한 마디당 1~2원쯤 들어요.' : '설정 탭 → AI 선생님에서 API 키를 먼저 넣어 주세요.'}</p>
+  </div>`;
+}
+$('talkSetup').addEventListener('change', e => {
+  const r = e.target.closest('input[name="tlv"]'); if (!r) return;
+  TALK_LV = +r.value || 0; store.set('zh.talk_lv', TALK_LV); renderTalk();
+});
+$('talkSetup').addEventListener('click', e => {
+  const b = e.target.closest('[data-sit]'); if (!b) return;
+  if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
+  const sit = TALK_SITS[+b.dataset.sit];
+  talk = { sit: sit[0], desc: sit[1], lv: talkLv(), hist: [], said: [], hint: '', n: 0, key: 't' + Date.now() };
+  $('talkLog').innerHTML = ''; renderTalk(); $('talkTop').textContent = `${talk.sit} · ${talk.lv}급`;
+  talkSend('', true);
+});
+function talkSystem(){
+  return `너는 지금 중국어 회화 연습의 상대역이다. 상황: ${talk.sit} (${talk.desc}). 학습자 수준: HSK ${talk.lv}급.
+- 그 급수 안의 쉬운 단어로, 한 번에 한 마디(1~2문장)만 말한다.
+- 학습자의 말에 한자가 하나도 없고 한국어로만 되어 있으면, 그것은 대화 속 발화가 아니라 **나에게 하는 질문**이다.
+  그 내용을 학습자가 중국어로 말했다고 가정하지 말고, [교정] 칸에 한국어로 답한다(알려 줄 중국어 표현은 병음과 함께).
+  이때 [상대] 칸은 이야기를 앞으로 진행시키지 말고, 방금 했던 질문을 다시 묻거나 대답을 기다리는 짧은 말로 둔다.
+- 아래 다섯 칸 형식으로만 답한다. 다른 말·인사·설명 금지.
+[상대] (중국어 한 마디)
+[병음] (그 한 마디의 병음)
+[뜻] (한국어 번역)
+[교정] (학습자가 방금 한 중국어에 대한 지적. 고칠 데가 없으면 정확히 "좋아요". 한 가지만 짧게. 첫 마디에는 "-")
+[힌트] (학습자가 다음에 할 만한 대답 예시 하나: 중국어 — 한국어 뜻)`
+  + (talk.said.length ? `\n\n[네가 이미 한 말 — 같은 것을 다시 묻지 말고 새로운 화제로 넘어가라]\n${talk.said.slice(-12).join('\n')}` : '');
+}
+/* 한 대화 안에서는 주고받은 말을 전부 기억한다 (회화는 한 마디가 짧아 다 보내도 부담이 적음).
+   다만 아주 길어지면 비용이 계속 늘어나므로 글자 수 예산(약 4,000자 — 보통 30턴 이상)을 두고,
+   넘치면 오래된 것부터 뺀다. 빠진 내용도 시스템 규칙의 '이미 한 말' 목록에는 남아 되풀이를 막는다. */
+function talkHist(){
+  const out = []; let left = 4000;
+  for (let i = talk.hist.length - 1; i >= 0; i--){
+    const h = talk.hist[i], size = (h.q + h.a).length;
+    if (left - size < 0 && out.length >= 4) break;
+    left -= size; out.unshift(h);
+  }
+  return out;
+}
+function talkParse(t){
+  const g = k => { const m = String(t).match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
+  return { zh: g('상대'), py: g('병음'), ko: g('뜻'), fix: g('교정'), hint: g('힌트'), raw: String(t) };
+}
+function talkAddMe(text){ $('talkLog').insertAdjacentHTML('beforeend', `<div class="tkb me"><span class="zt">${tapHtml(text)}</span></div>`); $('app').scrollTo({ top: $('app').scrollHeight }); }
+function talkAiHtml(o){
+  return `<div class="tkb ai"><div class="tz"><span class="zt">${tapHtml(o.zh || o.raw)}</span><button class="btn icon" data-tsay="${(o.zh || '').replace(/"/g, '&quot;')}" title="듣기"><i class="ic-spk"></i></button></div>
+    <div class="tp" hidden>${o.py || ''}</div><div class="tko" hidden>${o.ko || ''}</div>
+    ${o.py || o.ko ? `<button class="btn small" data-treveal="1" style="margin-top:6px">병음·뜻 보기</button>` : ''}</div>`;
+}
+function talkAddAi(o, thinking){
+  $('talkLog').insertAdjacentHTML('beforeend', thinking ? `<div class="tkb ai"><span class="thinking">생각 중</span></div>` : talkAiHtml(o));
+  $('app').scrollTo({ top: $('app').scrollHeight });
+  return $('talkLog').lastElementChild;
+}
+async function talkSend(text, kick){
+  if (!talk) return;
+  if (!kick){ if (!text.trim()) return; talkAddMe(text); }
+  const el = talkAddAi(null, true); $('btnTalkSend').disabled = true;
+  try{
+    const asking = !kick && !/[\u4e00-\u9fff]/.test(text) && /[가-힣]/.test(text);   // 한자 없이 한국어만 → 대화가 아니라 질문
+    const user = kick ? '대화를 시작해 줘. 네가 먼저 한 마디 건네.'
+      : asking ? `[학습자의 질문 — 한국어] ${text}\n(이것은 대화 속 발화가 아니다. 학습자가 이 내용을 중국어로 말했다고 가정하지 마라. [교정] 칸에 한국어로 답하고, 알려 줄 중국어 표현은 병음과 뜻을 함께 적어라. [상대] 칸은 이야기를 진행시키지 말고 방금 한 질문을 다시 묻거나 대답을 기다리는 짧은 말로 둬라.)`
+      : text;
+    const a = await aiCall(user, talkSystem(), talkHist());
+    const o = talkParse(a);
+    talk.hist.push({ q: user, a }); if (o.zh) talk.said.push(o.zh); talk.hint = o.hint || ''; talk.n++;
+    // 노트에는 칸 표시([상대] 같은 것)를 떼고 읽기 좋은 줄글로 저장
+    const noteA = [o.zh && `상대: ${o.zh}`, o.py && `(${o.py})`, o.ko && `뜻: ${o.ko}`,
+                   (!kick && o.fix && o.fix !== '-') && `${asking ? '답' : '교정'}: ${o.fix}`, o.hint && `힌트: ${o.hint}`].filter(Boolean).join('\n') || a;
+    const note = { q: kick ? '(대화 시작)' : text, a: noteA, t: Date.now(), sit: talk.sit, lv: talk.lv };
+    (AI_NOTES[talk.key] = AI_NOTES[talk.key] || []).push(note);
+    if (AI_NOTES[talk.key].length > 40) AI_NOTES[talk.key].shift();
+    store.set('zh.ai_notes', AI_NOTES);
+    let fixHtml = '';
+    if (!kick && o.fix && o.fix !== '-'){
+      const ok = /^좋아요/.test(o.fix);
+      fixHtml = `<div class="tfix ${ok ? 'ok' : ''}">${asking ? '💬 ' : ok ? '✓ 좋아요' : '✎ '}${ok && !asking ? '' : aiFmtRaw(o.fix)}</div>`;
+    }
+    el.outerHTML = fixHtml + talkAiHtml(o);   // '생각 중' 자리를 교정 + 상대 말로 교체
+    if (o.zh) speak(o.zh);
+  }catch(err){ el.innerHTML = `<div class="a err" style="color:var(--bad);font-size:13px">${err.message}</div>`; }
+  $('btnTalkSend').disabled = false; $('app').scrollTo({ top: $('app').scrollHeight });
+}
+$('btnTalkSend').onclick = () => { const v = $('talkQ').value; $('talkQ').value = ''; talkSend(v); };
+$('talkQ').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('btnTalkSend').click(); } });
+$('btnTalkHint').onclick = () => { if (!talk || !talk.hint){ showToast('아직 힌트가 없어요'); return; } $('talkLog').insertAdjacentHTML('beforeend', `<div class="tfix">💡 ${aiFmtRaw(talk.hint)}</div>`); $('app').scrollTo({ top: $('app').scrollHeight }); };
+$('btnTalkNew').onclick = () => { talk = null; renderTalk(); };
+$('btnTalkEnd').onclick = async () => {
+  if (!talk || !talk.n){ talk = null; renderTalk(); return; }
+  const el = talkAddAi(null, true);
+  try{
+    const a = await aiCall('대화를 여기서 끝내자. 지금까지 내가 한 중국어에서 고칠 점과 잘한 점을 정리해 줘. 형식 칸 없이 한국어로, 6줄 이내.', `너는 중국어 선생님이다. 학습자 수준 HSK ${talk.lv}급.`, talk.hist.slice(-4));
+    el.innerHTML = `<div style="font-size:14px">${aiFmtRaw(a)}</div>`;
+    (AI_NOTES[talk.key] = AI_NOTES[talk.key] || []).push({ q: '(총평)', a, t: Date.now(), sit: talk.sit, lv: talk.lv });
+    store.set('zh.ai_notes', AI_NOTES);
+    showToast('이 대화는 단어장 탭 → AI 노트에 저장됐어요');
+  }catch(err){ el.innerHTML = `<div style="color:var(--bad);font-size:13px">${err.message}</div>`; }
+  talk = null; $('talkTop').textContent = '';
+};
+$('btnTalkMic').onclick = () => {
+  if (!SR){ showToast('이 브라우저는 음성 인식을 지원하지 않아요'); return; }
+  if (talkRec){ try{ talkRec.abort(); }catch(e){} talkRec = null; $('btnTalkMic').setAttribute('aria-pressed', 'false'); return; }
+  const r = talkRec = new SR(); r.lang = 'zh-CN'; r.interimResults = true; let heard = '';
+  $('btnTalkMic').setAttribute('aria-pressed', 'true'); $('talkQ').placeholder = '● 듣는 중… 말해 보세요';
+  const done = () => { if (talkRec !== r) return; talkRec = null; clearTimeout(tm); $('btnTalkMic').setAttribute('aria-pressed', 'false'); $('talkQ').placeholder = '중국어로 답해 보세요'; if (heard) $('talkQ').value = heard; };
+  r.onresult = e => { heard = e.results[e.results.length - 1][0].transcript; };
+  r.onend = done; r.onerror = done;
+  const tm = setTimeout(() => { try{ r.abort(); }catch(e){} done(); }, 10000);
+  try{ r.start(); }catch(e){ talkRec = null; showToast('마이크를 시작하지 못했어요'); }
+};
+$('talkLog').addEventListener('click', e => {
+  const sy = e.target.closest('[data-tsay]'); if (sy){ speak(sy.dataset.tsay); return; }
+  const rv = e.target.closest('[data-treveal]'); if (rv){ const c = rv.closest('.tkb'); c.querySelector('.tp').hidden = false; c.querySelector('.tko').hidden = false; rv.remove(); return; }
+  const tk = e.target.closest('.tok'); if (tk) showLookup(tk);
+});
+
+/* ═══════════ 작문 연습 (한국어 → 중국어, AI 첨삭) ═══════════
+   우리 예문 데이터의 한국어 뜻(또는 AI 가 새로 지은 한국어 문장)을 문제로 내고,
+   내가 쓴 중국어를 먼저 참고 답안과 글자 단위로 견준 뒤(공짜), 원하면 AI 에게 첨삭을 받는다(토큰 씀).
+   틀리거나 어색했던 문장은 복습 큐(WRITE_ST.rev)에 들어가 며칠 뒤 다시 나온다 — 간격은 WR_GAP.
+   기록에는 내가 쓴 문장뿐 아니라 고친 문장·이유까지 남긴다(틀린 문장만 다시 보면 틀린 형태가 굳으므로). */
+const WRITE_ST = Object.assign({ n: 0, ok: 0, recent: [], rev: {} }, store.get('zh.write', {}));
+if (!WRITE_ST.rev) WRITE_ST.rev = {};
+let wr = null, wrBusy = false;
+let WR_LV = +store.get('zh.write_lv', 0) || 0;      // 0 = 학습 급수를 따라감
+let WR_MODE = store.get('zh.write_mode', 'sent');   // 'sent' = 예문에서, 'ai' = AI 가 새 문장을 냄
+const WR_GAP = [2, 4, 7, 14, 30];                   // 틀린 횟수별 복습 간격(일)
+function wrSave(){ store.set('zh.write', WRITE_ST); }
+function wrNorm(t){ return String(t).replace(/[\s。，、！？：；""''（）()。.,!?:;]/g, ''); }
+function wrStudyLv(){ const ls = (SETTINGS.levels || []).map(Number).filter(Boolean); return ls.length ? Math.min(...ls) : 1; }
+function wrLv(){ return WR_LV || wrStudyLv(); }
+function wrDueList(){ const now = Date.now(); return Object.entries(WRITE_ST.rev).filter(([, r]) => (r.due || 0) <= now).sort((a, b) => (a[1].due || 0) - (b[1].due || 0)); }
+
+/* 다음 문제 고르기 — 복습할 게 있으면 그것부터, 없으면 급수 안에서 새로 */
+function wrPick(){
+  const due = wrDueList();
+  if (due.length){ const [key, r] = due[0]; return { key, ko: r.ko, zh: r.zh, py: r.py || '', lv: r.lv || wrLv(), word: r.word || null, rev: true, n: r.n || 1 }; }
+  const lvs = WR_LV ? [WR_LV] : (SETTINGS.levels || []).map(Number).filter(Boolean);
+  const set = new Set(lvs.length ? lvs : [1]);
+  const pool = Object.keys(SENTS).filter(id => { const w = BY_ID.get(+id); return w && set.has(w.lv) && SENTS[id].ko; });
+  if (!pool.length) return null;
+  const recent = new Set((WRITE_ST.recent || []).map(r => String(r.key || r.id)));
+  const fresh = pool.filter(id => !recent.has(id));
+  const from = fresh.length ? fresh : pool;
+  const id = from[Math.floor(Math.random() * from.length)];
+  const st = SENTS[id], w = BY_ID.get(+id);
+  return { key: String(id), ko: st.ko, zh: st.zh, py: st.py || '', lv: w.lv, word: { s: w.s, py: w.py } };
+}
+
+/* AI 가 그 급수 단어로 새 한국어 문장을 지어 준다 — 기존 예문의 뜻이 아니라 진짜 작문이 되도록 */
+async function wrMakeAi(){
+  const lv = wrLv();
+  const seen = (WRITE_ST.recent || []).slice(-10).map(r => r.ko).filter(Boolean);
+  const a = await aiCall(`HSK ${lv}급 수준의 작문 문제 하나를 내 줘.`,
+    `너는 중국어 작문 문제 출제자다. 학습자 수준 HSK ${lv}급.
+그 급수까지의 단어만 써서, 일상에서 실제로 쓸 법한 한국어 문장 하나를 만들고 모범 중국어 번역을 붙여라.
+아래 네 칸 형식으로만 답한다. 다른 말 금지.
+[한국어] (10~25자 정도의 자연스러운 한국어 문장 한 개)
+[중국어] (모범 번역)
+[병음] (성조 기호 포함)
+[핵심단어] (그 문장에서 가장 중요한 단어 하나, 한자만)` +
+    (seen.length ? `\n\n[최근에 낸 문장 — 비슷한 것을 또 내지 말 것]\n${seen.join('\n')}` : ''));
+  const g = k => { const m = a.match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
+  const ko = g('한국어'), zh = g('중국어');
+  if (!ko || !zh) throw new Error('문제를 만들지 못했어요. 다시 눌러 주세요.');
+  const key = 'x' + wrNorm(ko).slice(0, 14);
+  return { key, ko, zh, py: g('병음'), lv, word: g('핵심단어') ? { s: g('핵심단어'), py: '' } : null, ai: true };
+}
+
+function wrHead(){
+  const pct = WRITE_ST.n ? Math.round(WRITE_ST.ok / WRITE_ST.n * 100) : 0;
+  const due = wrDueList().length;
+  $('wrTop').textContent = (WRITE_ST.n ? `${WRITE_ST.n}문장 · ${pct}%` : '') + (due ? `${WRITE_ST.n ? ' · ' : ''}복습 ${due}` : '');
+}
+function wrLogRow(r, i){
+  const cls = r.v === '맞음' ? 'good' : r.v === '어색함' ? 'soso' : 'bad';
+  const better = (r.v !== '맞음') ? (r.fix || r.zh || '') : '';
+  return `<div class="wr-log" data-wrlog="${i}">
+    <div class="wr-log-h"><span class="wr-badge ${cls}">${r.v}</span> <span style="color:var(--ink-2)">${r.ko}</span></div>
+    <div class="wr-mine${r.v === '맞음' ? '' : ' off'}">${tapHtml(r.mine || '')}</div>
+    ${better ? `<div class="wr-fix">→ ${tapHtml(better)}</div>` : ''}
+    <div class="wr-why" hidden>
+      ${r.why ? `<div style="font-size:13px;margin-bottom:6px">${aiFmtRaw(r.why)}</div>` : '<div style="font-size:13px;color:var(--ink-2);margin-bottom:6px">AI 첨삭을 받지 않은 문장이에요.</div>'}
+      ${r.zh && r.zh !== better ? `<div style="font-size:12px;color:var(--ink-2)">참고 답안</div><div style="font-family:var(--hanzi);font-size:16px">${tapHtml(r.zh)}</div>` : ''}
+      ${r.py ? `<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${r.py}</div>` : ''}
+      <div class="dataops" style="margin-top:8px"><button class="btn small" data-wragain="${i}">이 문장 다시 쓰기</button><button class="btn small" data-wrsay="${i}"><i class="ic-spk"></i><span>듣기</span></button></div>
+    </div>
+  </div>`;
+}
+function renderWrite(){
+  wrHead();
+  if (!wr && WR_MODE === 'sent') wr = wrPick();
+  const logs = (WRITE_ST.recent || []).slice(-8).reverse();
+  const setup = `<div class="card">
+    <h3 class="sk-h">작문 수준 <small>이 화면에서만 쓰는 급수예요</small></h3>
+    <div class="lvbar wrap" id="wrLvBar">
+      <label><input type="radio" name="wlv" value="0"${WR_LV ? '' : ' checked'}>학습 급수 (${wrStudyLv()}급)</label>
+      ${[1,2,3,4,5,6,7,8,9].map(n => `<label><input type="radio" name="wlv" value="${n}"${WR_LV === n ? ' checked' : ''}>${n}급</label>`).join('')}
+    </div>
+    <div class="dataops" style="margin-top:10px">
+      <button class="btn small${WR_MODE === 'sent' ? ' primary' : ''}" data-wrmode="sent" style="flex:1">예문에서 출제</button>
+      <button class="btn small${WR_MODE === 'ai' ? ' primary' : ''}" data-wrmode="ai" style="flex:1"><i class="ic-ai"></i><span>AI 새 문장</span></button>
+    </div>
+    <p class="hint" style="font-size:11.5px;color:var(--ink-2);margin:8px 0 0">${WR_MODE === 'ai' ? 'AI 가 그 급수 단어로 새 한국어 문장을 지어 줘요 — 암기가 아니라 진짜 작문 연습이 돼요.' : '외운 예문의 뜻이 문제로 나와요.'}</p>
+  </div>`;
+  let box;
+  if (wrBusy) box = '<div class="card"><span class="thinking">문제 만드는 중</span></div>';
+  else if (!wr && WR_MODE === 'ai') box = `<div class="card"><p style="color:var(--ink-2);margin:0 0 10px">${AI.key ? 'AI 가 낼 새 문장으로 시작해요.' : '설정 탭 → AI 선생님에서 API 키를 먼저 넣어 주세요.'}</p><button class="btn primary" id="btnWrSkip" style="width:100%">문제 받기</button></div>`;
+  else if (!wr) box = '<div class="card"><p style="color:var(--ink-2)">이 급수에는 예문이 아직 없어요. 위에서 다른 급수를 골라 주세요.</p></div>';
+  else box = `<div class="card">
+    <div class="sh-label">이 뜻이 되도록 중국어로 써 보세요 <small style="font-weight:400">· ${wr.rev ? `복습 ${wr.n}번째 · ` : ''}HSK ${wr.lv}급</small></div>
+    <div class="wr-ko">${wr.ko}</div>
+    ${wr.word ? `<div style="font-size:12px;color:var(--ink-2);margin-bottom:8px">핵심 단어: <b style="font-family:var(--hanzi);font-size:16px">${wr.word.s}</b> <span style="font-family:var(--mono)">${wr.word.py || ''}</span></div>` : '<div style="height:6px"></div>'}
+    <textarea class="wr-in" id="wrIn" placeholder="중국어로 입력 (한자)" autocapitalize="off" autocorrect="off">${wr.mine || ''}</textarea>
+    <div class="dataops" style="margin-top:10px">
+      <button class="btn primary" id="btnWrSubmit" style="flex:1">제출</button>
+      <button class="btn" id="btnWrSkip">다른 문제</button>
+    </div>
+    <div class="wr-res" id="wrRes" hidden></div>
+  </div>`;
+  $('wrBox').innerHTML = setup + box +
+    (logs.length ? `<div class="card" style="margin-top:12px"><h3 class="sk-h">지난 문장 <small>눌러서 이유·참고 답안 보기</small></h3>${logs.map(wrLogRow).join('')}</div>` : '');
+}
+/* 다음 문제로 (AI 모드면 새로 지어 온다) */
+async function wrNext(){
+  if (WR_MODE !== 'ai' || wrDueList().length){ wr = wrPick(); renderWrite(); return; }
+  if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
+  wr = null; wrBusy = true; renderWrite();
+  try{ wr = await wrMakeAi(); }
+  catch(err){ showToast(err.message); }
+  finally{ wrBusy = false; renderWrite(); }
+}
+$('wrBox').addEventListener('change', e => {
+  const r = e.target.closest('input[name="wlv"]'); if (!r) return;
+  WR_LV = +r.value || 0; store.set('zh.write_lv', WR_LV);
+  if (wr && !wr.rev && !wr.mine) wr = null;   // 아직 손대지 않은 문제면 새 급수로 다시 뽑는다
+  renderWrite();
+});
+$('wrBox').addEventListener('click', async e => {
+  const md = e.target.closest('[data-wrmode]');
+  if (md){ WR_MODE = md.dataset.wrmode; store.set('zh.write_mode', WR_MODE); if (!wr || !wr.mine) wr = null; renderWrite(); return; }
+  if (e.target.closest('#btnWrSkip') || e.target.closest('#btnWrNext')){ wrNext(); return; }
+  const say = e.target.closest('[data-wrsay]');
+  if (say){ const r = (WRITE_ST.recent || []).slice(-8).reverse()[+say.dataset.wrsay]; if (r) speak(r.fix || r.zh || r.mine); return; }
+  const ag = e.target.closest('[data-wragain]');
+  if (ag){
+    const r = (WRITE_ST.recent || []).slice(-8).reverse()[+ag.dataset.wragain]; if (!r) return;
+    wr = { key: String(r.key || r.id), ko: r.ko, zh: r.zh, py: r.py || '', lv: r.lv || wrLv(), word: r.word || null, rev: true, n: (WRITE_ST.rev[String(r.key || r.id)] || {}).n || 1 };
+    renderWrite(); $('wrIn') && $('wrIn').focus(); return;
+  }
+  const lg = e.target.closest('.wr-log-h, .wr-mine, .wr-fix');
+  if (lg && !e.target.closest('.tok')){ const w = lg.closest('.wr-log').querySelector('.wr-why'); w.hidden = !w.hidden; return; }
+  const tk = e.target.closest('.tok'); if (tk && !e.target.closest('#wrIn')){ showLookup(tk); return; }
+  if (e.target.closest('#btnWrSay')){ speak(wr.zh); return; }
+  if (e.target.closest('#btnWrSubmit')){
+    const mine = $('wrIn').value.trim(); if (!mine){ showToast('중국어로 한 문장 써 보세요'); return; }
+    wr.mine = mine;
+    const same = wrNorm(mine) === wrNorm(wr.zh);
+    const box = $('wrRes'); box.hidden = false;
+    box.innerHTML = `<span class="wr-badge ${same ? 'good' : 'soso'}">${same ? '참고 답안과 같음' : '참고 답안과 다름 — 그래도 맞을 수 있어요'}</span>
+      <div style="font-size:13px;color:var(--ink-2);margin-top:4px">참고 답안</div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--hanzi);font-size:19px">${tapHtml(wr.zh)}</span><button class="btn icon" id="btnWrSay" title="듣기"><i class="ic-spk"></i></button></div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${wr.py || ''}</div>
+      <div class="dataops" style="margin-top:10px"><button class="btn primary" id="btnWrAi" style="flex:1"><i class="ic-ai"></i><span>AI 첨삭 받기</span></button><button class="btn" id="btnWrNext">다음 문제 ›</button></div>
+      <div id="wrAiRes" style="margin-top:10px"></div>`;
+    if (same && !wr.counted){ wr.counted = true; wrRecordKeep('맞음'); }
+    return;
+  }
+  if (e.target.closest('#btnWrAi')){
+    if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
+    const out = $('wrAiRes'); out.innerHTML = '<span class="thinking">생각 중</span>';
+    try{
+      const a = await aiCall(`[한국어 뜻] ${wr.ko}\n[학습자가 쓴 중국어] ${wr.mine}\n[참고 답안] ${wr.zh}`,
+        `너는 중국어 작문 첨삭 선생님이다. 학습자 수준 HSK ${wr.lv}급.
+아래 네 칸 형식으로만 답한다. 다른 말 금지.
+[판정] 맞음 / 어색함 / 틀림 중 하나
+[고친 문장] (학습자 문장을 최소한만 고친 자연스러운 중국어. 고칠 게 없으면 학습자 문장 그대로)
+[이유] 무엇이 왜 문제인지 한국어로 1~3문장. 맞았으면 왜 좋은지 한 문장.
+[참고 답안과 차이] 학습자 문장과 참고 답안이 다르면 뉘앙스 차이를 한 문장. 사실상 같으면 "같음".`);
+      const g = k => { const m = a.match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
+      const v = /맞음/.test(g('판정')) ? '맞음' : /어색/.test(g('판정')) ? '어색함' : '틀림';
+      const fixed = g('고친 문장'), why = g('이유'), diff = g('참고 답안과 차이');
+      out.innerHTML = `<span class="wr-badge ${v === '맞음' ? 'good' : v === '어색함' ? 'soso' : 'bad'}">${v}</span>
+        ${fixed ? `<div style="font-family:var(--hanzi);font-size:19px">${tapHtml(fixed)}</div>` : ''}
+        <div style="font-size:14px;margin-top:6px">${aiFmtRaw(why)}</div>
+        ${diff && diff !== '같음' ? `<div style="font-size:13px;color:var(--ink-2);margin-top:4px">${aiFmtRaw(diff)}</div>` : ''}`;
+      const nk = 'c' + wr.key;
+      (AI_NOTES[nk] = AI_NOTES[nk] || []).push({ q: `작문: ${wr.ko}`, a: [`내 문장: ${wr.mine}`, fixed && `고친 문장: ${fixed}`, why, diff && diff !== '같음' && diff].filter(Boolean).join('\n'), t: Date.now() });
+      if (AI_NOTES[nk].length > 20) AI_NOTES[nk].shift();
+      store.set('zh.ai_notes', AI_NOTES);
+      if (wr.counted) wrUpdateLast(v, fixed, why + (diff && diff !== '같음' ? '\n' + diff : ''));
+      else { wr.counted = true; wrRecordKeep(v, fixed, why + (diff && diff !== '같음' ? '\n' + diff : '')); }
+    }catch(err){ out.innerHTML = `<span style="color:var(--bad);font-size:13px">${err.message}</span>`; }
+  }
+});
+/* 기록 + 복습 큐 갱신 (첨삭 결과를 남긴 채로 — 화면을 다시 그리지 않는다) */
+function wrRecordKeep(verdict, fixed, why){
+  WRITE_ST.n++; if (verdict === '맞음') WRITE_ST.ok++;
+  (WRITE_ST.recent = WRITE_ST.recent || []).push({ key: wr.key, id: +wr.key || 0, ko: wr.ko, zh: wr.zh, py: wr.py || '', lv: wr.lv, word: wr.word || null, mine: wr.mine, fix: fixed || '', why: why || '', v: verdict, t: Date.now() });
+  if (WRITE_ST.recent.length > 30) WRITE_ST.recent.shift();
+  wrSchedule(verdict, fixed, why);
+  wrSave(); wrHead();
+}
+/* 방금 기록한 문장의 판정을 AI 첨삭 결과로 덮어쓴다 (무료 비교로 '맞음'이 먼저 들어간 경우) */
+function wrUpdateLast(verdict, fixed, why){
+  const r = (WRITE_ST.recent || [])[WRITE_ST.recent.length - 1];
+  if (!r || r.key !== wr.key) return;
+  if (r.v === '맞음' && verdict !== '맞음') WRITE_ST.ok = Math.max(0, WRITE_ST.ok - 1);
+  if (r.v !== '맞음' && verdict === '맞음') WRITE_ST.ok++;
+  r.v = verdict; r.fix = fixed || ''; r.why = why || '';
+  wrSchedule(verdict, fixed, why);
+  wrSave(); wrHead();
+}
+/* 틀리거나 어색했으면 복습 큐에 넣고 다음 날짜를 잡는다. 맞으면 큐에서 뺀다. */
+function wrSchedule(verdict, fixed, why){
+  const R = WRITE_ST.rev, k = wr.key;
+  if (verdict === '맞음'){ delete R[k]; return; }
+  const old = R[k] || {}; const n = (old.n || 0) + 1;
+  R[k] = { ko: wr.ko, zh: wr.zh, py: wr.py || '', lv: wr.lv, word: wr.word || null, mine: wr.mine, fix: fixed || old.fix || '', why: why || old.why || '', v: verdict, n, due: Date.now() + WR_GAP[Math.min(n - 1, WR_GAP.length - 1)] * DAY };
+  const keys = Object.keys(R);
+  if (keys.length > 80){ keys.sort((a, b) => (R[a].due || 0) - (R[b].due || 0)); delete R[keys[keys.length - 1]]; }
+}
+
 /* ═══════════ 시작 ═══════════ */
-loadVoices(); loadAudioIndex();
+loadVoices();
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
 startUnit(currentUnitIndex());
 if (onScreen('home')) renderHome();   // 첫 화면(홈)의 오늘 목표·복습 수 등을 채움 — 전에는 다른 탭에 갔다 와야 채워졌음
