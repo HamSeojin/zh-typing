@@ -967,7 +967,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0915.1230</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0915.1239</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -3146,6 +3146,24 @@ function aiNoteLabel(key){   // 노트 묶음 제목: label(진한 줄) + sub(�
   if (key[0] === 'p'){ const pg = PASSAGES.find(x => x.id === +key.slice(1)); return pg ? { label: pg.title, sub: '읽기', ctx: () => aiPassageCtx(pg) } : null; }
   return null;
 }
+/* 지난 문장(기록 한 건)을 문맥으로 묻기 — 목록에서 바로, AI 노트를 거치지 않고 */
+function aiWrRecCtx(r){
+  const text = `[지난 작문 문제] ${r.ko}\n[참고 답안] ${r.zh}${r.py ? ' (' + r.py + ')' : ''}\n[내가 쓴 중국어] ${r.mine}\n[판정] ${r.v}`
+    + (r.fix ? `\n[고친 문장] ${r.fix}` : '') + (r.why ? `\n[받은 설명] ${String(r.why).replace(/\n/g, ' ')}` : '')
+    + `\n[학습자 수준] HSK ${r.lv || 1}급`;
+  return { key: 'c' + String(r.key || r.id), label: `작문 · ${r.ko}`, text, quick: [
+    { label: '왜 틀렸는지 더 자세히', q: '내가 왜 이렇게 틀렸는지, 같은 실수를 안 하려면 무엇을 기억해야 하는지 설명해 줘.' },
+    { label: '내 문장도 되나?', q: '내가 쓴 문장이 실제로 통할지, 통한다면 어떤 어감으로 들릴지 알려 줘.' },
+    { label: '비슷한 문장 3개', q: '같은 문법을 쓰는 비슷한 한국어 문장 3개를 문제로 내 줘. 답은 마지막에 따로 적어 줘.' },
+    { label: '다르게 말하는 법', q: '같은 뜻을 다른 표현으로 말하는 방법을 병음·뜻과 함께 알려 줘.' },
+  ] };
+}
+function wrAskRec(t){
+  const r = wrLogAt(t); if (!r) return;
+  if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
+  aiOpen(aiWrRecCtx(r));
+}
+
 /* 지금 풀고 있는 작문 문제를 문맥으로 AI 에게 묻기 — 첨삭 한 번으로 끝내지 않고 계속 파고들 수 있게 */
 function aiWrNowCtx(){
   const text = `[작문 문제 — 이 한국어 뜻이 되도록 중국어로 쓰는 중] ${wr.ko}\n[참고 답안] ${wr.zh}${wr.py ? ' (' + wr.py + ')' : ''}\n[학습자 수준] HSK ${wr.lv}급`
@@ -4838,7 +4856,7 @@ function wrLogRow(r){
       ${r.why ? `<div style="font-size:13px;margin-bottom:6px">${aiFmtRaw(r.why)}</div>` : '<div style="font-size:13px;color:var(--ink-2);margin-bottom:6px">AI 첨삭을 받지 않은 문장이에요.</div>'}
       ${r.zh && r.zh !== better ? `<div style="font-size:12px;color:var(--ink-2)">참고 답안</div><div style="font-family:var(--hanzi);font-size:16px">${tapHtml(r.zh)}</div>` : ''}
       ${r.py ? `<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${r.py}</div>` : ''}
-      <div class="dataops" style="margin-top:8px"><button class="btn small" data-wragain="${r.t}">이 문장 다시 쓰기</button><button class="btn small" data-wrsay="${r.t}"><i class="ic-spk"></i><span>듣기</span></button></div>
+      <div class="dataops" style="margin-top:8px"><button class="btn small" data-wragain="${r.t}">이 문장 다시 쓰기</button><button class="btn small" data-wrask="${r.t}"><i class="ic-ai"></i><span>묻기</span></button><button class="btn small" data-wrsay="${r.t}"><i class="ic-spk"></i><span>듣기</span></button></div>
     </div>
   </div>`;
 }
@@ -4905,6 +4923,8 @@ $('wrBox').addEventListener('click', async e => {
   if (e.target.closest('#btnWrSkip') || e.target.closest('#btnWrNext')){ wrNext(); return; }
   const say = e.target.closest('[data-wrsay]');
   if (say){ const r = wrLogAt(say.dataset.wrsay); if (r) speak(r.fix || r.zh || r.mine); return; }
+  const ak = e.target.closest('[data-wrask]');
+  if (ak){ wrAskRec(ak.dataset.wrask); return; }
   const ag = e.target.closest('[data-wragain]');
   if (ag){ wrAgain(ag.dataset.wragain); return; }
   const lg = e.target.closest('.wr-log-h, .wr-mine, .wr-fix');
@@ -5002,6 +5022,7 @@ $('wrLogQ').addEventListener('input', e => { wrLogQ = e.target.value; renderWrLo
 $('wrLogList').addEventListener('click', e => {
   const say = e.target.closest('[data-wrsay]');
   if (say){ const r = wrLogAt(say.dataset.wrsay); if (r) speak(r.fix || r.zh || r.mine); return; }
+  const ak = e.target.closest('[data-wrask]'); if (ak){ wrAskRec(ak.dataset.wrask); return; }
   const ag = e.target.closest('[data-wragain]'); if (ag){ wrAgain(ag.dataset.wragain); return; }
   const tk = e.target.closest('.tok'); if (tk){ showLookup(tk); return; }
   const lg = e.target.closest('.wr-log-h, .wr-mine, .wr-fix');
