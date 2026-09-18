@@ -265,7 +265,8 @@ textarea.io{width:100%;height:110px;font-family:var(--mono);font-size:12px;borde
 .hanzi.sent{font-size:30px;letter-spacing:.04em;line-height:1.5}
 .hanzi.sent .blank{width:.9em;height:1em;vertical-align:-.1em}
 .hanzi.sent mark,.hanzi.sent .tok.hit,.slist .szh .tok.hit{background:var(--good-bg);color:var(--good);padding:0 .08em;border-radius:4px}
-.hanzi.sent .tok,.slist .szh .tok{cursor:pointer;border-radius:4px;padding:0 1px}
+.hanzi .tok,.hanzi.sent .tok,.slist .szh .tok{cursor:pointer;border-radius:4px;padding:0 1px}
+.hanzi .tok:hover,.hanzi .tok.sel{background:var(--good-bg)}
 .hanzi.sent .tok:hover,.hanzi.sent .tok.sel,.slist .szh .tok:hover,.slist .szh .tok.sel{background:var(--good-bg)}
 .hanzi.sent .wrongch{color:var(--bad);text-decoration:underline wavy var(--bad)}
 .orderArea{margin-top:10px}
@@ -1157,7 +1158,8 @@ details.more summary::-webkit-details-marker{display:none}
     </div>
     <h3>AI 선생님 (선택)</h3>
     <div id="aiBox">
-      <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">학습 중 "묻기" 버튼으로 AI에게 질문하려면 본인 API 키가 필요해요. <details class="more" style="display:inline;border:0;margin:0;padding:0"><summary style="display:inline;padding:0">자세히</summary><span style="display:block;margin-top:6px">키는 이 기기에만 저장되고 동기화·백업에는 들어가지 않아요(문답 내용은 단어장 → AI 노트에 저장·동기화). 질문 하나에 보통 1~10원. 서비스마다 키를 따로 기억하니 바꿔 가며 쓸 수 있어요.</span></details></p>
+      <p style="margin:0 0 8px;font-size:13px;color:var(--ink-2)">학습 중 "묻기" 버튼으로 AI에게 질문하려면 본인 API 키가 필요해요.</p>
+      <details class="more" style="margin-top:0;margin-bottom:12px"><summary>키·요금은 어떻게 되나요?</summary><p style="margin:8px 0 10px;font-size:13px;color:var(--ink-2)">키는 이 기기에만 저장되고 동기화·백업에는 들어가지 않아요(문답 내용은 단어장 → AI 노트에 저장·동기화). 질문 하나에 보통 1~10원. 서비스마다 키를 따로 기억하니 바꿔 가며 쓸 수 있어요.</p></details>
       <label class="row"><span>서비스</span>
         <select id="aiService">
           <option value="deepseek">DeepSeek — 가장 저렴, 중국어 강함</option>
@@ -1946,7 +1948,7 @@ function renderQuestion(){
   $('toneArea').hidden = true; $('sayArea').hidden = true;
   if (M.input === 'say'){
     qKind.textContent = '단어를 소리 내어 읽으세요';
-    qHanzi.textContent = cur.s; qHanzi.className = 'hanzi';
+    qHanzi.innerHTML = tapHtml(cur.s); qHanzi.className = 'hanzi';
     qPinyin.innerHTML = renderPinyin(cur); qTrad.textContent = '';
     qKo.textContent = SETTINGS.showKo ? (ko || '') : ''; qKo.className = 'ko';
     qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0, 2).join(' ; ') : '';
@@ -1979,7 +1981,8 @@ function renderQuestion(){
   } else if (M.kind === 'sent'){
     renderSentQuestion(M, ko);
   } else {
-  if (showH) qHanzi.textContent = cur.s; else qHanzi.innerHTML = renderMask(cur.s, 0);
+  if (showH) qHanzi.innerHTML = M.showP ? tapHtml(cur.s) : cur.s;   // 병음이 답인 모드에서는 누를 수 없게 (풍선에 답이 보이므로)
+  else qHanzi.innerHTML = renderMask(cur.s, 0);
   qHanzi.className = 'hanzi';
   const showP = M.showP;
   qPinyin.innerHTML = showP ? renderPinyin(cur) : '';
@@ -2303,7 +2306,7 @@ function showExt(w){
 }
 function altText(w){ return (w.alt&&w.alt.length) ? '다른 읽기: ' + w.alt.map(a=>`${a.py} (${a.en})`).join(' · ') : ''; }
 function reveal(){
-  qHanzi.className='hanzi'; qHanzi.textContent = cur.s; qPinyin.innerHTML = renderPinyin(cur);
+  qHanzi.className='hanzi'; qHanzi.innerHTML = tapHtml(cur.s); qPinyin.innerHTML = renderPinyin(cur);
   if (!mode().showM){ const ko = KO[cur.s] || cur.ko; qKo.textContent = ko; qKo.className = 'ko'; qEn.textContent = SETTINGS.showEn ? cur.en.split(' ; ').slice(0,2).join(' ; ') : ''; }
   const parts = [qTrad.textContent, altText(cur)].filter(Boolean); qTrad.textContent = parts.join('  ·  ');
   $('wordRel').innerHTML = relatedHtml(cur); appendExtras($('wordRel'), cur, { ex: true });
@@ -2910,11 +2913,13 @@ function aiEmptyMsg(reason){
   return '답이 비어서 왔어요. 잠시 뒤 다시 해 보세요.';
 }
 
-async function aiCall(user, systemExtra, history){   // history: [{q, a}] 앞선 문답 (이어서 질문할 때 함께 보냄)
+async function aiCall(user, systemExtra, history, extra){   // history: [{q, a}] 앞선 문답 (이어서 질문할 때 함께 보냄) · extra.boost: 길이 상한을 3배로 (내부 재시도용)
   if (!AI.key) throw new Error('설정 탭에서 API 키를 먼저 넣어 주세요');
   const system = aiSystem() + (systemExtra ? '\n' + systemExtra : '');
   const turns = (history || []).flatMap(h => [{ role:'user', text: h.q }, { role:'assistant', text: h.a }]);
-  const maxTok = AI.len==='long' ? 1500 : 900;
+  /* 답변 길이 상한(토큰). 요금은 실제로 받은 만큼만 나가므로 이 값은 폭주 방어용이다.
+     '생각하는' 모델(DeepSeek 등)은 속으로 생각한 분량도 여기서 빠져나가므로 넉넉히 잡는다. */
+  const maxTok = Math.min(8000, (AI.len==='long' ? 4000 : 2000) * (extra && extra.boost ? 3 : 1));   // 8000 넘게 요구하면 거부하는 서비스가 있어 그 아래로
   let res, j;
   if (AI.provider === 'gemini'){
     res = await aiFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI.model)}:generateContent?key=${encodeURIComponent(AI.key)}`, { method:'POST', headers:{ 'Content-Type':'application/json' },
@@ -2944,8 +2949,14 @@ async function aiCall(user, systemExtra, history){   // history: [{q, a}] 앞선
   if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && (j.error.message || j.error)));
   { const ch = (j.choices||[])[0];
     const out = (ch?.message?.content || '').trim();
-    if (!out) throw new Error(aiEmptyMsg(ch?.finish_reason));
-    aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
+    if (!out){
+      // 생각(reasoning)만 하다가 길이 상한에 걸려 정작 답은 비어 온 경우 — 상한을 3배로 키워 한 번만 더 시도
+      const thoughtOnly = ch?.finish_reason === 'length' && (ch?.message?.reasoning_content || ch?.message?.reasoning);
+      if (thoughtOnly && !(extra && extra.boost)) return aiCall(user, systemExtra, history, { boost: true });
+      throw new Error(thoughtOnly ? '모델이 생각만 하다가 길이 한도를 다 썼어요. 설정에서 생각을 덜 하는 모델로 바꾸거나 질문을 짧게 해 보세요.' : aiEmptyMsg(ch?.finish_reason));
+    }
+    aiCountUsage(system + user + turns.map(t=>t.text).join(''), out);
+    return ch?.finish_reason === 'length' ? out + '\n\n_(답이 길어서 여기서 끊겼어요 — 이어서 "계속"이라고 물어보세요)_' : out; }
 }
 // 지금 보고 있는 것(단어·문장·문법)을 질문에 같이 보내기 위한 문맥
 let aiCtx = null;   // { key, label, text, quick:[{label, q}] }
