@@ -992,7 +992,7 @@ details.more summary::-webkit-details-marker{display:none}
 
 <!-- ═══════════ 홈 ═══════════ -->
 <section class="screen" data-screen="home">
-  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0920.0853</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
+  <header class="apphead"><h1>汉习 <span class="hx">Hànxí</span></h1><small>HSK 3.0 · 1~9급 · <span id="appVer">v0920.0949</span></small><button class="askbtn" id="homeFreeAsk" title="궁금한 거 묻기 — 단어·문장과 상관없는 중국어 질문" aria-label="궁금한 거 묻기"><i class="ic-ai"></i></button></header>
   <div class="stats" hidden><div class="stat"><b id="stToday">0</b></div><div class="stat"><b id="stAcc">–</b></div><div class="stat"><b id="stDue">0</b></div><div class="stat"><b id="stLearned">0</b></div></div>
   <div class="hero" id="heroContinue" role="button" tabindex="0">
     <div class="hero-eyebrow">이어서 학습</div>
@@ -4838,6 +4838,7 @@ async function talkSend(text, kick){
     const a = await aiCall(user, talkSystem(), talkHist());
     const o = talkParse(a);
     talk.hist.push({ q: user, a }); if (o.zh) talk.said.push(o.zh); talk.hint = o.hint || ''; talk.n++;
+    if (!kick && !asking){ const h = histToday(); h.n++; if (!o.fix || o.fix === '-') h.ok++; store.set('zh.history', HISTORY); }   // 오늘 공부량에 포함 (내가 중국어로 한 마디 = 1문제, 교정 없으면 정답)
     // 노트에는 칸 표시([상대] 같은 것)를 떼고 읽기 좋은 줄글로 저장
     const noteA = [o.zh && `상대: ${o.zh}`, o.py && `(${o.py})`, o.ko && `뜻: ${o.ko}`,
                    (!kick && o.fix && o.fix !== '-') && `${asking ? '답' : '교정'}: ${o.fix}`, o.hint && `힌트: ${o.hint}`].filter(Boolean).join('\n') || a;
@@ -5200,6 +5201,7 @@ $('wrLogList').addEventListener('click', e => {
 /* 기록 + 복습 큐 갱신 (첨삭 결과를 남긴 채로 — 화면을 다시 그리지 않는다) */
 function wrRecordKeep(verdict, fixed, why){
   WRITE_ST.n++; if (verdict === '맞음') WRITE_ST.ok++;
+  { const h = histToday(); h.n++; if (verdict === '맞음') h.ok++; store.set('zh.history', HISTORY); }   // 오늘 공부량에 포함 (한 문장 = 1문제)
   (WRITE_ST.recent = WRITE_ST.recent || []).push({ key: wr.key, id: +wr.key || 0, ko: wr.ko, zh: wr.zh, py: wr.py || '', lv: wr.lv, word: wr.word || null, mine: wr.mine, fix: fixed || '', why: why || '', v: verdict, t: Date.now() });
   if (WRITE_ST.recent.length > 1000) WRITE_ST.recent.shift();   // 넉넉히 — 공간이 정말 모자라면 storeTrim 이 알아서 줄인다
   wrSchedule(verdict, fixed, why);
@@ -5209,8 +5211,10 @@ function wrRecordKeep(verdict, fixed, why){
 function wrUpdateLast(verdict, fixed, why){
   const r = (WRITE_ST.recent || [])[WRITE_ST.recent.length - 1];
   if (!r || r.key !== wr.key) return;
-  if (r.v === '맞음' && verdict !== '맞음') WRITE_ST.ok = Math.max(0, WRITE_ST.ok - 1);
-  if (r.v !== '맞음' && verdict === '맞음') WRITE_ST.ok++;
+  const h = histToday();
+  if (r.v === '맞음' && verdict !== '맞음'){ WRITE_ST.ok = Math.max(0, WRITE_ST.ok - 1); h.ok = Math.max(0, h.ok - 1); }
+  if (r.v !== '맞음' && verdict === '맞음'){ WRITE_ST.ok++; h.ok++; }
+  store.set('zh.history', HISTORY);
   r.v = verdict; r.fix = fixed || ''; r.why = why || '';
   wrSchedule(verdict, fixed, why);
   wrSave(); wrHead();
