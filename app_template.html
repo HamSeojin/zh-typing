@@ -447,6 +447,15 @@ body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .wr-gap-h + .wr-gap-row{border-top:0}
 .wr-gap-row.ok{color:var(--good)}
 .wr-gap-row.no{color:var(--bad)}
+/* 서비스 갈아타기 물음 창 — AI 시트(z 30)보다 위에 */
+.aiswitch{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:20px}
+.aiswitch[hidden]{display:none}
+.aiswitch-box{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:16px;width:min(100%,380px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.aiswitch-box b{display:block;font-size:16px;margin-bottom:6px}
+.aiswitch-box p{margin:0 0 10px;font-size:14px;color:var(--ink-2);line-height:1.5}
+.aiswitch-keep{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);margin-bottom:12px}
+.aiswitch-keep input{width:16px;height:16px;accent-color:var(--accent)}
+.aiswitch-acts{display:grid;gap:8px}
 .wr-res{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
 .wr-badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;margin-bottom:6px}
 .wr-badge.good{background:var(--good-bg);color:var(--good)}
@@ -1541,6 +1550,19 @@ details.more summary::-webkit-details-marker{display:none}
 
 <button class="totop" id="btnTop" hidden aria-label="맨 위로">↑</button>
 <div class="toast" id="toast"></div>
+<!-- AI 서버가 밀렸을 때: 다른 서비스로 보낼지, 이대로 다시 할지 묻는 창 -->
+<div class="aiswitch" id="aiSwitch" hidden>
+  <div class="aiswitch-box">
+    <b id="aiSwitchTitle">서버가 밀려 있어요</b>
+    <p id="aiSwitchMsg"></p>
+    <label class="aiswitch-keep"><input type="checkbox" id="aiSwitchKeep"> 앱을 닫기 전까지는 묻지 않고 이렇게</label>
+    <div class="aiswitch-acts">
+      <button class="btn primary" data-sw="alt" id="aiSwitchAlt"></button>
+      <button class="btn" data-sw="retry" id="aiSwitchRetry"></button>
+      <button class="btn" data-sw="cancel">취소</button>
+    </div>
+  </div>
+</div>
 <div class="popup" id="popup" hidden></div>
 <!-- AI 선생님 패널 (화면 아래에서 올라오는 시트) -->
 <div class="ai-sheet" id="aiSheet" hidden>
@@ -2886,6 +2908,7 @@ function aiFriendlyError(status, msg){
   if (status >= 500) return `서비스 서버 쪽 문제예요 (${status}, 일시적). 여러 번 반복되면 설정에서 다른 모델·서비스로 바꿔 보세요.`;
   return `오류 ${status ? status + ' ' : ''}${m}`.trim();
 }
+function aiErr(status, msg){ const e = new Error(aiFriendlyError(status, msg)); e.transient = status >= 500 || status === 429; return e; }
 function aiCountUsage(inText, outText){ AI_USAGE.n++; AI_USAGE.inTok += Math.round(inText.length * 0.9); AI_USAGE.outTok += Math.round(outText.length * 1.1); store.set('zh.ai_usage', AI_USAGE); aiUsageLine(); }
 function aiUsageLine(){
   const el = $('aiUsage'); if (!el) return;
@@ -2899,14 +2922,17 @@ function aiUsageLine(){
    사용자에게 오류를 보여 주기 전에 앱이 먼저 두 번까지 다시 시도한다(1초 → 3초). 그래도 안 되면 그때 안내한다.
    키·잔액·모델 이름 문제(401/402/404)처럼 다시 해도 소용없는 것은 곧바로 알린다. */
 const AI_RETRY_MS = [1000, 3000];
+const AI_TIMEOUT_MS = 90000;   // 한 요청에 이만큼 기다려도 답이 없으면 끊는다 (생각하는 모델은 오래 걸릴 수 있어 넉넉히)
 async function aiFetch(url, opts){
   let last;
   for (let i = 0; i <= AI_RETRY_MS.length; i++){
+    const ac = new AbortController(); const timer = setTimeout(() => ac.abort(), AI_TIMEOUT_MS);
     try{
-      const res = await fetch(url, opts);
+      const res = await fetch(url, Object.assign({}, opts, { signal: ac.signal }));
       if (res.ok || res.status < 500) return res;      // 성공이거나, 다시 해도 같은 결과인 오류
       last = res;
-    }catch(e){ last = e; }                             // 네트워크 자체가 끊긴 경우
+    }catch(e){ last = e.name === 'AbortError' ? new Error('응답이 너무 오래 걸려 끊었어요 (90초). 잠시 뒤 다시 하거나, 설정에서 답변 길이를 줄여 보세요.') : e; }
+    finally{ clearTimeout(timer); }
     if (i < AI_RETRY_MS.length) await new Promise(r => setTimeout(r, AI_RETRY_MS[i]));
   }
   if (last instanceof Response) return last;
@@ -2919,46 +2945,103 @@ function aiEmptyMsg(reason){
   return '답이 비어서 왔어요. 잠시 뒤 다시 해 보세요.';
 }
 
-async function aiCall(user, systemExtra, history, extra){   // history: [{q, a}] 앞선 문답 (이어서 질문할 때 함께 보냄) · extra.boost: 길이 상한을 3배로 (내부 재시도용)
-  if (!AI.key) throw new Error('설정 탭에서 API 키를 먼저 넣어 주세요');
+/* 어느 서비스로 보낼지: 보통은 설정된 서비스. 그 서버가 과부하(5xx)·요청 한도(429)면 키가 저장된 다른 서비스로 그 질문만 보낸다 */
+const AI_SVC_NAME = { deepseek:'DeepSeek', gemini:'Gemini', claude:'Claude', openai:'OpenAI', custom:'직접 지정 서버' };
+function aiTarget(svc){
+  const sv = AI_SERVICES[svc]; if (!sv) return null;
+  return { service: svc, provider: sv.provider, base: svc === 'custom' ? (AI.bases.custom || '') : sv.base, model: AI.models[svc] || (sv.models[0] ? sv.models[0][0] : ''), key: AI.keys[svc] || '' };
+}
+function aiAltService(){   // 지금 서비스 말고 키가 저장된 서비스 중 하나 (싸고 빠른 순)
+  for (const svc of ['deepseek', 'gemini', 'openai', 'claude', 'custom']){
+    if (svc === AI.service || !AI.keys[svc]) continue;
+    const t = aiTarget(svc); if (t && t.key && t.model) return t;
+  }
+  return null;
+}
+async function aiCall(user, systemExtra, history, extra){   // history: [{q, a}] 앞선 문답 · extra.boost: 길이 상한 3배 · extra.target: 다른 서비스로 보내기
+  extra = extra || {};
+  const target = extra.target || { service: AI.service, provider: AI.provider, base: AI.base, model: AI.model, key: AI.key };
+  for (let round = 0; ; round++){
+    try{ return await aiCallRaw(target, user, systemExtra, history, extra); }
+    catch(e){
+      if (extra.target || extra.silent || !e.transient) throw e;   // 이미 대체 중이거나, 배경 작업이거나, 다시 해도 소용없는 오류
+      const alt = aiAltService();
+      if (!alt) throw e;
+      const choice = await aiSwitchAsk(alt, e.message);
+      if (choice === 'retry') continue;                            // 같은 서비스로 한 번 더 (또 실패하면 다시 묻는다)
+      if (choice !== 'alt') throw e;
+      let a;
+      try{ a = await aiCallRaw(alt, user, systemExtra, history, Object.assign({}, extra, { target: alt })); }
+      catch(e2){ throw new Error(`${AI_SVC_NAME[alt.service] || alt.service}도 실패했어요 — ${e2.message}`); }
+      const note = `${AI_SVC_NAME[AI.service] || AI.service} 서버가 밀려서 이번 답은 ${AI_SVC_NAME[alt.service] || alt.service}(${alt.model})로 받았어요`;
+      showToast(note);
+      return a + `\n\n※ ${note}.`;
+    }
+  }
+}
+/* 다른 서비스로 보낼지 묻는다. 세션 동안 기억하기를 켜면 다음부터는 묻지 않고 그 선택대로 */
+let aiSwitchPref = null;   // 'alt' | 'retry' | null — 앱을 닫으면 사라진다
+function aiSwitchAsk(alt, why){
+  if (aiSwitchPref) return Promise.resolve(aiSwitchPref);
+  const cur = AI_SVC_NAME[AI.service] || AI.service, nxt = AI_SVC_NAME[alt.service] || alt.service;
+  $('aiSwitchTitle').textContent = `${cur} 서버가 밀려 있어요`;
+  $('aiSwitchMsg').textContent = `${why} 키가 저장된 ${nxt}(${alt.model})로 이번 질문을 보낼 수도 있어요. 설정은 바뀌지 않고, 이 질문만 우회해요.`;
+  $('aiSwitchAlt').textContent = `${nxt}로 보내기`;
+  $('aiSwitchRetry').textContent = `${cur}로 다시 시도`;
+  $('aiSwitchKeep').checked = false;
+  const box = $('aiSwitch'); box.hidden = false;
+  return new Promise(resolve => {
+    aiSwitchWaiters.push(resolve);          // 동시에 여러 질문이 걸려 있으면 한 번의 선택으로 모두 처리
+    box.onclick = e => {
+      const b = e.target.closest('[data-sw]'); if (!b) return;
+      box.hidden = true; box.onclick = null;
+      const c = b.dataset.sw;
+      if (c !== 'cancel' && $('aiSwitchKeep').checked) aiSwitchPref = c;
+      const ws = aiSwitchWaiters.splice(0); ws.forEach(r => r(c));
+    };
+  });
+}
+const aiSwitchWaiters = [];
+async function aiCallRaw(T, user, systemExtra, history, extra){
+  if (!T.key) throw new Error('설정 탭에서 API 키를 먼저 넣어 주세요');
   const system = aiSystem() + (systemExtra ? '\n' + systemExtra : '');
   const turns = (history || []).flatMap(h => [{ role:'user', text: h.q }, { role:'assistant', text: h.a }]);
   /* 답변 길이 상한(토큰). 요금은 실제로 받은 만큼만 나가므로 이 값은 폭주 방어용이다.
      '생각하는' 모델(DeepSeek 등)은 속으로 생각한 분량도 여기서 빠져나가므로 넉넉히 잡는다. */
   const maxTok = Math.min(8000, (AI.len==='long' ? 4000 : 2000) * (extra && extra.boost ? 3 : 1));   // 8000 넘게 요구하면 거부하는 서비스가 있어 그 아래로
   let res, j;
-  if (AI.provider === 'gemini'){
-    res = await aiFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI.model)}:generateContent?key=${encodeURIComponent(AI.key)}`, { method:'POST', headers:{ 'Content-Type':'application/json' },
+  if (T.provider === 'gemini'){
+    res = await aiFetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(T.model)}:generateContent?key=${encodeURIComponent(T.key)}`, { method:'POST', headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[...turns.map(t => ({ role: t.role==='assistant' ? 'model' : 'user', parts:[{ text: t.text }] })), { role:'user', parts:[{ text: user }] }], generationConfig:{ maxOutputTokens: maxTok * 2 } }) });
     j = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && j.error.message));
+    if (!res.ok) throw aiErr(res.status, j.error && j.error.message);
     { const c = (j.candidates||[])[0];
       const out = ((c?.content?.parts)||[]).map(p => p.text||'').join('').trim();
       if (!out) throw new Error(aiEmptyMsg(c?.finishReason || j.promptFeedback?.blockReason));
       aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
   }
-  if (AI.provider === 'claude'){
-    res = await aiFetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key': AI.key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
-      body: JSON.stringify({ model: AI.model, max_tokens: maxTok, system, messages:[...turns.map(t => ({ role: t.role, content: t.text })), { role:'user', content: user }] }) });
+  if (T.provider === 'claude'){
+    res = await aiFetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key': T.key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model: T.model, max_tokens: maxTok, system, messages:[...turns.map(t => ({ role: t.role, content: t.text })), { role:'user', content: user }] }) });
     j = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && j.error.message));
+    if (!res.ok) throw aiErr(res.status, j.error && j.error.message);
     { const out = (j.content||[]).filter(c => c.type==='text').map(c => c.text).join('').trim();
       if (!out) throw new Error(aiEmptyMsg(j.stop_reason));
       aiCountUsage(system + user + turns.map(t=>t.text).join(''), out); return out; }
   }
   // OpenAI 호환 (DeepSeek, OpenAI, 기타)
-  const base = AI.base || 'https://api.openai.com/v1';
-  const body = { model: AI.model, messages:[{ role:'system', content: system }, ...turns.map(t => ({ role: t.role, content: t.text })), { role:'user', content: user }] };
+  const base = T.base || 'https://api.openai.com/v1';
+  const body = { model: T.model, messages:[{ role:'system', content: system }, ...turns.map(t => ({ role: t.role, content: t.text })), { role:'user', content: user }] };
   if (/openai\.com/.test(base)) body.max_completion_tokens = maxTok; else body.max_tokens = maxTok;
-  res = await aiFetch(`${base}/chat/completions`, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + AI.key }, body: JSON.stringify(body) });
+  res = await aiFetch(`${base}/chat/completions`, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + T.key }, body: JSON.stringify(body) });
   j = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(aiFriendlyError(res.status, j.error && (j.error.message || j.error)));
+  if (!res.ok) throw aiErr(res.status, j.error && (j.error.message || j.error));
   { const ch = (j.choices||[])[0];
     const out = (ch?.message?.content || '').trim();
     if (!out){
       // 생각(reasoning)만 하다가 길이 상한에 걸려 정작 답은 비어 온 경우 — 상한을 3배로 키워 한 번만 더 시도
       const thoughtOnly = ch?.finish_reason === 'length' && (ch?.message?.reasoning_content || ch?.message?.reasoning);
-      if (thoughtOnly && !(extra && extra.boost)) return aiCall(user, systemExtra, history, { boost: true });
+      if (thoughtOnly && !(extra && extra.boost)) return aiCallRaw(T, user, systemExtra, history, Object.assign({}, extra, { boost: true }));
       throw new Error(thoughtOnly ? '모델이 생각만 하다가 길이 한도를 다 썼어요. 설정에서 생각을 덜 하는 모델로 바꾸거나 질문을 짧게 해 보세요.' : aiEmptyMsg(ch?.finish_reason));
     }
     aiCountUsage(system + user + turns.map(t=>t.text).join(''), out);
@@ -3004,6 +3087,7 @@ function aiFreeCtx(key){   // 자유 질문: 단어·문장 문맥 없이 중국
 const AI_FRESH = {};   // 문맥별 '새 대화' 시작 시각 — 이 시각 이전 문답은 시트에 안 띄우고 이어 묻기에도 안 보냄 (노트에는 남음)
 function aiOpen(ctx){
   aiCtx = ctx; $('aiSheet').hidden = false; $('aiCtx').textContent = ctx.label;
+  $('btnAiSend').disabled = false;   // 다른 문맥에서 답을 기다리는 중이어도 이 문맥에서는 바로 물을 수 있게
   $('aiQuick').innerHTML = ctx.quick.map((q,i) => `<button data-aiq="${i}">${q.label}</button>`).join('');
   const log = $('aiLog'); log.innerHTML = '';
   for (const n of (AI_NOTES[ctx.key] || [])) if (!n.del && n.t > (AI_FRESH[ctx.key] || 0)) aiAppend(n.q, n.a);   // '새 대화' 이후 것만 화면에 (노트에는 다 남아 있음)
@@ -3023,18 +3107,21 @@ function aiFmt(t, stars){   // stars=true 면 중국어 문장 끝마다 '내 �
 }
 function aiFmtRaw(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/^#+\s*/gm, '').replace(/^[ \t]*(?)[*\-•][ \t]+/gm, '$1• ').replace(/\n{3,}/g, '\n\n').replace(/([\u4e00-\u9fff]{1,20})/g, (m) => `<span class="zh">${tapHtml(m)}</span>`); }   // 한자는 단어로 끊어 눌러서 뜻을 볼 수 있게
 function aiAppend(q, a, cls){ const log = $('aiLog'); const ph = log.querySelector('.thinking[style]'); if (ph) ph.remove(); log.insertAdjacentHTML('beforeend', `<div class="q">${aiFmt(q)}</div><div class="a ${cls||''}">${a === null ? '<span class="thinking">생각 중</span>' : aiFmt(a, true)}</div>`); log.scrollTop = log.scrollHeight; return log.lastElementChild; }
+let aiBusy = 0;   // 진행 중인 질문 수 — 0 이 될 때 보내기 버튼을 켠다
 async function aiAsk(q){
   if (!q.trim() || !aiCtx) return;
   if (!AI.key){ showToast('설정 탭에서 API 키를 넣어 주세요'); return; }
-  const el = aiAppend(q, null); $('btnAiSend').disabled = true;
+  const ctx = aiCtx;                                   // 답이 오는 사이 시트가 다른 문맥으로 바뀌어도 이 질문은 원래 문맥의 것
+  const el = aiAppend(q, null); aiBusy++; $('btnAiSend').disabled = true;
   try{
     // 이어서 질문: 같은 문맥에서 나눈 최근 3번의 문답을 같이 보냄. 문맥 설명은 첫 질문 앞에만 붙임
-    const hist = (AI_NOTES[aiCtx.key] || []).filter(h => !h.del && h.t > (AI_FRESH[aiCtx.key] || 0)).slice(-3).map((h, i, arr) => ({ q: i === 0 ? `${aiCtx.text}\n\n[질문] ${h.q}` : h.q, a: h.a }));
-    const a = await aiCall(hist.length ? q : `${aiCtx.text}\n\n[질문] ${q}`, '', hist);
-    el.innerHTML = aiFmt(a, true);
-    (AI_NOTES[aiCtx.key] = AI_NOTES[aiCtx.key] || []).push({ q, a, t: Date.now() }); if (AI_NOTES[aiCtx.key].length > 200) AI_NOTES[aiCtx.key].shift(); store.set('zh.ai_notes', AI_NOTES);
-  }catch(e){ el.className = 'a err'; el.textContent = /(Failed to fetch|NetworkError|Load failed)/i.test(e.message) ? '서버에 연결하지 못했어요. 인터넷을 확인하거나, 이 서비스가 브라우저 직접 호출을 막는 경우(CORS)일 수 있어요.' : e.message; }
-  $('btnAiSend').disabled = false; $('aiLog').scrollTop = $('aiLog').scrollHeight;
+    const hist = (AI_NOTES[ctx.key] || []).filter(h => !h.del && h.t > (AI_FRESH[ctx.key] || 0)).slice(-3).map((h, i, arr) => ({ q: i === 0 ? `${ctx.text}\n\n[질문] ${h.q}` : h.q, a: h.a }));
+    const a = await aiCall(hist.length ? q : `${ctx.text}\n\n[질문] ${q}`, '', hist);
+    (AI_NOTES[ctx.key] = AI_NOTES[ctx.key] || []).push({ q, a, t: Date.now() }); if (AI_NOTES[ctx.key].length > 200) AI_NOTES[ctx.key].shift(); store.set('zh.ai_notes', AI_NOTES);
+    if (el.isConnected) el.innerHTML = aiFmt(a, true);
+    else if (aiCtx === ctx) aiOpen(ctx);               // 화면이 새로 그려졌으면(같은 문맥) 노트에서 다시 불러 보여 준다
+  }catch(e){ if (el.isConnected){ el.className = 'a err'; el.textContent = /(Failed to fetch|NetworkError|Load failed)/i.test(e.message) ? '서버에 연결하지 못했어요. 인터넷을 확인하거나, 이 서비스가 브라우저 직접 호출을 막는 경우(CORS)일 수 있어요.' : e.message; } }
+  finally{ aiBusy = Math.max(0, aiBusy - 1); if (!aiBusy) $('btnAiSend').disabled = false; $('aiLog').scrollTop = $('aiLog').scrollHeight; }
 }
 $('aiQuick').addEventListener('click', e => { const b = e.target.closest('[data-aiq]'); if (!b) return; const q = aiCtx.quick[+b.dataset.aiq].q; if (!q){ $('aiQ').value = '3번 문장 '; $('aiQ').focus(); $('aiQ').setSelectionRange(0, 2); return; } aiAsk(q); });
 $('aiForm').onsubmit = e => { e.preventDefault(); const q = $('aiQ').value; $('aiQ').value = ''; aiAsk(q); };
@@ -4807,7 +4894,7 @@ function wrParseProblems(a, lv){
   }
   return out;
 }
-async function wrFetchBatch(lv){
+async function wrFetchBatch(lv, quiet){
   const seen = [...(WRITE_ST.recent || []).slice(-10).map(r => r.ko), ...wrQueue.map(x => x.ko)].filter(Boolean);
   const a = await aiCall(`HSK ${lv}급 수준의 작문 문제 ${WR_BATCH}개를 내 줘.`,
     `너는 중국어 작문 문제 출제자다. 학습자 수준 HSK ${lv}급.
@@ -4818,7 +4905,7 @@ async function wrFetchBatch(lv){
 [중국어] (모범 번역)
 [병음] (성조 기호 포함)
 [핵심단어] (그 문장에서 가장 중요한 단어 하나 — 한자 다음에 한 칸 띄고 병음. 예: 朋友 péngyou)` +
-    (seen.length ? `\n\n[최근에 낸 문장 — 비슷한 것을 또 내지 말 것]\n${seen.join('\n')}` : ''));
+    (seen.length ? `\n\n[최근에 낸 문장 — 비슷한 것을 또 내지 말 것]\n${seen.join('\n')}` : ''), null, { silent: !!quiet });
   const list = wrParseProblems(a, lv);
   if (!list.length) throw new Error('문제를 만들지 못했어요. 다시 눌러 주세요.');
   return list;
@@ -4828,7 +4915,7 @@ function wrPrefetch(){
   const lv = wrLv();
   if (wrQueueLv !== lv){ wrQueue = []; wrQueueLv = lv; }   // 급수를 바꾸면 쌓아 둔 것은 버린다
   if (!AI.key || WR_MODE !== 'ai' || wrFetching || wrQueue.length >= 2) return;
-  wrFetching = wrFetchBatch(lv)
+  wrFetching = wrFetchBatch(lv, true)
     .then(list => { if (wrQueueLv === lv) wrQueue.push(...list); })
     .catch(() => {})                                       // 미리 받기 실패는 조용히 넘긴다 (필요할 때 다시 시도)
     .finally(() => { wrFetching = null; });
