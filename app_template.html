@@ -441,6 +441,12 @@ body.no-tabbar .totop{bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .wr-mine.off{color:var(--ink-2);text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:1px}
 .wr-fix{font-family:var(--hanzi);font-size:17px;color:var(--good);margin-top:2px}
 .wr-why{margin-top:8px;padding:8px 10px;border-radius:9px;background:var(--paper);cursor:auto}
+.wr-gap{margin-top:10px;padding:9px 11px;border-radius:10px;background:var(--paper);border:1px solid var(--line);font-size:13.5px}
+.wr-gap-h{font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.04em;margin-bottom:4px}
+.wr-gap-row{padding:3px 0;border-top:1px dashed var(--line)}
+.wr-gap-h + .wr-gap-row{border-top:0}
+.wr-gap-row.ok{color:var(--good)}
+.wr-gap-row.no{color:var(--bad)}
 .wr-res{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
 .wr-badge{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;margin-bottom:6px}
 .wr-badge.good{background:var(--good-bg);color:var(--good)}
@@ -4897,7 +4903,7 @@ function renderWrite(){
     <div class="sh-label">이 뜻이 되도록 중국어로 써 보세요 <small style="font-weight:400">· ${wr.rev ? `복습 ${wr.n}번째 · ` : ''}HSK ${wr.lv}급</small></div>
     <div class="wr-ko">${wr.ko}</div>
     ${wr.word ? `<div style="font-size:12px;color:var(--ink-2);margin-bottom:8px">핵심 단어: <b style="font-family:var(--hanzi);font-size:16px">${tapHtml(wr.word.s)}</b> <span style="font-family:var(--mono)">${wr.word.py || ''}</span> <small style="color:var(--ink-2)">눌러서 뜻 보기</small></div>` : '<div style="height:6px"></div>'}
-    <textarea class="wr-in" id="wrIn" placeholder="중국어로 입력 (한자)" autocapitalize="off" autocorrect="off">${wr.mine || ''}</textarea>
+    <textarea class="wr-in" id="wrIn" placeholder="중국어로 입력 — 모르는 단어는 한국어로 그냥 써도 돼요 (예: 我 어제 去了 병원)" autocapitalize="off" autocorrect="off">${wr.mine || ''}</textarea>
     <div class="dataops" style="margin-top:10px">
       <button class="btn primary" id="btnWrSubmit" style="flex:1">제출</button>
       <button class="btn icon" id="btnWrAsk" title="AI 에게 묻기"><i class="ic-ai"></i></button>
@@ -4954,7 +4960,9 @@ $('wrBox').addEventListener('click', async e => {
     wr.mine = mine;
     const same = wrNorm(mine) === wrNorm(wr.zh);
     const box = $('wrRes'); box.hidden = false;
+    const gapN = (mine.match(/[가-힣]+/g) || []).length;
     box.innerHTML = `<span class="wr-badge ${same ? 'good' : 'soso'}">${same ? '참고 답안과 같음' : '참고 답안과 다름 — 그래도 맞을 수 있어요'}</span>
+      ${gapN ? `<div style="font-size:12.5px;color:var(--ink-2);margin:2px 0 4px">한국어로 남겨 둔 단어 ${gapN}개 — AI 첨삭을 받으면 그 단어와 자리가 맞는지 알려 줘요.</div>` : ''}
       <div style="font-size:13px;color:var(--ink-2);margin-top:4px">참고 답안</div>
       <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--hanzi);font-size:19px">${tapHtml(wr.zh)}</span><button class="btn icon" id="btnWrSay" title="듣기"><i class="ic-spk"></i></button></div>
       <div style="font-family:var(--mono);font-size:12px;color:var(--ink-2)">${wr.py || ''}</div>
@@ -4969,27 +4977,43 @@ $('wrBox').addEventListener('click', async e => {
     if (!AI.key){ showToast('설정 탭에서 API 키를 먼저 넣어 주세요'); return; }
     const out = $('wrAiRes'); out.innerHTML = '<span class="thinking">생각 중</span>';
     try{
+      /* 문장 안의 한국어 조각 = 중국어 단어를 몰라서 우리말로 채워 넣은 자리.
+         이때는 틀렸다고만 하지 말고 ① 그 단어가 중국어로 무엇인지 ② 그 자리에 두는 게 맞는지를 따로 짚어 달라고 한다. */
+      const gaps = [...new Set((wr.mine.match(/[가-힣]+/g) || []))];
+      const gapRule = gaps.length ? `
+학습자 문장에 한국어로 남아 있는 부분(${gaps.join(', ')})은 그 중국어 단어를 몰라서 우리말로 대신 써 둔 자리다. 단어를 못 쓴 것이므로 [판정]은 반드시 "틀림"으로 하되, [이유]에는 중국어로 쓴 나머지 부분의 구조가 맞는지를 적는다.
+[모르는 단어] 한국어 조각마다 한 줄씩 "한국어 → 한자 (병음) — 뜻·품사, 쓰임 한마디" 형식. 줄은 " / " 로 잇는다.
+[자리 점검] 그 단어들을 넣은 위치가 중국어 어순으로 맞는지 조각마다 "한국어: 맞음/틀림 — 이유(어디로 가야 하는지)" 형식. 줄은 " / " 로 잇는다.` : '';
       const a = await aiCall(`[한국어 뜻] ${wr.ko}\n[학습자가 쓴 중국어] ${wr.mine}\n[참고 답안] ${wr.zh}`,
         `너는 중국어 작문 첨삭 선생님이다. 학습자 수준 HSK ${wr.lv}급.
-아래 네 칸 형식으로만 답한다. 다른 말 금지.
+아래 칸 형식으로만 답한다. 다른 말 금지.
 [판정] 맞음 / 어색함 / 틀림 중 하나
 [고친 문장] (학습자 문장을 최소한만 고친 자연스러운 중국어. 고칠 게 없으면 학습자 문장 그대로)
 [이유] 무엇이 왜 문제인지 한국어로 1~3문장. 맞았으면 왜 좋은지 한 문장.
-[참고 답안과 차이] 학습자 문장과 참고 답안이 다르면 뉘앙스 차이를 한 문장. 사실상 같으면 "같음".`);
+[참고 답안과 차이] 학습자 문장과 참고 답안이 다르면 뉘앙스 차이를 한 문장. 사실상 같으면 "같음".${gapRule}`);
       const g = k => { const m = a.match(new RegExp('\\[' + k + '\\]\\s*([^\\n]*)')); return m ? m[1].trim() : ''; };
-      const v = /맞음/.test(g('판정')) ? '맞음' : /어색/.test(g('판정')) ? '어색함' : '틀림';
+      const v = gaps.length ? '틀림' : /맞음/.test(g('판정')) ? '맞음' : /어색/.test(g('판정')) ? '어색함' : '틀림';   // 한국어로 남긴 단어가 있으면 무조건 틀림 → 복습 큐로
       const fixed = g('고친 문장'), why = g('이유'), diff = g('참고 답안과 차이');
+      const words = gaps.length ? g('모르는 단어').split(/\s\/\s/).map(x => x.trim()).filter(Boolean) : [];
+      const places = gaps.length ? g('자리 점검').split(/\s\/\s/).map(x => x.trim()).filter(Boolean) : [];
+      const gapHtml = (words.length || places.length) ? `<div class="wr-gap">
+          ${words.length ? `<div class="wr-gap-h">몰랐던 단어</div>${words.map(w => `<div class="wr-gap-row">${aiFmtRaw(w)}</div>`).join('')}` : ''}
+          ${places.length ? `<div class="wr-gap-h" style="margin-top:8px">자리 점검</div>${places.map(x => `<div class="wr-gap-row ${/맞음/.test(x) ? 'ok' : 'no'}">${aiFmtRaw(x)}</div>`).join('')}` : ''}
+        </div>` : '';
       out.innerHTML = `<span class="wr-badge ${v === '맞음' ? 'good' : v === '어색함' ? 'soso' : 'bad'}">${v}</span>
         ${fixed ? `<div style="font-family:var(--hanzi);font-size:19px">${tapHtml(fixed)}</div>` : ''}
         <div style="font-size:14px;margin-top:6px">${aiFmtRaw(why)}</div>
-        ${diff && diff !== '같음' ? `<div style="font-size:13px;color:var(--ink-2);margin-top:4px">${aiFmtRaw(diff)}</div>` : ''}`;
+        ${diff && diff !== '같음' ? `<div style="font-size:13px;color:var(--ink-2);margin-top:4px">${aiFmtRaw(diff)}</div>` : ''}
+        ${gapHtml}`;
+      const gapText = [words.length && '몰랐던 단어: ' + words.join(' / '), places.length && '자리 점검: ' + places.join(' / ')].filter(Boolean).join('\n');
       const nk = 'c' + wr.key;
-      (AI_NOTES[nk] = AI_NOTES[nk] || []).push({ q: `작문: ${wr.ko}`, a: [`내 문장: ${wr.mine}`, fixed && `고친 문장: ${fixed}`, why, diff && diff !== '같음' && diff].filter(Boolean).join('\n'), t: Date.now() });
+      (AI_NOTES[nk] = AI_NOTES[nk] || []).push({ q: `작문: ${wr.ko}`, a: [`내 문장: ${wr.mine}`, fixed && `고친 문장: ${fixed}`, why, diff && diff !== '같음' && diff, gapText].filter(Boolean).join('\n'), t: Date.now() });
       if (AI_NOTES[nk].length > 100) AI_NOTES[nk].shift();
       store.set('zh.ai_notes', AI_NOTES);
       wr.fixed = fixed; wr.why = why;
-      if (wr.counted) wrUpdateLast(v, fixed, why + (diff && diff !== '같음' ? '\n' + diff : ''));
-      else { wr.counted = true; wrRecordKeep(v, fixed, why + (diff && diff !== '같음' ? '\n' + diff : '')); }
+      const whyAll = why + (diff && diff !== '같음' ? '\n' + diff : '') + (gapText ? '\n' + gapText : '');
+      if (wr.counted) wrUpdateLast(v, fixed, whyAll);
+      else { wr.counted = true; wrRecordKeep(v, fixed, whyAll); }
     }catch(err){ out.innerHTML = `<span style="color:var(--bad);font-size:13px">${err.message}</span>`; }
   }
 });
